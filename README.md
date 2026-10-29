@@ -3,6 +3,7 @@
 [![Docs](https://img.shields.io/readthedocs/orbit-genome-browser)](https://orbit-genome-browser.readthedocs.io/en/latest/)
 [![Release](https://img.shields.io/github/v/release/junjunlab/Orbit)](https://github.com/junjunlab/Orbit/releases)
 [![License](https://img.shields.io/github/license/junjunlab/Orbit)](LICENSE)
+[![Stars](https://img.shields.io/github/stars/junjunlab/Orbit)](https://github.com/junjunlab/Orbit)
 
 A fast, offline-first **desktop genome browser** — a lightweight alternative to IGV Desktop.
 Native window, double-click to run, no Java, no server setup.

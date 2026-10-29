@@ -71,6 +71,8 @@ async function connect(opts = {}) {
       '--hide-scrollbars',
       '--no-first-run',
       '--no-default-browser-check',
+      '--no-proxy-server',
+      '--proxy-bypass-list=*',
       'about:blank',
     ], { stdio: 'ignore', detached: false });
     console.log(`launched chrome (dpr=${dpr}, profile=${PROFILE})`);
