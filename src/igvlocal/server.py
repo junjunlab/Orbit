@@ -732,41 +732,136 @@ class Handler(BaseHTTPRequestHandler):
         return self._error("unknown endpoint", HTTPStatus.NOT_FOUND)
 
 
+_GC_CACHE: dict[tuple, list] = {}
+_GC_CACHE_MAX = 512
+
+
+def _gc_of(seq: str) -> float | None:
+    if not seq:
+        return None
+    g = seq.count("G") + seq.count("C")
+    tot = len(seq) - seq.count("N")
+    return round(g / tot, 4) if tot > 10 else None
+
+
+def _gc_remember(key: tuple, out: list) -> None:
+    if len(_GC_CACHE) >= _GC_CACHE_MAX:
+        _GC_CACHE.clear()
+    _GC_CACHE[key] = out
+
+
 def gc_profile(genome: TwoBitFile, chrom: str, start: int, end: int, bins: int) -> list:
-    """GC fraction per bin; samples at most ~120 kb per bin for speed."""
+    """GC fraction per bin.
+
+    Local 2bit reads the whole window in one go (fast disk) and computes every
+    bin exactly. A *remote* 2bit must not do that: each bin used to become its
+    own HTTP Range round-trip (up to ~5600 of them for a whole-chromosome view),
+    which saturated the shared keep-alive connection and stalled every other
+    request behind it. For remote and/or large windows we instead read a bounded
+    number of sample chunks and interpolate to the requested bin count, so a
+    request always finishes in a second or two.
+    """
     length = end - start
     if length <= 0:
         return []
+    try:
+        chrom_len = genome.chroms.get(chrom)
+    except Exception:  # noqa: BLE001
+        chrom_len = None
+    if chrom_len:
+        end = min(end, chrom_len)
+        length = end - start
+        if length <= 0:
+            return []
+
     bins = max(10, min(bins, 4000))
     # never ask for windows smaller than ~20 bp, they are pure noise
     if length < bins * 20:
         bins = max(6, length // 20)
+    bins = max(1, bins)
     step = length / bins
-    out = []
-    max_window = 20_000
-    for i in range(bins):
-        a = int(start + i * step)
-        b = int(start + (i + 1) * step)
-        if b <= a:
-            b = a + 1
+
+    key = (id(genome), chrom, start, end, bins)
+    hit = _GC_CACHE.get(key)
+    if hit is not None:
+        return hit
+
+    remote = isinstance(genome, RemoteTwoBitFile)
+
+    # ---- exact path: one contiguous fetch, but only for windows small enough
+    # that it is cheap. A whole chromosome must never be materialised as one
+    # string (~250 MB) even on local disk.
+    if length <= 80_000 or (not remote and length <= 4_000_000):
         try:
-            if b - a <= max_window:
-                seq = genome.fetch(chrom, a, b)
-                g = seq.count("G") + seq.count("C")
-                tot = len(seq) - seq.count("N")
-            else:
-                sub = []
-                for k in range(8):
-                    sa = a + (b - a) * k // 8
-                    sb = a + (b - a) * (k + 1) // 8
-                    sub.append(genome.fetch(chrom, sa, min(sb, sa + max_window // 8)))
-                seq = "".join(sub)
-                g = seq.count("G") + seq.count("C")
-                tot = len(seq) - seq.count("N")
+            seq = genome.fetch(chrom, start, end)
         except Exception:  # noqa: BLE001
-            out.append(None)
+            seq = ""
+        if seq:
+            out = []
+            for i in range(bins):
+                a = int(round(i * step))
+                b = int(round((i + 1) * step))
+                if b <= a:
+                    b = a + 1
+                out.append(_gc_of(seq[a:b]))
+            _gc_remember(key, out)
+            return out
+        if not remote:
+            return [None] * bins
+
+    # ---- bounded sampling path (remote and/or large window)
+    # Local disk can afford many more probes than a remote host, so the sample
+    # density scales with where the sequence comes from.
+    n_pts = 200 if not remote else 40
+    budget = 2_000_000 if not remote else 200_000
+    chunk = max(600, min(int(length / n_pts), budget // n_pts, 8000))
+
+    spans = []
+    for i in range(n_pts):
+        mid = int(start + (i + 0.5) * length / n_pts)
+        a = max(start, min(mid - chunk // 2, end - chunk))
+        b = min(end, a + chunk)
+        if b > a:
+            spans.append((a, b))
+    if not spans:
+        return [None] * bins
+
+    def _one(ab):
+        a, b = ab
+        try:
+            return _gc_of(genome.fetch(chrom, a, b))
+        except Exception:  # noqa: BLE001
+            return None
+
+    # Fetch the sample chunks concurrently: the reader keeps a small connection
+    # pool, so their round-trips overlap instead of queueing one by one.
+    from concurrent.futures import ThreadPoolExecutor
+    with ThreadPoolExecutor(max_workers=min(4, len(spans))) as pool:
+        vals = list(pool.map(_one, spans))
+    xs = [(a + b) / 2 for a, b in spans]
+
+    out = []
+    lo = 0
+    for j in range(bins):
+        x = start + (j + 0.5) * step
+        if x <= xs[0]:
+            out.append(vals[0])
             continue
-        out.append(round(g / tot, 4) if tot > 10 else None)
+        if x >= xs[-1]:
+            out.append(vals[-1])
+            continue
+        while lo < len(xs) - 2 and xs[lo + 1] <= x:
+            lo += 1
+        v0, v1 = vals[lo], vals[lo + 1]
+        if v0 is None:
+            out.append(v1)
+        elif v1 is None:
+            out.append(v0)
+        else:
+            span = (xs[lo + 1] - xs[lo]) or 1
+            t = (x - xs[lo]) / span
+            out.append(round(v0 + (v1 - v0) * t, 4))
+    _gc_remember(key, out)
     return out
 
 

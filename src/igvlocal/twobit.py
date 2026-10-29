@@ -152,7 +152,8 @@ class _HttpRangeReader:
     """
 
     def __init__(self, url: str, timeout: float = 30.0, retries: int = 4,
-                 max_entries: int = 2048, max_bytes: int = 96 << 20):
+                 max_entries: int = 2048, max_bytes: int = 96 << 20,
+                 max_conns: int = 4):
         self.url = url
         self.timeout = timeout
         self.retries = retries
@@ -163,7 +164,12 @@ class _HttpRangeReader:
         self._host = u.hostname
         self._port = u.port
         self._path = u.path + (("?" + u.query) if u.query else "")
-        self._conn: http.client.HTTPConnection | None = None
+        # A small pool lets independent range reads overlap their round-trips.
+        # A single connection serialised every read, which is what made remote
+        # GC/sequence feel frozen (tens of sequential RTTs per request).
+        self.max_conns = max(1, int(max_conns))
+        self._free: list = []
+        self._pool_lock = threading.Lock()
         self._cache: dict[tuple[int, int], bytes] = {}
         self._bytes = 0
         self._lock = threading.Lock()
@@ -188,26 +194,46 @@ class _HttpRangeReader:
                 self._bytes += len(data)
         return data
 
+    def _new_conn(self):
+        cls = (http.client.HTTPSConnection if self._https
+               else http.client.HTTPConnection)
+        return cls(self._host, self._port, timeout=self.timeout)
+
+    def _acquire(self):
+        with self._pool_lock:
+            if self._free:
+                return self._free.pop()
+        return self._new_conn()
+
+    def _release(self, conn, reusable: bool) -> None:
+        if reusable:
+            with self._pool_lock:
+                if len(self._free) < self.max_conns:
+                    self._free.append(conn)
+                    return
+        try:
+            conn.close()
+        except Exception:  # noqa: BLE001
+            pass
+
     def _close_conn(self) -> None:
-        if self._conn is not None:
+        """Close every pooled connection (kept for the existing call sites)."""
+        with self._pool_lock:
+            conns, self._free = self._free, []
+        for c in conns:
             try:
-                self._conn.close()
+                c.close()
             except Exception:  # noqa: BLE001
                 pass
-            self._conn = None
 
-    def _request(self, start: int, size: int) -> bytes:
-        if self._conn is None:
-            cls = (http.client.HTTPSConnection if self._https
-                   else http.client.HTTPConnection)
-            self._conn = cls(self._host, self._port, timeout=self.timeout)
+    def _request(self, conn, start: int, size: int) -> bytes:
         end = start + size - 1
-        self._conn.request("GET", self._path, headers={
+        conn.request("GET", self._path, headers={
             "Range": f"bytes={start}-{end}",
             "User-Agent": "Orbit/1.0 (+igvlocal)",
             "Accept-Encoding": "identity",
         })
-        resp = self._conn.getresponse()
+        resp = conn.getresponse()
         status = resp.status
         if status == 206:
             data = resp.read()
@@ -223,21 +249,22 @@ class _HttpRangeReader:
     def _fetch(self, start: int, size: int) -> bytes:
         last: Exception | None = None
         for attempt in range(self.retries):
-            with self._lock:
-                try:
-                    return self._request(start, size)
-                except TwoBitError:
-                    self._close_conn()
-                    raise
-                except Exception as exc:  # noqa: BLE001
-                    last = exc
-                    self._close_conn()
+            conn = self._acquire()
+            try:
+                data = self._request(conn, start, size)
+                self._release(conn, True)
+                return data
+            except TwoBitError:
+                self._release(conn, False)
+                raise
+            except Exception as exc:  # noqa: BLE001
+                last = exc
+                self._release(conn, False)
             time.sleep(0.4 * (attempt + 1))
         raise TwoBitError(f"range fetch failed {start}-{size + start - 1}: {last}")
 
     def close(self) -> None:
-        with self._lock:
-            self._close_conn()
+        self._close_conn()
 
 
 

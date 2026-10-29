@@ -8,9 +8,10 @@
   // 界面文案：中文原文 → 当前语言（见 i18n.js）
   const T = (s) => window.I18N.t(s);
 
-  const api = async (path, params) => {
+  const api = async (path, params, opts) => {
     const qs = new URLSearchParams(params || {}).toString();
-    const res = await fetch(`api/${path}${qs ? '?' + qs : ''}`);
+    const init = (opts && opts.signal) ? { signal: opts.signal } : undefined;
+    const res = await fetch(`api/${path}${qs ? '?' + qs : ''}`, init);
     if (!res.ok) throw new Error(`${path}: ${res.status}`);
     return res.json();
   };
@@ -438,20 +439,33 @@
 
     d.range = need;
     d.loadedFor = view.chrom;
+    // 同一个面板上一次取数还没回来就又开始新的（连续平移/缩放）：取消旧的。
+    // 否则浏览器每个域只有 6 个并发连接，很快被占满，界面就像卡死。
+    if (P._ac) { try { P._ac.abort(); } catch { /* ignore */ } }
+    const ac = new AbortController();
+    P._ac = ac;
+    const sig = ac.signal;
     S.pending++;
     setLoading(true);
     const t0 = performance.now();
     const jobs = [
-      api('genes', { db: S.asm.id, chrom: view.chrom, s: need.start, e: need.end })
+      api('genes', { db: S.asm.id, chrom: view.chrom, s: need.start, e: need.end }, { signal: sig })
         .then((r) => { d.genes = r.genes; d.truncated = r.truncated; d.ms = r.ms; }),
     ];
+    // GC 与序列改为后台加载：不阻塞其它轨道的绘制。
+    // 以前它们和 genes 一起 await Promise.all，只要远程序列慢，整个视图就不刷新。
     if (S.tracks.gc && S.asm.hasSeq) {
-      jobs.push(api('gc', { db: S.asm.id, chrom: view.chrom, s: need.start, e: need.end, bins: 700 })
-        .then((r) => { d.gc = r.gc; d.gcRange = { ...need }; }));
+      d.gc = null;
+      api('gc', { db: S.asm.id, chrom: view.chrom, s: need.start, e: need.end, bins: 700 }, { signal: sig })
+        .then((r) => { d.gc = r.gc; d.gcRange = { ...need }; scheduleRender(); })
+        .catch(() => { /* 取消或失败：保持占位，不打断其它轨道 */ });
     }
     if (wantSeq) {
-      jobs.push(api('seq', { db: S.asm.id, chrom: view.chrom, s: need.start, e: need.end })
-        .then((r) => { d.seq = r.seq; d.seqStart = r.start ?? need.start; }));
+      d.seq = null;
+      d.seqStart = null;
+      api('seq', { db: S.asm.id, chrom: view.chrom, s: need.start, e: need.end }, { signal: sig })
+        .then((r) => { d.seq = r.seq; d.seqStart = r.start ?? need.start; scheduleRender(); })
+        .catch(() => { /* 取消或失败：drawSeq 会显示“读取序列…” */ });
     } else {
       d.seq = null;
     }
@@ -462,13 +476,14 @@
       const prev = P.bwData[t.id];
       if (!force && prev && prev.chrom === view.chrom
         && prev.start <= need.start && prev.end >= need.end) continue;
-      jobs.push(api('bw', { track: t.id, chrom: view.chrom, s: need.start, e: need.end, bins })
+      jobs.push(api('bw', { track: t.id, chrom: view.chrom, s: need.start, e: need.end, bins }, { signal: sig })
         .then((r) => {
           P.bwData[t.id] = { chrom: view.chrom, start: r.start, end: r.end,
             values: r.values, peak: r.peak, fileMax: r.fileMax,
             reason: r.reason || null };
         })
         .catch((err) => {
+          if (err && err.name === 'AbortError') return;
           P.bwData[t.id] = { chrom: view.chrom, start: need.start, end: need.end,
             values: null, reason: T('读取失败：') + err.message };
         }));
@@ -480,13 +495,14 @@
       if (!force && prev && prev.chrom === view.chrom
         && prev.start <= need.start && prev.end >= need.end) continue;
       jobs.push(api('loaded/bam', { track: t.id, db: S.asm.id, chrom: view.chrom,
-        s: need.start, e: need.end, max: 1500 })
+        s: need.start, e: need.end, max: 1500 }, { signal: sig })
         .then((r) => {
           P.alignData[t.id] = { chrom: view.chrom, start: r.start, end: r.end,
             reads: r.reads, total: r.total, sampled: r.sampled,
             hasSeq: r.hasSeq, reason: r.reason || null };
         })
         .catch((err) => {
+          if (err && err.name === 'AbortError') return;
           P.alignData[t.id] = { chrom: view.chrom, start: need.start, end: need.end,
             reads: null, reason: T('读取失败：') + err.message };
         }));
@@ -494,7 +510,7 @@
     try {
       await Promise.all(jobs);
     } catch (err) {
-      toast(T('数据加载失败：') + err.message);
+      if (!(err && err.name === 'AbortError')) toast(T('数据加载失败：') + err.message);
     } finally {      S.pending--;
       if (S.pending <= 0) setLoading(false);
       $('#stPerf').textContent = T(`载入 ${(performance.now() - t0).toFixed(0)} ms`);

@@ -4,7 +4,7 @@
 ; 产物：  dist\installer\Orbit-<version>-Windows-x64-Setup.exe
 
 #define MyAppName "Orbit"
-#define MyAppVersion "1.0.2"
+#define MyAppVersion "1.0.1"
 #define MyAppPublisher "junjunlab"
 #define MyAppURL "https://github.com/junjunlab/Orbit"
 #define MyAppExeName "Orbit.exe"

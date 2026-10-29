@@ -30,9 +30,9 @@ Download the package for your platform from [Releases](https://github.com/junjun
 
 | Platform | File | Size |
 |---|---|---|
-| Windows 10/11 x64 | `Orbit-1.0.2-Windows-x64-Setup.exe` | ~150 MB |
-| macOS Apple Silicon | `Orbit-1.0.2-macOS-arm64.dmg` | ~244 MB |
-| macOS Intel | `Orbit-1.0.2-macOS-x86_64.dmg` | ~253 MB |
+| Windows 10/11 x64 | `Orbit-1.0.1-Windows-x64-Setup.exe` | ~150 MB |
+| macOS Apple Silicon | `Orbit-1.0.1-macOS-arm64.dmg` | ~244 MB |
+| macOS Intel | `Orbit-1.0.1-macOS-x86_64.dmg` | ~253 MB |
 
 - **Windows** — per-user install, no admin rights needed (`%LOCALAPPDATA%\Programs\Orbit`).
 - **macOS** — drag `Orbit.app` into Applications. Builds are ad-hoc signed, not notarized,
