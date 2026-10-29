@@ -11,12 +11,12 @@ msgstr ""
 "POT-Creation-Date: 2026-10-29 15:37+0800\n"
 "PO-Revision-Date: 2026-10-29 20:00+0800\n"
 "Last-Translator: junjunlab\n"
-"Language-Team: zh_CN <LL@li.org>\n"
 "Language: zh_CN\n"
+"Language-Team: zh_CN <LL@li.org>\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=1; plural=0;\n"
 "Generated-By: Babel 2.18.0\n"
 
 #: ../../installation.rst:2
@@ -125,7 +125,8 @@ msgstr "该构建只做了临时签名（ad-hoc），**未经过公证**，因�
 
 #: ../../installation.rst:49
 msgid ""
-"right-click (or Control-click) the app and choose **Open**, then confirm, or"
+"right-click (or Control-click) the app and choose **Open**, then confirm,"
+" or"
 msgstr "右键（或按住 Control 点击）应用图标，选择 **打开**，然后确认；或者"
 
 #: ../../installation.rst:50
@@ -134,10 +135,9 @@ msgstr "在终端中执行一次::"
 
 #: ../../installation.rst:54
 msgid ""
-"If macOS reports the app is *damaged and can't be opened*, the quarantine "
-"attribute is the cause — the ``xattr`` command above fixes it."
-msgstr ""
-"如果 macOS 提示应用 *已损坏，无法打开*，那是隔离属性（quarantine）导致的 — 上面那条 ``xattr`` 命令即可解决。"
+"If macOS reports the app is *damaged and can't be opened*, the quarantine"
+" attribute is the cause — the ``xattr`` command above fixes it."
+msgstr "如果 macOS 提示应用 *已损坏，无法打开*，那是隔离属性（quarantine）导致的 — 上面那条 ``xattr`` 命令即可解决。"
 
 #: ../../installation.rst:58
 msgid "Command line"
@@ -211,8 +211,8 @@ msgstr "示例 — 两个实例、各自独立的状态、不同端口::"
 
 #: ../../installation.rst:87
 msgid ""
-"``ORBIT_HOME`` moves the settings and cache directory, so instances do not "
-"share preferences."
+"``ORBIT_HOME`` moves the settings and cache directory, so instances do "
+"not share preferences."
 msgstr "``ORBIT_HOME`` 用于改变设置与缓存目录，这样多个实例不会共用偏好。"
 
 #: ../../installation.rst:91
@@ -233,11 +233,11 @@ msgstr "偏好设置、会话、Qt 缓存"
 
 #: ../../installation.rst:100
 msgid ""
-"``%LOCALAPPDATA%\\Orbit`` (Windows), ``~/Library/Application Support/Orbit``"
-" (macOS)"
+"``%LOCALAPPDATA%\\Orbit`` (Windows), ``~/Library/Application "
+"Support/Orbit`` (macOS)"
 msgstr ""
-"``%LOCALAPPDATA%\\Orbit`` (Windows)、``~/Library/Application Support/Orbit`` "
-"(macOS)"
+"``%LOCALAPPDATA%\\Orbit`` (Windows)、``~/Library/Application "
+"Support/Orbit`` (macOS)"
 
 #: ../../installation.rst:101
 msgid "Application log"
@@ -262,8 +262,87 @@ msgstr "卸载"
 #: ../../installation.rst:109
 msgid ""
 "Use *Add or remove programs* on Windows, or move the app to the Bin on "
-"macOS. User data in ``%LOCALAPPDATA%\\Orbit`` is left in place; delete it "
-"manually if you want a clean slate."
+"macOS. User data in ``%LOCALAPPDATA%\\Orbit`` is left in place; delete it"
+" manually if you want a clean slate."
 msgstr ""
 "Windows 上使用 *添加或删除程序*，macOS 上把应用移到废纸篓即可。``%LOCALAPPDATA%\\Orbit`` "
 "中的用户数据会被保留；若想彻底清理，请手动删除。"
+
+msgid "Frontend export"
+msgstr "前端导出"
+
+msgid "``composePlot`` / ``composeVector`` generate the downloadable files"
+msgstr "``composePlot`` / ``composeVector`` 生成可下载的导出文件"
+
+msgid "Bundled newer build"
+msgstr "内置较新版本"
+
+msgid "Bundled older build"
+msgstr "内置较旧版本"
+
+msgid "UCSC ncbiRefSeq / sgdGene"
+msgstr "UCSC ncbiRefSeq / sgdGene"
+
+msgid "Response time depends on the network and reference index."
+msgstr "响应时间取决于网络状况和参考索引。"
+
+msgid ""
+"The range cache is in memory and per session, not a persistent offline "
+"genome."
+msgstr "区间缓存位于内存中，仅在本次会话有效，不是持久保存的离线基因组。"
+
+msgid "Local 2bit takes priority over the remote source."
+msgstr "本地 2bit 优先于远程序列源。"
+
+msgid ""
+"For a second instance, use a different port. To isolate imported data "
+"too, prepare a separate compatible data folder and pass it with "
+"``--data``:"
+msgstr "第二个实例应使用不同端口。如需同时隔离导入数据，请准备独立且结构兼容的数据目录，并通过 ``--data`` 指定："
+
+msgid ""
+"Changing the port alone does not isolate data. Do not rely on an "
+"unsupported ``ORBIT_HOME`` setting to separate research files."
+msgstr "只更换端口不会隔离数据。不要依赖未支持的 ``ORBIT_HOME`` 设置来隔离科研文件。"
+
+msgid ""
+"User data may remain in ``%LOCALAPPDATA%/Orbit`` or the application data "
+"folder. Back up imported research files before uninstalling. Do not "
+"delete an entire user-data folder merely to reset colours or another "
+"display preference."
+msgstr ""
+"用户数据可能仍保存在 ``%LOCALAPPDATA%/Orbit`` "
+"或应用数据目录中。卸载前请备份导入的科研文件，不要仅为了重置颜色等显示偏好而删除整个用户数据目录。"
+
+msgid ""
+"The backend uses the standard library ThreadingHTTPServer, bound to "
+"localhost by default. It serves the frontend and JSON APIs; the frontend "
+"composes exports."
+msgstr "后端采用标准库 ThreadingHTTPServer，默认绑定本机地址。它提供前端页面与 JSON API；导出由前端合成。"
+
+msgid ""
+"Set ``ORBIT_OFFLINE=1`` before launching to disable remote 2bit fallback."
+" A local matching 2bit supplies built-in reference operations offline. "
+"Imported FASTA remains an independent sequence track; see "
+":doc:`sequence`::"
+msgstr ""
+"启动前设置 ``ORBIT_OFFLINE=1`` 可禁用远程 2bit 回退。匹配的本地 2bit 支持内置参考序列操作离线工作。导入 "
+"FASTA 仍是独立序列轨道；详见 :doc:`sequence` 。"
+
+msgid ""
+"For a second instance, use a different port. To isolate imported data "
+"too, prepare a separate compatible data folder and pass it with "
+"``--data``::"
+msgstr "第二个实例应使用不同端口。如需同时隔离导入数据，请准备独立且结构兼容的数据目录，并通过 ``--data`` 指定："
+
+msgid ""
+"Use *Add or remove programs* on Windows, or move the app to the Bin on "
+"macOS. User data may remain in ``%LOCALAPPDATA%/Orbit`` or the "
+"application data folder. Back up imported research files before "
+"uninstalling. Do not delete an entire user-data folder merely to reset "
+"colours or another display preference."
+msgstr ""
+"Windows 可通过“添加或删除程序”卸载，macOS 可将应用移到废纸篓。用户数据可能仍保存在 "
+"``%LOCALAPPDATA%/Orbit`` "
+"或应用数据目录中。卸载前请备份导入的科研文件，不要仅为了重置颜色等显示偏好而删除整个用户数据目录。"
+

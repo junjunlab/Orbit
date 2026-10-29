@@ -79,13 +79,13 @@ for scripts and for running several instances side by side.
    * - ``--debug``
      - Verbose logging, plus JavaScript console output from the window
 
-Example — two instances, separate state, different ports::
+For a second instance, use a different port. To isolate imported data too,
+prepare a separate compatible data folder and pass it with ``--data``::
 
-   set ORBIT_HOME=%TEMP%\orbit-b
-   Orbit.exe --port 8766
+   Orbit.exe --port 8766 --data C:/Orbit-test/data
 
-``ORBIT_HOME`` moves the settings and cache directory, so instances do not
-share preferences.
+Changing the port alone does not isolate data. Do not rely on an unsupported
+``ORBIT_HOME`` setting to separate research files.
 
 Where things are stored
 -----------------------
@@ -107,5 +107,6 @@ Uninstalling
 ------------
 
 Use *Add or remove programs* on Windows, or move the app to the Bin on macOS.
-User data in ``%LOCALAPPDATA%\Orbit`` is left in place; delete it manually if
-you want a clean slate.
+User data may remain in ``%LOCALAPPDATA%/Orbit`` or the application data folder.
+Back up imported research files before uninstalling. Do not delete an entire
+user-data folder merely to reset colours or another display preference.

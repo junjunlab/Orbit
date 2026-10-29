@@ -1,108 +1,126 @@
 Navigation
-==========
+==============
 
-Moving around a genome is the part you do most, so Orbit tries to make every
-route to a locus one action long.
+Search a gene or an exact interval, then choose how much detail to display.
+Coordinates typed into Orbit are **1-based, inclusive**. The examples below use
+**human hg38 / GRCh38**; do not reuse them on hg19.
 
-Search syntax
--------------
-
-The search box accepts several forms and figures out which one you meant:
-
-.. list-table::
-   :header-rows: 1
-   :widths: 30 70
-
-   * - Input
-     - Result
-   * - ``TP53``
-     - Jumps to the gene, case-insensitive
-   * - ``chr17:7,668,402-7,687,550``
-     - That interval on chr17
-   * - ``chr17:7668402-7687550``
-     - Same, without thousands separators
-   * - ``7,668,402-7,687,550``
-     - Uses the current chromosome
-   * - ``chr17:7,668,402``
-     - A single base, shown with a 50 bp flank
-   * - ``chr17``
-     - The whole chromosome
-
-If a gene symbol matches several genes, the first hit is used and a list of
-alternatives is offered. Press :kbd:`Enter` again to cycle through them.
-
-Zooming and panning
+Search and zoom
 -------------------
 
-* Mouse wheel zooms around the cursor
-* Dragging on the ruler pans; dragging on a gene selects a range
-* :kbd:`+` / :kbd:`-` zoom around the centre
-* The zoom level is shown as base pairs per pixel, which is the honest measure
-  of how much detail you are actually seeing
+1. Select **hg38** in the assembly menu.
+2. Type ``EGFR`` and press :kbd:`Enter` to open the gene. Select a suggestion
+   when several names match; entering the same text again is not a next-hit command.
+3. Paste ``chr7:55,019,250-55,019,308`` to inspect its start-codon region.
+4. Use the wheel or toolbar zoom controls to change scale. Drag a track to pan;
+   dragging is not an interval-selection gesture. Double-click to zoom in
+   around the pointer. :kbd:`/` focuses the search box.
 
-There is a hard limit at one base per pixel. Beyond that the sequence track
-takes over — it draws coloured bases instead of pretending to have more
-resolution.
+The search also accepts ``chr7``, ``chr7:55,019,278``, and coordinate ranges
+without thousands separators. Zooming below one base per pixel is supported;
+this is necessary to make individual base letters readable. See :doc:`sequence`
+for nucleotide and amino-acid views.
 
-Split view
-----------
+.. figure:: examples/interface-overview.png
+   :width: 100%
+   :alt: ACTB locus showing the toolbar, track labels and gene model
 
-Split view shows up to four independent loci at once, each with its own
-chromosome, coordinates and selection. It is the fastest way to compare the
-same gene across samples, or to check that an event really is where you think
-it is.
+   A complete locus view. The assembly and search controls are at the top;
+   track settings are beside the drawing, and the sidebar holds visibility
+   switches and the selected-gene details.
 
-* Choose *2*, *3* or *4* panes from the toolbar
-* Each pane keeps its own search state; :kbd:`Ctrl` + :kbd:`1` … :kbd:`4`
-  focuses a pane
-* Tracks are shared — load a bigWig once and it appears in every pane
-* The whole-genome overview is not split; it follows the focused pane
+Expand and collapse a gene
+------------------------------
 
-Deep links
-----------
+1. Search ``EGFR``. In the RefSeq drawing, find the small **+** beside its label.
+   Clicking the gene body or name selects it; it does not by itself expand it.
+2. Click **+** to show the individual transcript rows. The symbol becomes **−**.
+3. Compare transcript accessions (for example ``NM_005228``), exon blocks,
+   intron connectors and coding regions. Different isoforms can have different
+   exon structures and CDS boundaries.
+4. Click **−** in the same place to collapse the transcript rows back to the
+   merged gene model. A gene with only one transcript has no +/− expansion control.
 
-Every view has a URL you can paste into a notebook or a chat:
+.. figure:: examples/genes-collapsed.png
+   :width: 100%
+   :alt: EGFR collapsed to a merged gene model with its plus control
 
-.. code-block:: text
+   Before expansion: one merged EGFR model. Use the small + control, not an
+   arbitrary point on an exon, to open the transcript list.
 
-   http://127.0.0.1:8765/?db=hg38&locus=chr17:7,668,402-7,687,550
+.. figure:: examples/genes-expanded.png
+   :width: 100%
+   :alt: EGFR expanded into separate named transcript rows
 
-Parameters:
+   After expansion: EGFR isoforms occupy separate rows with their transcript
+   accessions. The − control collapses them again; the locus and zoom are unchanged.
 
-.. list-table::
-   :header-rows: 1
-   :widths: 18 82
+Expand or collapse the entire track
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-   * - Key
-     - Meaning
-   * - ``db``
-     - Assembly id, for example ``hg38`` or ``mm39``
-   * - ``locus``
-     - A locus in any of the search-box forms
-   * - ``tracks``
-     - Comma-separated track names to enable
+Click the **gear beside RefSeq**, then choose **Expand all** or **Collapse all**.
+Expand all also applies to genes that become visible after panning. You can
+still collapse an individual gene using its − control. Imported GTF/GFF3 gene
+tracks have their own gear and independent expansion state. Shift-click is not
+an expand-all shortcut. Do not rely on expansion surviving a new app launch.
 
-When Orbit runs as a desktop window the address bar is not visible, but the
-link is still accepted: launch with ``--browser`` and the page reads the
-query string, or paste the locus part into the search box.
+.. figure:: examples/gene-settings.png
+   :width: 100%
+   :alt: Gene-track settings with Expand all and Collapse all buttons
 
-Transcript expansion
---------------------
+   The actual gene-track settings: expansion controls and colours for strands,
+   CDS and UTR. The setting affects the chosen track, not every annotation file.
 
-Click any gene to expand it into its transcripts. Expanded genes show exons,
-introns, CDS thickness, and the coding direction; the row grows from 32 to
-54 pixels and the label is drawn on top of the feature when there is no room
-beside it.
+Compare several genes in panels
+-----------------------------------
 
-* Click again to collapse
-* :kbd:`Shift` + click expands every gene in the window
-* The expanded set is remembered across sessions
+Orbit supports **1–5 panels**. Loci and zoom levels are independent; track files
+and track-level settings are shared. A panel is not a separate sample import.
 
-The whole-genome overview
--------------------------
+Two-panel example: ACTB and EGFR
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The overview at the bottom lists every primary chromosome as a horizontal bar
-whose length is proportional to the chromosome size, with the current window
-marked in colour. It starts collapsed as a single row for the current
-chromosome; press the chevron to expand all 25 rows. Clicking a bar navigates
-to that chromosome.
+1. Open **Split view** in the toolbar and choose **2 panels**.
+2. In the position input above the first panel, type ``ACTB`` and press Enter.
+3. In the second panel input, type ``EGFR`` and press Enter.
+4. Zoom or pan within one panel to compare detail without moving the other.
+   Click its header to select the target panel for shared toolbar navigation.
+5. Use the **×** in a panel header to close that panel, or choose one panel in
+   the split menu to return to a single view.
+
+.. figure:: examples/panels-two.png
+   :width: 100%
+   :alt: ACTB and EGFR displayed in two independent genomic panels
+
+   ACTB (negative strand) and EGFR (positive strand) in two panels. Each has
+   its own position field and coordinate scale: aligned screen columns do not
+   mean the same genomic coordinate.
+
+Four-panel example
+~~~~~~~~~~~~~~~~~~~~~~
+
+Choose **4 panels**, then enter ``ACTB``, ``EGFR``, ``TP53`` and ``MYC`` in their
+respective header inputs. Alternatively, enter ``ACTB, EGFR, TP53, MYC`` in the
+main search box to open multiple loci. Check the pane count and gene names
+before exporting. Ctrl+number is not a supported panel-focus shortcut.
+
+.. figure:: examples/panels-four.png
+   :width: 100%
+   :alt: Four panels comparing ACTB EGFR TP53 and MYC
+
+   Four real gene loci side by side. The view makes gene structures easy to
+   compare, while every panel retains its own zoom and chromosome.
+
+Whole-genome overview and links
+-----------------------------------
+
+Enable the whole-genome overview from the sidebar track list. Its chevron
+expands the primary-chromosome bars; their count depends on the chosen species.
+Click a bar to navigate. In split view each panel draws its own overview and
+current-window marker.
+
+In browser mode a locus can be opened with a URL such as::
+
+   http://127.0.0.1:8765/?db=hg38&locus=chr7:5526400-5531300
+
+Use the search box inside the native desktop window when no address bar is shown.

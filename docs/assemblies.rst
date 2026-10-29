@@ -8,13 +8,21 @@ small.
 Bundled assemblies
 ------------------
 
+.. figure:: examples/assembly-menu.png
+   :width: 100%
+   :alt: Assembly selector listing human and model-organism reference builds
+
+   Choose the reference build before searching or importing. The bundled
+   annotation list is not a claim that these are the newest available assemblies.
+
+
 .. list-table::
    :header-rows: 1
    :widths: 30 20 20 30
 
    * - Species
-     - Current
-     - Previous
+     - Bundled newer build
+     - Bundled older build
      - Source
    * - Human
      - ``hg38``
@@ -43,7 +51,7 @@ Bundled assemblies
    * - Yeast
      - ``sacCer3``
      - ``sacCer2``
-     - UCSC refGene
+     - UCSC ncbiRefSeq / sgdGene
    * - Frog
      - ``xenTro10``
      - ``xenTro9``
@@ -63,9 +71,9 @@ Every assembly in ``data/catalog.json`` records a ``twoBitURL`` pointing at the
 UCSC 2bit file. When you navigate, Orbit issues an HTTP Range request for just
 the bytes covering the window and decodes them locally.
 
-* First visit to a chromosome: about one second
-* Subsequent moves within it: about 0.3 seconds
-* Nothing is written to disk; the range cache is in memory and per session
+* Response time depends on the network and reference index.
+* The range cache is in memory and per session, not a persistent offline genome.
+* Local 2bit takes priority over the remote source.
 
 If the network is unavailable, the sequence and GC tracks go grey and
 everything else keeps working.
@@ -73,8 +81,9 @@ everything else keeps working.
 Offline mode
 ------------
 
-Set ``ORBIT_OFFLINE=1`` before launching to forbid network access. Combined
-with a local FASTA or 2bit, this gives a fully air-gapped browser::
+Set ``ORBIT_OFFLINE=1`` before launching to disable remote 2bit fallback.
+A local matching 2bit supplies built-in reference operations offline. Imported
+FASTA remains an independent sequence track; see :doc:`sequence`::
 
    set ORBIT_OFFLINE=1
    Orbit.exe

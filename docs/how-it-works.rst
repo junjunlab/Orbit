@@ -46,8 +46,8 @@ exception: they have no index, so they are read into memory.
 The server
 ----------
 
-The backend is a single-threaded HTTP server from the standard library. It
-serves three things:
+The backend uses the standard library ThreadingHTTPServer, bound to localhost
+by default. It serves the frontend and JSON APIs; the frontend composes exports.
 
 .. list-table::
    :header-rows: 1
@@ -59,8 +59,8 @@ serves three things:
      - The frontend, served from ``web/``
    * - ``/api/...``
      - JSON: catalog, genes in a window, sequence, bigWig values, search
-   * - ``/export/...``
-     - Rendered exports
+   * - Frontend export
+     - ``composePlot`` / ``composeVector`` generate the downloadable files
 
 The window itself is QtWebEngine, so the frontend is ordinary browser code —
 Canvas for tracks, plain DOM for controls, no framework. The same page runs in

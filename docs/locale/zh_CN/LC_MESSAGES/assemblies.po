@@ -11,12 +11,12 @@ msgstr ""
 "POT-Creation-Date: 2026-10-29 14:43+0800\n"
 "PO-Revision-Date: 2026-10-29 15:00+0800\n"
 "Last-Translator: junjunlab\n"
-"Language-Team: zh_CN <LL@li.org>\n"
 "Language: zh_CN\n"
+"Language-Team: zh_CN <LL@li.org>\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=1; plural=0;\n"
 "Generated-By: Babel 2.18.0\n"
 
 #: ../../assemblies.rst:2
@@ -25,9 +25,9 @@ msgstr "装配"
 
 #: ../../assemblies.rst:4
 msgid ""
-"Orbit bundles annotation for 18 assemblies across 9 species. Sequence is not"
-" bundled — it is streamed from UCSC on demand, which is what keeps the "
-"download small."
+"Orbit bundles annotation for 18 assemblies across 9 species. Sequence is "
+"not bundled — it is streamed from UCSC on demand, which is what keeps the"
+" download small."
 msgstr "Orbit 内置 9 个物种共 18 个装配的注释。序列不打包——按需从 UCSC 流式读取，这也是下载体积小的原因。"
 
 #: ../../assemblies.rst:9
@@ -176,12 +176,12 @@ msgstr "序列怎么取"
 
 #: ../../assemblies.rst:62
 msgid ""
-"Every assembly in ``data/catalog.json`` records a ``twoBitURL`` pointing at "
-"the UCSC 2bit file. When you navigate, Orbit issues an HTTP Range request "
-"for just the bytes covering the window and decodes them locally."
+"Every assembly in ``data/catalog.json`` records a ``twoBitURL`` pointing "
+"at the UCSC 2bit file. When you navigate, Orbit issues an HTTP Range "
+"request for just the bytes covering the window and decodes them locally."
 msgstr ""
-"``data/catalog.json`` 里每个装配都记录了一个指向 UCSC 2bit 文件的 ``twoBitURL``。导航时 Orbit "
-"只对窗口覆盖的字节发 HTTP Range 请求，在本地解码。"
+"``data/catalog.json`` 里每个装配都记录了一个指向 UCSC 2bit 文件的 ``twoBitURL``。导航时 Orbit"
+" 只对窗口覆盖的字节发 HTTP Range 请求，在本地解码。"
 
 #: ../../assemblies.rst:66
 msgid "First visit to a chromosome: about one second"
@@ -192,8 +192,7 @@ msgid "Subsequent moves within it: about 0.3 seconds"
 msgstr "之后在其上移动：约 0.3 秒"
 
 #: ../../assemblies.rst:68
-msgid ""
-"Nothing is written to disk; the range cache is in memory and per session"
+msgid "Nothing is written to disk; the range cache is in memory and per session"
 msgstr "不写磁盘；Range 缓存在内存里，随会话结束而消失"
 
 #: ../../assemblies.rst:70
@@ -208,14 +207,15 @@ msgstr "离线模式"
 
 #: ../../assemblies.rst:76
 msgid ""
-"Set ``ORBIT_OFFLINE=1`` before launching to forbid network access. Combined "
-"with a local FASTA or 2bit, this gives a fully air-gapped browser::"
+"Set ``ORBIT_OFFLINE=1`` before launching to forbid network access. "
+"Combined with a local FASTA or 2bit, this gives a fully air-gapped "
+"browser::"
 msgstr "启动前设置 ``ORBIT_OFFLINE=1`` 即可禁止联网。配合本地 FASTA 或 2bit，就是一个完全隔离的浏览器："
 
 #: ../../assemblies.rst:82
 msgid ""
-"With no local sequence the GC and sequence tracks stay disabled, but genes, "
-"cytobands, search and imported tracks are unaffected."
+"With no local sequence the GC and sequence tracks stay disabled, but "
+"genes, cytobands, search and imported tracks are unaffected."
 msgstr "没有本地序列时，GC 和序列轨道保持禁用，但基因、细胞遗传带、搜索和导入的轨道不受影响。"
 
 #: ../../assemblies.rst:86
@@ -223,21 +223,91 @@ msgid "Adding your own assembly"
 msgstr "添加自己的装配"
 
 #: ../../assemblies.rst:88
-msgid ""
-"Edit ``data/catalog.json`` and add an entry alongside the existing ones:"
+msgid "Edit ``data/catalog.json`` and add an entry alongside the existing ones:"
 msgstr "编辑 ``data/catalog.json``，在现有条目旁边加一条："
 
 #: ../../assemblies.rst:102
 msgid ""
 "Then place ``genes.igvbin`` and ``cytoband.json`` under "
-"``data/ann/myAssembly/``. The binary index is produced by the build scripts "
-"in ``build/``; see :doc:`how-it-works` for the format."
+"``data/ann/myAssembly/``. The binary index is produced by the build "
+"scripts in ``build/``; see :doc:`how-it-works` for the format."
 msgstr ""
 "然后把 ``genes.igvbin`` 和 ``cytoband.json`` 放到 ``data/ann/myAssembly/`` "
 "下。二进制索引由 ``build/`` 里的构建脚本生成；格式见 :doc:`how-it-works`。"
 
 #: ../../assemblies.rst:106
 msgid ""
-"Restart Orbit and the assembly appears in the selector. Nothing else needs "
-"to change — the frontend reads the catalog, not a hard-coded list."
+"Restart Orbit and the assembly appears in the selector. Nothing else "
+"needs to change — the frontend reads the catalog, not a hard-coded list."
 msgstr "重启 Orbit，装配就会出现在选择器里。其它都不用改——前端读的是 catalog，不是硬编码列表。"
+
+msgid "Frontend export"
+msgstr "前端导出"
+
+msgid "``composePlot`` / ``composeVector`` generate the downloadable files"
+msgstr "``composePlot`` / ``composeVector`` 生成可下载的导出文件"
+
+msgid "Bundled newer build"
+msgstr "内置较新版本"
+
+msgid "Bundled older build"
+msgstr "内置较旧版本"
+
+msgid "UCSC ncbiRefSeq / sgdGene"
+msgstr "UCSC ncbiRefSeq / sgdGene"
+
+msgid "Response time depends on the network and reference index."
+msgstr "响应时间取决于网络状况和参考索引。"
+
+msgid ""
+"The range cache is in memory and per session, not a persistent offline "
+"genome."
+msgstr "区间缓存位于内存中，仅在本次会话有效，不是持久保存的离线基因组。"
+
+msgid "Local 2bit takes priority over the remote source."
+msgstr "本地 2bit 优先于远程序列源。"
+
+msgid ""
+"For a second instance, use a different port. To isolate imported data "
+"too, prepare a separate compatible data folder and pass it with "
+"``--data``:"
+msgstr "第二个实例应使用不同端口。如需同时隔离导入数据，请准备独立且结构兼容的数据目录，并通过 ``--data`` 指定："
+
+msgid ""
+"Changing the port alone does not isolate data. Do not rely on an "
+"unsupported ``ORBIT_HOME`` setting to separate research files."
+msgstr "只更换端口不会隔离数据。不要依赖未支持的 ``ORBIT_HOME`` 设置来隔离科研文件。"
+
+msgid ""
+"User data may remain in ``%LOCALAPPDATA%/Orbit`` or the application data "
+"folder. Back up imported research files before uninstalling. Do not "
+"delete an entire user-data folder merely to reset colours or another "
+"display preference."
+msgstr ""
+"用户数据可能仍保存在 ``%LOCALAPPDATA%/Orbit`` "
+"或应用数据目录中。卸载前请备份导入的科研文件，不要仅为了重置颜色等显示偏好而删除整个用户数据目录。"
+
+msgid ""
+"The backend uses the standard library ThreadingHTTPServer, bound to "
+"localhost by default. It serves the frontend and JSON APIs; the frontend "
+"composes exports."
+msgstr "后端采用标准库 ThreadingHTTPServer，默认绑定本机地址。它提供前端页面与 JSON API；导出由前端合成。"
+
+msgid ""
+"Set ``ORBIT_OFFLINE=1`` before launching to disable remote 2bit fallback."
+" A local matching 2bit supplies built-in reference operations offline. "
+"Imported FASTA remains an independent sequence track; see "
+":doc:`sequence`::"
+msgstr ""
+"启动前设置 ``ORBIT_OFFLINE=1`` 可禁用远程 2bit 回退。匹配的本地 2bit 支持内置参考序列操作离线工作。导入 "
+"FASTA 仍是独立序列轨道；详见 :doc:`sequence` 。"
+
+msgid "Assembly selector listing human and model-organism reference builds"
+msgstr "装配选择菜单，列出人类与模式物种的参考版本"
+
+msgid ""
+"Choose the reference build before searching or importing. The bundled "
+"annotation list is not a claim that these are the newest available "
+"assemblies."
+msgstr "搜索或导入前先选择参考装配。内置注释列表并不表示这些是目前可获得的最新装配版本。"
+

@@ -1,0 +1,103 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1160 620" width="1160" height="620">
+<rect width="1160" height="620" fill="#ffffff"/>
+<g font-family="Segoe UI,Microsoft YaHei,Arial,sans-serif" fill="#172b3a">
+<text x="32" y="42" font-size="25" font-weight="700">Standard DNA genetic code / 标准 DNA 密码表 (#1)</text>
+<text x="32" y="73" font-size="15" fill="#526779">Read each codon 5′→3′ · T/C/A/G = third base · M = methionine · * = stop</text>
+<rect x="32" y="96" width="270" height="104" rx="9" fill="#f5f8fb" stroke="#d7e1ea"/>
+<text x="44" y="119" font-size="17" font-weight="700">TTN</text>
+<text x="44" y="147" font-size="16" fill="#243b53" font-family="Consolas,monospace">TTT → F</text>
+<text x="175" y="147" font-size="16" fill="#243b53" font-family="Consolas,monospace">TTC → F</text>
+<text x="44" y="174" font-size="16" fill="#243b53" font-family="Consolas,monospace">TTA → L</text>
+<text x="175" y="174" font-size="16" fill="#243b53" font-family="Consolas,monospace">TTG → L</text>
+<rect x="314" y="96" width="270" height="104" rx="9" fill="#f5f8fb" stroke="#d7e1ea"/>
+<text x="326" y="119" font-size="17" font-weight="700">TCN</text>
+<text x="326" y="147" font-size="16" fill="#243b53" font-family="Consolas,monospace">TCT → S</text>
+<text x="457" y="147" font-size="16" fill="#243b53" font-family="Consolas,monospace">TCC → S</text>
+<text x="326" y="174" font-size="16" fill="#243b53" font-family="Consolas,monospace">TCA → S</text>
+<text x="457" y="174" font-size="16" fill="#243b53" font-family="Consolas,monospace">TCG → S</text>
+<rect x="596" y="96" width="270" height="104" rx="9" fill="#f5f8fb" stroke="#d7e1ea"/>
+<text x="608" y="119" font-size="17" font-weight="700">TAN</text>
+<text x="608" y="147" font-size="16" fill="#243b53" font-family="Consolas,monospace">TAT → Y</text>
+<text x="739" y="147" font-size="16" fill="#243b53" font-family="Consolas,monospace">TAC → Y</text>
+<text x="608" y="174" font-size="16" fill="#b74343" font-family="Consolas,monospace">TAA → *</text>
+<text x="739" y="174" font-size="16" fill="#b74343" font-family="Consolas,monospace">TAG → *</text>
+<rect x="878" y="96" width="270" height="104" rx="9" fill="#f5f8fb" stroke="#d7e1ea"/>
+<text x="890" y="119" font-size="17" font-weight="700">TGN</text>
+<text x="890" y="147" font-size="16" fill="#243b53" font-family="Consolas,monospace">TGT → C</text>
+<text x="1021" y="147" font-size="16" fill="#243b53" font-family="Consolas,monospace">TGC → C</text>
+<text x="890" y="174" font-size="16" fill="#b74343" font-family="Consolas,monospace">TGA → *</text>
+<text x="1021" y="174" font-size="16" fill="#243b53" font-family="Consolas,monospace">TGG → W</text>
+<rect x="32" y="212" width="270" height="104" rx="9" fill="#f5f8fb" stroke="#d7e1ea"/>
+<text x="44" y="235" font-size="17" font-weight="700">CTN</text>
+<text x="44" y="263" font-size="16" fill="#243b53" font-family="Consolas,monospace">CTT → L</text>
+<text x="175" y="263" font-size="16" fill="#243b53" font-family="Consolas,monospace">CTC → L</text>
+<text x="44" y="290" font-size="16" fill="#243b53" font-family="Consolas,monospace">CTA → L</text>
+<text x="175" y="290" font-size="16" fill="#243b53" font-family="Consolas,monospace">CTG → L</text>
+<rect x="314" y="212" width="270" height="104" rx="9" fill="#f5f8fb" stroke="#d7e1ea"/>
+<text x="326" y="235" font-size="17" font-weight="700">CCN</text>
+<text x="326" y="263" font-size="16" fill="#243b53" font-family="Consolas,monospace">CCT → P</text>
+<text x="457" y="263" font-size="16" fill="#243b53" font-family="Consolas,monospace">CCC → P</text>
+<text x="326" y="290" font-size="16" fill="#243b53" font-family="Consolas,monospace">CCA → P</text>
+<text x="457" y="290" font-size="16" fill="#243b53" font-family="Consolas,monospace">CCG → P</text>
+<rect x="596" y="212" width="270" height="104" rx="9" fill="#f5f8fb" stroke="#d7e1ea"/>
+<text x="608" y="235" font-size="17" font-weight="700">CAN</text>
+<text x="608" y="263" font-size="16" fill="#243b53" font-family="Consolas,monospace">CAT → H</text>
+<text x="739" y="263" font-size="16" fill="#243b53" font-family="Consolas,monospace">CAC → H</text>
+<text x="608" y="290" font-size="16" fill="#243b53" font-family="Consolas,monospace">CAA → Q</text>
+<text x="739" y="290" font-size="16" fill="#243b53" font-family="Consolas,monospace">CAG → Q</text>
+<rect x="878" y="212" width="270" height="104" rx="9" fill="#f5f8fb" stroke="#d7e1ea"/>
+<text x="890" y="235" font-size="17" font-weight="700">CGN</text>
+<text x="890" y="263" font-size="16" fill="#243b53" font-family="Consolas,monospace">CGT → R</text>
+<text x="1021" y="263" font-size="16" fill="#243b53" font-family="Consolas,monospace">CGC → R</text>
+<text x="890" y="290" font-size="16" fill="#243b53" font-family="Consolas,monospace">CGA → R</text>
+<text x="1021" y="290" font-size="16" fill="#243b53" font-family="Consolas,monospace">CGG → R</text>
+<rect x="32" y="328" width="270" height="104" rx="9" fill="#f5f8fb" stroke="#d7e1ea"/>
+<text x="44" y="351" font-size="17" font-weight="700">ATN</text>
+<text x="44" y="379" font-size="16" fill="#243b53" font-family="Consolas,monospace">ATT → I</text>
+<text x="175" y="379" font-size="16" fill="#243b53" font-family="Consolas,monospace">ATC → I</text>
+<text x="44" y="406" font-size="16" fill="#243b53" font-family="Consolas,monospace">ATA → I</text>
+<text x="175" y="406" font-size="16" fill="#247b43" font-family="Consolas,monospace">ATG → M</text>
+<rect x="314" y="328" width="270" height="104" rx="9" fill="#f5f8fb" stroke="#d7e1ea"/>
+<text x="326" y="351" font-size="17" font-weight="700">ACN</text>
+<text x="326" y="379" font-size="16" fill="#243b53" font-family="Consolas,monospace">ACT → T</text>
+<text x="457" y="379" font-size="16" fill="#243b53" font-family="Consolas,monospace">ACC → T</text>
+<text x="326" y="406" font-size="16" fill="#243b53" font-family="Consolas,monospace">ACA → T</text>
+<text x="457" y="406" font-size="16" fill="#243b53" font-family="Consolas,monospace">ACG → T</text>
+<rect x="596" y="328" width="270" height="104" rx="9" fill="#f5f8fb" stroke="#d7e1ea"/>
+<text x="608" y="351" font-size="17" font-weight="700">AAN</text>
+<text x="608" y="379" font-size="16" fill="#243b53" font-family="Consolas,monospace">AAT → N</text>
+<text x="739" y="379" font-size="16" fill="#243b53" font-family="Consolas,monospace">AAC → N</text>
+<text x="608" y="406" font-size="16" fill="#243b53" font-family="Consolas,monospace">AAA → K</text>
+<text x="739" y="406" font-size="16" fill="#243b53" font-family="Consolas,monospace">AAG → K</text>
+<rect x="878" y="328" width="270" height="104" rx="9" fill="#f5f8fb" stroke="#d7e1ea"/>
+<text x="890" y="351" font-size="17" font-weight="700">AGN</text>
+<text x="890" y="379" font-size="16" fill="#243b53" font-family="Consolas,monospace">AGT → S</text>
+<text x="1021" y="379" font-size="16" fill="#243b53" font-family="Consolas,monospace">AGC → S</text>
+<text x="890" y="406" font-size="16" fill="#243b53" font-family="Consolas,monospace">AGA → R</text>
+<text x="1021" y="406" font-size="16" fill="#243b53" font-family="Consolas,monospace">AGG → R</text>
+<rect x="32" y="444" width="270" height="104" rx="9" fill="#f5f8fb" stroke="#d7e1ea"/>
+<text x="44" y="467" font-size="17" font-weight="700">GTN</text>
+<text x="44" y="495" font-size="16" fill="#243b53" font-family="Consolas,monospace">GTT → V</text>
+<text x="175" y="495" font-size="16" fill="#243b53" font-family="Consolas,monospace">GTC → V</text>
+<text x="44" y="522" font-size="16" fill="#243b53" font-family="Consolas,monospace">GTA → V</text>
+<text x="175" y="522" font-size="16" fill="#243b53" font-family="Consolas,monospace">GTG → V</text>
+<rect x="314" y="444" width="270" height="104" rx="9" fill="#f5f8fb" stroke="#d7e1ea"/>
+<text x="326" y="467" font-size="17" font-weight="700">GCN</text>
+<text x="326" y="495" font-size="16" fill="#243b53" font-family="Consolas,monospace">GCT → A</text>
+<text x="457" y="495" font-size="16" fill="#243b53" font-family="Consolas,monospace">GCC → A</text>
+<text x="326" y="522" font-size="16" fill="#243b53" font-family="Consolas,monospace">GCA → A</text>
+<text x="457" y="522" font-size="16" fill="#243b53" font-family="Consolas,monospace">GCG → A</text>
+<rect x="596" y="444" width="270" height="104" rx="9" fill="#f5f8fb" stroke="#d7e1ea"/>
+<text x="608" y="467" font-size="17" font-weight="700">GAN</text>
+<text x="608" y="495" font-size="16" fill="#243b53" font-family="Consolas,monospace">GAT → D</text>
+<text x="739" y="495" font-size="16" fill="#243b53" font-family="Consolas,monospace">GAC → D</text>
+<text x="608" y="522" font-size="16" fill="#243b53" font-family="Consolas,monospace">GAA → E</text>
+<text x="739" y="522" font-size="16" fill="#243b53" font-family="Consolas,monospace">GAG → E</text>
+<rect x="878" y="444" width="270" height="104" rx="9" fill="#f5f8fb" stroke="#d7e1ea"/>
+<text x="890" y="467" font-size="17" font-weight="700">GGN</text>
+<text x="890" y="495" font-size="16" fill="#243b53" font-family="Consolas,monospace">GGT → G</text>
+<text x="1021" y="495" font-size="16" fill="#243b53" font-family="Consolas,monospace">GGC → G</text>
+<text x="890" y="522" font-size="16" fill="#243b53" font-family="Consolas,monospace">GGA → G</text>
+<text x="1021" y="522" font-size="16" fill="#243b53" font-family="Consolas,monospace">GGG → G</text>
+<text x="32" y="585" font-size="15" fill="#526779">Code #2 example / 脊椎动物线粒体表：TGA → W · ATA → M · AGA/AGG → *</text>
+</g></svg>

@@ -23,13 +23,13 @@ Supported formats
      - Loaded into memory; fine up to a few hundred MB.
    * - BAM
      - ``.bam``
-     - Coverage and stacked reads are computed from the file directly; a ``.bai`` is optional.
+     - BAM is scanned into an in-memory index during import; .bai is not used.
    * - GTF / GFF3
      - ``.gtf`` ``.gff`` ``.gff3``
      - Becomes a gene track; UTR and CDS features are kept.
    * - FASTA
      - ``.fa`` ``.fasta``
-     - Registers the file as a local sequence source for the current assembly.
+     - Adds an independent sequence track for matching genomic coordinates.
 
 bigWig
 ------
@@ -49,9 +49,9 @@ range if you want several samples to share one scale.
    :align: center
    :width: 100%
 
-   A ribo-seq ``.bw`` track imported onto hg38. The signal is added to the
+   A local ``.bw`` signal track imported onto hg38. The signal is added to the
    signal panel with autoscale on, and its label (``Scr_R1_IP``) appears in the
-   left sidebar.
+   left sidebar. Its filename alone does not establish the experimental assay.
 
 bedGraph
 --------
@@ -76,18 +76,19 @@ panel, same autoscale, same colour controls.
 BAM
 ---
 
-Orbit reads the alignments straight from the ``.bam`` — there is no separate
-indexing step and a ``.bai`` is optional. Coverage and the stacked reads are
-computed from the reads in the visible window only, which keeps memory flat but
-means the first draw of a new region takes a moment.
+Orbit scans the BAM during import and builds an in-memory interval index;
+``.bai`` is not required or consumed by this implementation. Initial import
+costs time and memory. The current loader caps accepted reads at 6,000,000;
+check the truncation notice for larger files. Coverage and displayed reads
+are then queried for the visible window, and dense alignments may be sampled.
 
 .. code-block:: text
 
    Import → select sample.bam
 
-Each BAM produces two linked views: a **coverage** track (the blue area) and an
-**alignment** track (the grey stacked reads). Toggle them independently from the
-track label.
+The sidebar has a parent signal switch and a subordinate alignment switch:
+turn the parent on to see coverage, then enable the alignment switch for reads.
+Turning the parent off hides both; reads are not independent of the parent.
 
 .. figure:: examples/import-bam.png
    :align: center
@@ -100,11 +101,17 @@ track label.
 GTF / GFF3
 ----------
 
+1. Choose the matching assembly: **hg38** for GRCh38 or **sacCer3** for the
+   yeast example below.
+2. Click Import, select the GTF/GFF3, and wait for parsing to finish.
+3. Enable its annotation row. Use the dedicated imported-annotation search
+   controls when a gene exists only in your imported file, not in RefSeq.
+4. Click its small **+** to expand a gene, or the track's gear for **Expand all**.
+   The procedure and a before/after illustration are in :doc:`navigation`.
+
 Imported annotations become a normal gene track: expandable transcripts,
-strand colours, labels. Transcript and CDS features are preserved, so a GTF
-exported from StringTie or Ensembl looks the way you expect. Chromosome naming
-is reconciled automatically, so Ensembl-style ``1`` / ``I`` maps onto UCSC-style
-``chr1`` / ``chrI``.
+strand colours and labels. Chromosome aliases such as ``1`` / ``chr1`` or
+``I`` / ``chrI`` are reconciled, but aliases do not convert genome assemblies.
 
 .. code-block:: text
 
@@ -127,22 +134,30 @@ is reconciled automatically, so Ensembl-style ``1`` / ``I`` maps onto UCSC-style
 FASTA
 -----
 
-Loading a FASTA registers it as the local sequence source for the assembly.
-This is how you use Orbit fully offline, or work with an assembly that UCSC
-does not host.
+Importing FASTA adds its own sequence track; it does not replace the backend
+reference for built-in GC, motif or BAM mismatch calculations. Uncompressed
+FASTA uses indexed file reads. A gzip FASTA is decompressed into memory, so
+whole-human-genome gzip imports can consume several GB of RAM.
 
-.. code-block:: text
+For the complete human-genome walkthrough, with exact positive/negative-strand
+start/stop windows, Flip strand and amino-acid translation, see :doc:`sequence`.
 
-   Import → select genome.fa
+.. figure:: examples/sequence-actb-start-flipped.png
+   :width: 100%
+   :alt: Local human FASTA displayed at ACTB with complementary-strand translation
 
-Large FASTA files are memory-mapped, so a 3 GB genome does not need 3 GB of
-RAM — but the first access to a chromosome still costs a disk read.
+   An imported GRCh38 chromosome FASTA at base resolution. The detailed
+   sequence guide explains why a negative-strand gene must be read right to left
+   after flipping the displayed bases.
 
 Where imported tracks live
 --------------------------
 
 Importing copies the file into Orbit's per-user data directory
 (``data/loaded``, or ``%LOCALAPPDATA%/Orbit/loaded`` when the install
-directory is read-only), so the original file is no longer needed after import.
+directory is read-only).
+The imported copy is used for display; keep your original research files as
+backups. Remove a track only when you intend to remove its imported copy.
 Imported tracks are session-scoped by default: set ``IGV_RESTORE_LOADED=1`` to
-restore them automatically on the next launch.
+restore them on the next server launch. Restored tracks may still need to be
+checked on in the sidebar.

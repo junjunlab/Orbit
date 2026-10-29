@@ -2,8 +2,10 @@ Orbit
 =====
 
 Orbit is a desktop genome browser for people who need to look at a locus *now*.
-It opens as a native window, needs no Java, no server and no setup, and works
-offline once a chromosome has been visited.
+It opens as a native window, needs no Java and no separately managed server.
+Annotations work offline; sequence requires a local source or access to the
+configured remote reference. In-memory remote caches are not a persistent
+offline genome download.
 
 RefSeq annotations are compiled into a binary index at build time, and sequence
 is read from UCSC 2bit files — from disk or over HTTP Range — so a whole
@@ -45,6 +47,7 @@ What you get
    interface
    navigation
    data-import
+   sequence
    data-export
    assemblies
 

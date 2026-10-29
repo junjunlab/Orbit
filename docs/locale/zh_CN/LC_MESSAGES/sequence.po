@@ -1,0 +1,502 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2026, junjunlab
+# This file is distributed under the same license as the Orbit package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Orbit 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-10-29 20:39+0800\n"
+"PO-Revision-Date: 2026-10-29 21:00+0800\n"
+"Last-Translator: junjunlab\n"
+"Language: zh_CN\n"
+"Language-Team: zh_CN <LL@li.org>\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../sequence.rst:2
+msgid "Local genome, strands and translation"
+msgstr "本地基因组、链与翻译"
+
+#: ../../sequence.rst:4
+msgid ""
+"This walkthrough uses a local human **GRCh38 FASTA** and the bundled "
+"**hg38 RefSeq** annotation. The examples are DNA sequences (T rather than"
+" RNA U). A FASTA supplies bases; it does not supply gene or transcript "
+"annotation."
+msgstr "本教程使用本地 human  GRCh38 FASTA  和内置  hg38 RefSeq  注释。"
+
+#: ../../sequence.rst:9
+msgid "Import your human genome FASTA"
+msgstr "导入 human 基因组 FASTA"
+
+#: ../../sequence.rst:11
+msgid ""
+"Select **human hg38 / GRCh38** before loading the file. A GRCh37 FASTA "
+"must be paired with hg19 instead; a matching chromosome name alone is not"
+" enough."
+msgstr "加载文件前选择  human hg38 / GRCh38 。"
+
+#: ../../sequence.rst:13
+msgid ""
+"Click **Import** and select your local "
+"``Homo_sapiens.GRCh38.dna.primary_assembly.fa`` or another matching "
+"genome FASTA. Plain uncompressed FASTA is recommended for a large human "
+"genome."
+msgstr ""
+"点击  Import  并选择匹配的本地基因组 FASTA。 "
+"``Homo_sapiens.GRCh38.dna.primary_assembly.fa``"
+
+#: ../../sequence.rst:16
+msgid ""
+"Wait until parsing finishes. Enable the imported FASTA in the sidebar if "
+"it is hidden. It appears as its own sequence track, distinct from the "
+"built-in Sequence track. Ensembl ``7`` and UCSC ``chr7`` names are "
+"reconciled."
+msgstr "等待解析完成，并在侧栏启用导入的 FASTA 轨道。 ``7`` ``chr7``"
+
+#: ../../sequence.rst:19
+msgid ""
+"Search ``ACTB`` or ``EGFR``. At gene scale the FASTA track asks you to "
+"zoom in; that is expected, not a failed import."
+msgstr "搜索 ``ACTB`` 或 ``EGFR``；基因尺度下请放大查看序列。"
+
+#: ../../sequence.rst:21
+msgid ""
+"Paste one of the narrow intervals below. Coloured bases appear at "
+"approximately 1.2 bp/pixel or closer; letters need about 8 pixels/base. A"
+" 59-base window is a useful starting point on a desktop screen."
+msgstr "本节说明相关操作和结果。"
+
+#: ../../sequence.rst:24
+msgid ""
+"Click **Aa** beside the imported FASTA, enable **Show translation**, and "
+"select **#1 Standard** for these human nuclear genes. Translation needs "
+"about 3 pixels/base or more. Each sequence track has its own Aa and flip "
+"state."
+msgstr "点击序列轨道旁的  Aa ，启用  Show translation 。  #1 Standard "
+
+#: ../../sequence.rst:30
+msgid ""
+"A local FASTA is an independent imported track. It does not replace the "
+"backend reference used by built-in GC, motif searches or BAM mismatch "
+"comparisons. To supply that backend reference offline, place a matching "
+"``hg38.2bit`` in ``data/genomes``. A normal FASTA is read by indexed byte"
+" offsets; gzip FASTA is decompressed into memory, so a whole human "
+"``.fa.gz`` can require several GB of RAM. Importing also needs disk space"
+" for a copy."
+msgstr "本地 FASTA 是独立导入轨道，不会替换后端参考。 ``hg38.2bit`` ``data/genomes`` ``.fa.gz``"
+
+#: ../../sequence.rst:37
+msgid ""
+"The screenshots below use **chromosome 7 extracted unchanged from the "
+"local GRCh38 primary-assembly FASTA**, imported as ``GRCh38_chr7.fa``. "
+"Header ``>7`` and original chromosome coordinates are retained. This is "
+"not a short sequence renumbered from base 1, and no sequence was "
+"fabricated. Other chromosomes are not present in that demonstration file;"
+" a full genome FASTA contains them."
+msgstr ""
+"截图使用从本地 GRCh38 FASTA 原样提取的 chromosome 7。  chromosome 7 extracted "
+"unchanged from the local GRCh38 primary-assembly FASTA  "
+"``GRCh38_chr7.fa`` ``>7``"
+
+#: ../../sequence.rst:43
+msgid ""
+"Imported local chromosome 7 FASTA at the EGFR start codon with three "
+"translation frames"
+msgstr "导入的本地 chromosome 7 FASTA 及三个翻译阅读框。"
+
+#: ../../sequence.rst:47
+msgid ""
+"EGFR start region: local FASTA bases plus three translation frames below "
+"the RefSeq annotation. The Aa and double-arrow controls belong to the "
+"imported FASTA track; they do not automatically toggle other sequence "
+"tracks."
+msgstr "EGFR 起始区域：本地 FASTA 碱基及 RefSeq 下方的三个翻译阅读框。"
+
+#: ../../sequence.rst:52
+msgid "Choose a transcript before interpreting codons"
+msgstr "解释密码子前先选择转录本"
+
+#: ../../sequence.rst:54
+msgid ""
+"Expand a gene with its small + control (see :doc:`navigation`) and "
+"identify the transcript accession. For the examples we use **EGFR "
+"NM_005228** and **ACTB NM_001101** in the bundled annotation. Isoforms "
+"can have different CDS boundaries; a gene's outer boundary includes UTR "
+"and is not its start codon."
+msgstr ""
+"使用小型 + 控件展开基因（参见  :doc:`navigation` ），确认转录本登录号。  EGFR NM_005228   ACTB "
+"NM_001101 "
+
+#: ../../sequence.rst:59
+msgid ""
+"The coordinates in this table are **1-based inclusive**. They were "
+"checked against the local FASTA and the selected transcript CDS "
+"boundaries."
+msgstr "表中坐标为  1-based、包含端点 ，已根据本地 FASTA 和 CDS 边界核对。  1-based inclusive "
+
+#: ../../sequence.rst:62
+msgid "Verified hg38 examples"
+msgstr "已验证的 hg38 示例"
+
+#: ../../sequence.rst:66
+msgid "Gene / strand"
+msgstr "基因 / 链"
+
+#: ../../sequence.rst:67
+msgid "Boundary"
+msgstr "边界"
+
+#: ../../sequence.rst:68
+msgid "Genomic bases"
+msgstr "基因组碱基"
+
+#: ../../sequence.rst:69
+msgid "Reference + strand"
+msgstr "参考 + 链"
+
+#: ../../sequence.rst:70
+msgid "Coding 5′→3′"
+msgstr "编码 5′→3′"
+
+#: ../../sequence.rst:71 ../../sequence.rst:76
+msgid "EGFR / +"
+msgstr "EGFR / +"
+
+#: ../../sequence.rst:72 ../../sequence.rst:82
+msgid "Start"
+msgstr "起始"
+
+#: ../../sequence.rst:73
+msgid "``chr7:55,019,278-55,019,280``"
+msgstr "本节说明相关操作和结果。 ``chr7:55,019,278-55,019,280``"
+
+#: ../../sequence.rst:74 ../../sequence.rst:75 ../../sequence.rst:85
+msgid "``ATG``"
+msgstr "本节说明相关操作和结果。 ``ATG``"
+
+#: ../../sequence.rst:77 ../../sequence.rst:87
+msgid "Stop"
+msgstr "终止"
+
+#: ../../sequence.rst:78
+msgid "``chr7:55,205,615-55,205,617``"
+msgstr "本节说明相关操作和结果。 ``chr7:55,205,615-55,205,617``"
+
+#: ../../sequence.rst:79 ../../sequence.rst:80 ../../sequence.rst:197
+msgid "``TGA``"
+msgstr "本节说明相关操作和结果。 ``TGA``"
+
+#: ../../sequence.rst:81 ../../sequence.rst:86
+msgid "ACTB / −"
+msgstr "ACTB / −"
+
+#: ../../sequence.rst:83
+msgid "``chr7:5,529,655-5,529,657``"
+msgstr "本节说明相关操作和结果。 ``chr7:5,529,655-5,529,657``"
+
+#: ../../sequence.rst:84
+msgid "``CAT``"
+msgstr "本节说明相关操作和结果。 ``CAT``"
+
+#: ../../sequence.rst:88
+msgid "``chr7:5,527,748-5,527,750``"
+msgstr "本节说明相关操作和结果。 ``chr7:5,527,748-5,527,750``"
+
+#: ../../sequence.rst:89
+msgid "``CTA``"
+msgstr "本节说明相关操作和结果。 ``CTA``"
+
+#: ../../sequence.rst:90
+msgid "``TAG``"
+msgstr "本节说明相关操作和结果。 ``TAG``"
+
+#: ../../sequence.rst:93
+msgid "Positive-strand example: EGFR"
+msgstr "正链示例：EGFR"
+
+#: ../../sequence.rst:95
+msgid "Keep **Flip strand off** for the imported FASTA."
+msgstr "对导入的 FASTA 保持  Flip strand off 。"
+
+#: ../../sequence.rst:96
+msgid ""
+"Paste ``chr7:55,019,250-55,019,308`` into the search box. The start "
+"triplet at 55,019,278–55,019,280 is **ATG**, read left to right in the "
+"coding direction."
+msgstr "粘贴  ``chr7:55,019,250-55,019,308``  ATG "
+
+#: ../../sequence.rst:98
+msgid "With Aa on, find the frame containing that triplet. It shows green **M**."
+msgstr "开启 Aa 后，找到包含该三联体的阅读框。该位置显示绿色 M。"
+
+#: ../../sequence.rst:99
+msgid ""
+"Paste ``chr7:55,205,587-55,205,645`` to inspect the selected transcript's"
+" terminal **TGA**. In Standard table #1 it is a red **\\***, not an amino"
+" acid."
+msgstr "粘贴  ``chr7:55,205,587-55,205,645``  TGA   \\ "
+
+#: ../../sequence.rst:102
+msgid ""
+"EGFR terminal TGA in the imported local FASTA and standard-code "
+"translation"
+msgstr "本节说明相关操作和结果。"
+
+#: ../../sequence.rst:106
+msgid ""
+"EGFR stop region. Read the positive-strand DNA left to right. A stop "
+"symbol is meaningful for the selected CDS only in the correct reading "
+"frame."
+msgstr "本节说明相关操作和结果。"
+
+#: ../../sequence.rst:110
+msgid "Negative-strand example: ACTB and Flip strand"
+msgstr "负链示例：ACTB 与 Flip strand"
+
+#: ../../sequence.rst:112
+msgid ""
+"Paste ``chr7:5,529,627-5,529,685``. With flip off, the reference + strand"
+" at the start boundary reads **CAT** from left to right."
+msgstr "粘贴  ``chr7:5,529,627-5,529,685``  CAT "
+
+#: ../../sequence.rst:114
+msgid ""
+"Click the **double-arrow (Flip strand)** beside the imported FASTA. The "
+"displayed letters become the complementary bases at the same coordinates:"
+" **CAT → GTA** when read left to right."
+msgstr ""
+"点击导入 FASTA 旁的  双箭头（Flip strand） 以显示互补碱基。  double-arrow (Flip strand)   "
+"CAT → GTA "
+
+#: ../../sequence.rst:117
+msgid ""
+"Coordinates still increase left to right. The negative coding strand runs"
+" **5′→3′ from right to left**, so that displayed GTA is read as **ATG**. "
+"The flipped translation uses the reverse-complement triplet and shows M."
+msgstr "坐标仍从左向右递增；负向编码链沿  5′→3′ 从右向左 。  5′→3′ from right to left   ATG "
+
+#: ../../sequence.rst:120
+msgid ""
+"Paste ``chr7:5,527,720-5,527,778`` for the stop. The reference reads "
+"**CTA**; flip displays **GAT** from left to right, which reads **TAG** "
+"right to left."
+msgstr "粘贴  ``chr7:5,527,720-5,527,778``  CTA   GAT   TAG "
+
+#: ../../sequence.rst:122
+msgid ""
+"Click the double-arrow again to restore the reference strand. The gene's "
+"annotated − strand, its exon positions and the coordinate ruler never "
+"change."
+msgstr "再次点击双箭头以恢复参考链。"
+
+#: ../../sequence.rst:125
+msgid "ACTB start boundary before flip showing reference positive-strand CAT"
+msgstr "本节说明相关操作和结果。"
+
+#: ../../sequence.rst:129
+msgid ""
+"Before flip: ACTB is a negative-strand gene, but the FASTA row still "
+"shows reference + strand bases. CAT is therefore expected at its start "
+"boundary."
+msgstr "翻转前，FASTA 行显示参考 + 链碱基。"
+
+#: ../../sequence.rst:132
+msgid ""
+"Same ACTB start window after flip with complementary bases and reverse-"
+"direction translation"
+msgstr "本节说明相关操作和结果。"
+
+#: ../../sequence.rst:136
+msgid ""
+"After flip, in exactly the same window: read the complementary row from "
+"right to left for the ACTB coding sequence. The coordinate axis is not "
+"reversed."
+msgstr "翻转后，从右向左读取互补行得到编码序列；坐标轴不会反转。"
+
+#: ../../sequence.rst:139
+msgid ""
+"ACTB stop boundary on the complementary strand with standard-code stop "
+"marker"
+msgstr "本节说明相关操作和结果。"
+
+#: ../../sequence.rst:143
+msgid ""
+"ACTB stop boundary after flip. Right-to-left TAG is a stop in Standard "
+"#1. The start is at the higher-coordinate end of this negative-strand "
+"CDS."
+msgstr "本节说明相关操作和结果。"
+
+#: ../../sequence.rst:148
+msgid ""
+"Flip strand is not a gene-strand editor and does not reverse the screen. "
+"It complements bases in place. Do not copy the left-to-right letters of a"
+" flipped negative-strand row and label them a 5′→3′ coding sequence "
+"without reversing their order."
+msgstr "Flip strand 只在原位互补碱基，不会反转屏幕或编辑基因链。"
+
+#: ../../sequence.rst:154
+msgid "Translation tables and reading frames"
+msgstr "翻译表与阅读框"
+
+#: ../../sequence.rst:156
+msgid ""
+"Click **Aa** beside the sequence row to open the translation panel. "
+"Enable **Show translation**, then choose a genetic code. For human "
+"nuclear EGFR and ACTB use **#1 Standard**; for a vertebrate mitochondrial"
+" example choose **#2 Vertebrate mitochondrial** only when that code is "
+"appropriate."
+msgstr ""
+"点击序列轨道旁的  Aa ，启用  Show translation 。  #1 Standard   #2 Vertebrate "
+"mitochondrial "
+
+#: ../../sequence.rst:161
+msgid ""
+"Aa translation panel showing the enabled translation switch and genetic-"
+"code selector"
+msgstr "本节说明相关操作和结果。"
+
+#: ../../sequence.rst:165
+msgid ""
+"The actual translation controls. The selector contains multiple numbered "
+"genetic codes; the code is selected per imported track. Flipping that "
+"track also changes the strand used for its three-frame translation."
+msgstr "实际的翻译控件；每条导入轨道单独选择遗传密码。"
+
+#: ../../sequence.rst:169
+msgid ""
+"Three rows represent three offsets of the genomic reading frame, not "
+"three transcript isoforms. Frame grouping is anchored to genome "
+"coordinates."
+msgstr "三行表示基因组阅读框的三个偏移，而不是三个转录本异构体。"
+
+#: ../../sequence.rst:171
+msgid ""
+"A green **M** marks ATG; red **\\*** marks a stop under the chosen code. "
+"Other letters are amino-acid one-letter symbols. The DNA row remains "
+"A/C/G/T."
+msgstr "绿色 M 表示 ATG；红色星号表示在所选密码表中为终止密码子。其它字母为氨基酸单字母符号，DNA 行仍显示 A/C/G/T。"
+
+#: ../../sequence.rst:173
+msgid ""
+"All three frames can contain incidental ATG and stop triplets. Confirm "
+"the annotated CDS and transcript before calling a biological start or "
+"stop."
+msgstr "三个阅读框都可能包含偶然的 ATG 和终止三联体，请先确认 CDS 和转录本。"
+
+#: ../../sequence.rst:175
+msgid ""
+"Genomic-window translation does not splice exons, infer a transcript's "
+"phase, or produce a complete mature protein. Introns and exon junctions "
+"require transcript-aware interpretation; a short codon may even straddle "
+"an exon junction."
+msgstr "基因组窗口翻译不会剪接外显子或生成完整成熟蛋白。"
+
+#: ../../sequence.rst:178
+msgid ""
+"The viewer highlights ATG specifically. It is not a comprehensive "
+"predictor of alternative initiation sites, even when another code permits"
+" them."
+msgstr "查看器会突出显示 ATG，但不是全面的替代起始位点预测工具。"
+
+#: ../../sequence.rst:181
+msgid ""
+"Complete standard DNA genetic-code table grouping all 64 codons by the "
+"first two bases"
+msgstr "本节说明相关操作和结果。"
+
+#: ../../sequence.rst:185
+msgid ""
+"Standard genetic code (#1), DNA alphabet. Every row lists the third base "
+"in T/C/A/G order. M is methionine, W is tryptophan, and * is a stop. The "
+"companion contrast highlights why the same DNA can translate differently "
+"after changing the code table."
+msgstr "标准遗传密码（#1）使用 DNA 字母表，M 为甲硫氨酸，W 为色氨酸，* 为终止。"
+
+#: ../../sequence.rst:190
+msgid "Selected differences between codes #1 and #2"
+msgstr "代码 #1 与 #2 的选定差异"
+
+#: ../../sequence.rst:194
+msgid "DNA codon"
+msgstr "DNA 密码子"
+
+#: ../../sequence.rst:195
+msgid "#1 Standard"
+msgstr "#1 Standard"
+
+#: ../../sequence.rst:196
+msgid "#2 Vertebrate mitochondrial"
+msgstr "本节说明相关操作和结果。"
+
+#: ../../sequence.rst:198
+msgid "Stop (*), red"
+msgstr "Stop (*), red"
+
+#: ../../sequence.rst:199
+msgid "Tryptophan (W)"
+msgstr "Tryptophan (W)"
+
+#: ../../sequence.rst:200
+msgid "``ATA``"
+msgstr "本节说明相关操作和结果。 ``ATA``"
+
+#: ../../sequence.rst:201
+msgid "Isoleucine (I)"
+msgstr "Isoleucine (I)"
+
+#: ../../sequence.rst:202
+msgid "Methionine (M)"
+msgstr "Methionine (M)"
+
+#: ../../sequence.rst:203
+msgid "``AGA`` / ``AGG``"
+msgstr "本节说明相关操作和结果。 ``AGA`` ``AGG``"
+
+#: ../../sequence.rst:204
+msgid "Arginine (R)"
+msgstr "Arginine (R)"
+
+#: ../../sequence.rst:205
+msgid "Stop (*) in this table"
+msgstr "Stop (*) in this table"
+
+#: ../../sequence.rst:207
+msgid "Standard genetic code showing TGA as a stop at the verified EGFR boundary"
+msgstr "标准遗传密码（#1）使用 DNA 字母表，M 为甲硫氨酸，W 为色氨酸，* 为终止。"
+
+#: ../../sequence.rst:211
+msgid "Table #1: TGA is a stop. This is the appropriate code for nuclear EGFR."
+msgstr "表 #1：TGA 是终止密码子，适用于核基因 EGFR。"
+
+#: ../../sequence.rst:213
+msgid "Identical genomic bases with code two showing TGA as tryptophan"
+msgstr "本节说明相关操作和结果。"
+
+#: ../../sequence.rst:217
+msgid ""
+"Same DNA and coordinates, temporarily switched to table #2: TGA becomes "
+"W. This comparison demonstrates the software setting only; it is not a "
+"valid mitochondrial reassignment of a nuclear EGFR gene."
+msgstr "相同 DNA 和坐标切换到表 #2 后 TGA 变为 W，仅用于演示软件设置。"
+
+#: ../../sequence.rst:222
+msgid "Troubleshooting the sequence view"
+msgstr "序列视图故障排查"
+
+#: ../../sequence.rst:224
+msgid ""
+"If the track says to zoom in, enter one of the narrow windows above. If "
+"it has no sequence, check its visibility, FASTA chromosome header and "
+"assembly. If an expected ATG appears as CAT, check the gene strand and "
+"flip state before assuming a variant. If the amino-acid row is absent, "
+"enable Aa for that exact track and zoom further. A discrepancy after "
+"these checks can reflect an assembly/transcript mismatch; do not fix it "
+"by choosing a different genetic code."
+msgstr "若轨道提示放大，请输入窄窗口；若无序列，请检查可见性、FASTA 标题和装配。"
+

@@ -3,165 +3,193 @@
 # This file is distributed under the same license as the Orbit package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: Orbit 1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-29 14:43+0800\n"
-"PO-Revision-Date: 2026-10-29 15:00+0800\n"
+"POT-Creation-Date: 2026-10-29 20:35+0800\n"
+"PO-Revision-Date: 2026-10-29 20:50+0800\n"
 "Last-Translator: junjunlab\n"
-"Language-Team: zh_CN <LL@li.org>\n"
 "Language: zh_CN\n"
+"Language-Team: zh_CN <LL@li.org>\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=1; plural=0;\n"
 "Generated-By: Babel 2.18.0\n"
 
 #: ../../data-export.rst:2
-msgid "Exporting"
-msgstr "导出"
+msgid "Exporting figures"
+msgstr "导出图像"
 
 #: ../../data-export.rst:4
 msgid ""
-"The export button captures exactly what is on screen — same colours, same "
-"labels, same zoom — and writes it to a file."
-msgstr "导出按钮抓取的就是屏幕上看到的内容——同样的配色、同样的标签、同样的缩放——写进文件。"
+"Export includes the visible track drawing, with optional track-name "
+"labels. It is **not a screenshot of the entire application**: the "
+"toolbar, navigation sidebar and settings popovers are excluded."
+msgstr "导出内容包括可见的轨道绘图，并可选择显示轨道名称标签。它  不是整个应用的屏幕截图  ：工具栏、导航侧栏和设置弹窗不会包含在内。"
 
-#: ../../data-export.rst:8
-msgid "Formats"
-msgstr "格式"
+#: ../../data-export.rst:9
+msgid "Step-by-step example"
+msgstr "分步示例"
 
-#: ../../data-export.rst:14
-msgid "Format"
-msgstr "格式"
+#: ../../data-export.rst:11
+msgid ""
+"Arrange your loci, for example ``ACTB, EGFR, TP53, MYC`` in four panels "
+"(see :doc:`navigation`)."
+msgstr "将位点安排到四个面板中，例如 ``ACTB, EGFR, TP53, MYC`` （见  :doc:`navigation`  ）。"
+
+#: ../../data-export.rst:13
+msgid ""
+"Choose the desired gene expansion state, colours and signal scale. Hide "
+"tracks you do not need using the sidebar checkboxes."
+msgstr "选择所需的基因展开状态、颜色和信号量程。使用侧栏复选框隐藏不需要的轨道。"
 
 #: ../../data-export.rst:15
-msgid "Extension"
-msgstr "扩展名"
-
-#: ../../data-export.rst:16
-msgid "When to use it"
-msgstr "适用场景"
+msgid ""
+"Click **Export** in the toolbar. Leave **Include left track names** "
+"checked to retain the track-name column; clear it for a drawing-only "
+"figure."
+msgstr "点击工具栏中的  导出  。保留勾选  包含左侧轨道名称  以保留轨道名称列；清除后将只导出绘图。"
 
 #: ../../data-export.rst:17
-msgid "PNG"
-msgstr "PNG"
-
-#: ../../data-export.rst:18
-msgid "``.png``"
-msgstr "``.png``"
+msgid ""
+"Choose **PNG**, **SVG** or **PDF**. Wait for the export-complete "
+"notification and use the normal download/save location for your browser "
+"or desktop build."
+msgstr "选择  PNG  、  SVG  或  PDF  。等待导出完成通知，并使用浏览器或桌面版的常规下载/保存位置。"
 
 #: ../../data-export.rst:19
 msgid ""
-"Slides, quick sharing. Rendered at the current device pixel ratio, so it "
-"stays sharp on a HiDPI display."
-msgstr "做幻灯片、快速分享。按当前设备像素比渲染，在高分屏上依然清晰。"
+"Inspect the exported file before adding it to a manuscript: check labels,"
+" each panel's locus, and whether the signal scales should be comparable."
+msgstr "将导出的文件加入论文前先检查：核对标签、每个面板的位点，以及信号量程是否应保持可比。"
 
-#: ../../data-export.rst:21
+#: ../../data-export.rst:22
+msgid "Export menu offering track-name labels PNG SVG and PDF for four loci"
+msgstr "显示四个位点及轨道名称标签、PNG、SVG 和 PDF 选项的导出菜单"
+
+#: ../../data-export.rst:26
+msgid ""
+"Actual Export menu for a multi-gene view. The include-labels checkbox "
+"controls the track-name column, not the application sidebar."
+msgstr "多基因视图中的实际导出菜单。包含标签复选框控制的是轨道名称列，而不是应用侧栏。"
+
+#: ../../data-export.rst:29
+msgid "Exported four-locus plot without the application toolbar or sidebar"
+msgstr "不含应用工具栏或侧栏的四位点导出图"
+
+#: ../../data-export.rst:33
+msgid ""
+"Example plot composed from the same four panels. It retains the genomic "
+"tracks but omits the toolbar and application sidebar."
+msgstr "由相同四个面板组成的示例图。它保留基因组轨道，但省略工具栏和应用侧栏。"
+
+#: ../../data-export.rst:37
+msgid "Choose a format"
+msgstr "选择格式"
+
+#: ../../data-export.rst:43
+msgid "Format"
+msgstr "格式"
+
+#: ../../data-export.rst:44
+msgid "Best use"
+msgstr "最佳用途"
+
+#: ../../data-export.rst:45
+msgid "What to expect"
+msgstr "预期效果"
+
+#: ../../data-export.rst:46
+msgid "PNG"
+msgstr "PNG"
+
+#: ../../data-export.rst:47
+msgid "Slides, email, documents"
+msgstr "幻灯片、电子邮件、文档"
+
+#: ../../data-export.rst:48
+msgid ""
+"The app renders a 2× raster plot. Pixel dimensions, not a DPI label "
+"alone, determine how much detail it contains."
+msgstr "应用会渲染一张 2× 栅格图。图像包含多少细节取决于像素尺寸，而不仅是 DPI 标签。"
+
+#: ../../data-export.rst:50
 msgid "SVG"
 msgstr "SVG"
 
-#: ../../data-export.rst:22
-msgid "``.svg``"
-msgstr "``.svg``"
+#: ../../data-export.rst:51
+msgid "Editable illustration"
+msgstr "可编辑插图"
 
-#: ../../data-export.rst:23
+#: ../../data-export.rst:52
 msgid ""
-"Editing in Illustrator or Inkscape. Text stays text, strokes stay strokes."
-msgstr "需要在 Illustrator 或 Inkscape 里编辑。文字还是文字，描边还是描边。"
+"Vector exon blocks, arrows, signal primitives and text. Open in a vector "
+"editor to adjust individual objects; keep the original file."
+msgstr "矢量外显子块、箭头、信号图元和文本。在矢量编辑器中打开即可调整单个对象；请保留原始文件。"
 
-#: ../../data-export.rst:25
+#: ../../data-export.rst:54
 msgid "PDF"
 msgstr "PDF"
 
-#: ../../data-export.rst:26
-msgid "``.pdf``"
-msgstr "``.pdf``"
-
-#: ../../data-export.rst:27
-msgid "Journal figures. Vector, with an embedded font."
-msgstr "期刊插图。矢量，字体已嵌入。"
-
-#: ../../data-export.rst:29
-msgid ""
-"File names are generated from the locus so you can export several views "
-"without renaming anything::"
-msgstr "文件名按位点自动生成，导多个视图不用手动改名："
-
-#: ../../data-export.rst:35
-msgid "What is included"
-msgstr "导出内容"
-
-#: ../../data-export.rst:37
-msgid "Every visible track, in the same order and with the same heights"
-msgstr "所有可见轨道，顺序和高度都与屏幕一致"
-
-#: ../../data-export.rst:38
-msgid "Track labels and the axis on the left"
-msgstr "左侧的轨道标签和坐标轴"
-
-#: ../../data-export.rst:39
-msgid "Split view: all panes side by side, at their on-screen widths"
-msgstr "分屏时所有面板按屏幕宽度并排"
-
-#: ../../data-export.rst:40
-msgid "The selection highlight, if there is one"
-msgstr "选区高亮（如果有）"
-
-#: ../../data-export.rst:42
-msgid ""
-"Hidden tracks are not exported. If you want a figure without the ruler, "
-"uncheck it first — the export is a photograph of the window, not a separate "
-"renderer with its own options."
-msgstr "隐藏的轨道不会被导出。想去掉标尺就先把它取消勾选——导出是窗口的「照片」，不是另有一套选项的独立渲染器。"
-
-#: ../../data-export.rst:47
-msgid "Vector export notes"
-msgstr "矢量导出的几点说明"
-
-#: ../../data-export.rst:49
-msgid ""
-"SVG and PDF are drawn with real vector primitives, not by embedding a "
-"bitmap. A few consequences are worth knowing:"
-msgstr "SVG 和 PDF 用真正的矢量图元绘制，不是嵌一张位图。有几点后果值得知道："
-
-#: ../../data-export.rst:52
-msgid "Signal tracks become one path per sample, so they scale cleanly"
-msgstr "信号轨道每个样本一条路径，缩放后依然干净"
-
-#: ../../data-export.rst:53
-msgid "Gene models keep their exon rectangles and arrows as separate objects"
-msgstr "基因模型的外显子矩形和箭头都是独立对象"
-
-#: ../../data-export.rst:54
-msgid ""
-"Dense labels are laid out exactly as on screen, including the ones that sit "
-"on top of features — the export does not re-flow text"
-msgstr "标签排版与屏幕完全一致，包括压在特征上的那些——导出不会重排文字"
+#: ../../data-export.rst:55
+msgid "Publication or sharing"
+msgstr "发表或分享"
 
 #: ../../data-export.rst:56
 msgid ""
-"Very large exports (a whole chromosome at base resolution) produce large "
-"files; export a window instead"
-msgstr "超大范围导出（整条染色体到碱基分辨率）文件会很大；建议只导一个窗口"
+"Vector drawing with an embedded system font when available. If font "
+"loading fails, Orbit explicitly falls back to a raster PDF."
+msgstr "在系统字体可用时使用嵌入字体的矢量图。如果字体加载失败，Orbit 会明确回退为栅格 PDF。"
 
-#: ../../data-export.rst:61
+#: ../../data-export.rst:60
+msgid "PNG resolution and 300 DPI"
+msgstr "PNG 分辨率与 300 DPI"
+
+#: ../../data-export.rst:62
 msgid ""
-"For a publication figure, zoom until the scale reads something like ``10 "
-"bp/px``, then export SVG. Illustrator opens it with every label still "
-"editable, so you can nudge a gene name without redrawing anything."
+"For a 300-DPI figure, required pixels = printed width in inches × 300. A "
+"12.8-inch-wide figure needs 3840 pixels. Merely changing a 1280-pixel "
+"image's DPI metadata does not create more detail. Prefer SVG/PDF when you"
+" need arbitrary rescaling. The manual's new screenshots were captured at "
+"3× device scale and saved with 300-DPI metadata; that is separate from "
+"the app's 2× PNG export."
 msgstr ""
-"做发表用的图，先放大到比例尺显示 ``10 bp/px`` 左右，再导 SVG。Illustrator 打开后每个标签都可编辑，挪一下基因名不用重画。"
+"对于 300 DPI 的图像，所需像素数 = 印刷宽度（英寸）× 300。宽 12.8 英寸的图像需要 3840 像素。仅修改 1280 "
+"像素图像的 DPI 元数据不会增加细节。需要任意缩放时优先使用 SVG/PDF。手册中新截图以 3× 设备缩放比例截取，并保存了 300 DPI "
+"元数据；这与应用的 2× PNG 导出是两回事。"
 
-#: ../../data-export.rst:66
-msgid "Batch export"
-msgstr "批量导出"
+#: ../../data-export.rst:69
+msgid "What is included"
+msgstr "导出内容"
 
-#: ../../data-export.rst:68
+#: ../../data-export.rst:71
 msgid ""
-"There is no batch mode yet. For many views, use split view to place up to "
-"four loci in one canvas and export once — each pane keeps its own "
-"coordinates."
-msgstr "目前没有批量模式。要导很多视图时，用分屏把最多四个位点放进同一块画布一次导出——每个面板保留各自的坐标。"
+"Visible tracks are composed in their screen order, including imported "
+"BAM, signal, annotation and FASTA tracks. Multi-panel plots retain all "
+"panel drawing regions. Hidden tracks are omitted. Track names are "
+"optional; settings menus are not exported. A plot is more reliable than a"
+" whole-window screenshot when you want only the genomic data."
+msgstr ""
+"可见轨道按屏幕顺序合成，包括导入的 BAM、信号、注释和 FASTA "
+"轨道。多面板图会保留所有面板绘图区域。隐藏轨道会被省略。轨道名称可选；设置菜单不会导出。只需要基因组数据时，绘图比整个窗口的屏幕截图更可靠。"
+
+#: ../../data-export.rst:77
+msgid ""
+"The SVG/PDF renderer replays the drawing into vector primitives rather "
+"than embedding a screen bitmap. Signal rendering can produce many "
+"rectangles or paths; do not assume it is one editable path per sample. "
+"Fonts and labels should still be checked in the target illustration "
+"editor."
+msgstr ""
+"SVG/PDF "
+"渲染器会将绘图重新绘制为矢量图元，而不是嵌入屏幕位图。信号渲染可能生成许多矩形或路径；不要假定每个样本只有一条可编辑路径。在目标插图编辑器中仍应检查字体和标签。"
+
+#: ../../data-export.rst:82
+msgid ""
+"There is no separate batch-export interface. To export several loci "
+"together, use up to **five panels** and export once; for separate "
+"figures, navigate and export one locus at a time."
+msgstr "没有独立的批量导出界面。要一次导出多个位点，最多使用  五个面板  后导出；若需分别成图，请逐个位点导航并导出。"
+

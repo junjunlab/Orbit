@@ -1,22 +1,21 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) 2026, junjunlab
-# This file is distributed under the same license as the Orbit package.
+# Chinese (Simplified, China) translations for Orbit.
+# Copyright (C) 2026 ORGANIZATION
+# This file is distributed under the same license as the Orbit project.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: Orbit 1.0\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-29 14:47+0800\n"
-"PO-Revision-Date: 2026-10-29 18:30+0800\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2026-10-29 20:54+0800\n"
+"PO-Revision-Date: 2026-10-29 20:50+0800\n"
 "Last-Translator: junjunlab\n"
-"Language-Team: zh_CN <LL@li.org>\n"
 "Language: zh_CN\n"
+"Language-Team: zh_CN <LL@li.org>\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=1; plural=0;\n"
 "Generated-By: Babel 2.18.0\n"
 
 #: ../../quickstart.rst:2
@@ -24,166 +23,345 @@ msgid "Quick start"
 msgstr "快速上手"
 
 #: ../../quickstart.rst:4
-msgid "Five minutes from launch to a figure."
-msgstr "五分钟，从打开到出图。"
-
-#: ../../quickstart.rst:7
-msgid "1. Open a locus"
-msgstr "1. 打开一个位点"
+msgid ""
+"From launch to an exported figure: choose the correct assembly, find a "
+"locus, inspect transcripts, import experimental data, and compare or "
+"export the view. The examples below use the human ``hg38`` assembly."
+msgstr "从启动到导出图像：选择正确的装配，查找位点，检查转录本，导入实验数据，并比较或导出视图。以下示例使用人类 ``hg38`` 装配。"
 
 #: ../../quickstart.rst:9
-msgid ""
-"Type a locus into the search box at the top and press :kbd:`Enter`. All of "
-"these work:"
-msgstr "在顶部搜索框输入位点，按 :kbd:`Enter`。下面这些写法都支持："
+msgid "1. Choose an assembly"
+msgstr "1. 选择装配"
 
-#: ../../quickstart.rst:19
+#: ../../quickstart.rst:11
+msgid "Click the assembly name beside the Orbit logo in the top toolbar."
+msgstr "点击顶部工具栏中 Orbit 标志旁的装配名称。"
+
+#: ../../quickstart.rst:12
 msgid ""
-"A gene symbol jumps to its full extent; coordinates are 1-based and "
-"inclusive, matching the IGV convention."
-msgstr "基因名会跳到它的完整范围；坐标是 1-based 闭区间，与 IGV 约定一致。"
+"Select **hg38** from the assembly list and wait for the assembly label "
+"and annotation to update."
+msgstr "从装配列表中选择  hg38 ，等待装配标签和注释更新。"
+
+#: ../../quickstart.rst:14
+msgid ""
+"Check the assembly before searching or importing data. Your experimental "
+"files must use the same coordinate system; changing the selector does not"
+" convert a file between assemblies."
+msgstr "在搜索或导入数据前检查装配。实验文件必须使用相同的坐标系；切换选择器不会在不同装配之间转换文件。"
+
+#: ../../quickstart.rst:18
+msgid ""
+"Changing assembly opens that assembly's default region, not the previous "
+"locus. Repeat your search after an assembly change. See :doc:`assemblies`"
+" for assembly names and sequence availability."
+msgstr "切换装配会打开该装配的默认区域，而不是之前的位点。切换装配后请重新搜索。装配名称和序列可用性见  :doc:`assemblies` 。"
 
 #: ../../quickstart.rst:23
-msgid "2. Choose an assembly"
-msgstr "2. 选择装配"
+msgid "2. Open a locus"
+msgstr "2. 打开位点"
 
 #: ../../quickstart.rst:25
 msgid ""
-"The assembly selector sits next to the search box. Orbit ships with 18 "
-"assemblies — see :doc:`assemblies`. Changing the assembly keeps the locus "
-"text if the chromosome name also exists in the new genome."
+"Click the main search box, type ``TP53``, and press :kbd:`Enter`. "
+"Suggestions appear while you type; click a result or use :kbd:`↑` / "
+":kbd:`↓` and :kbd:`Enter` to choose one. A gene search opens the gene "
+"with flanking context. You can also enter a coordinate with its "
+"chromosome name:"
 msgstr ""
-"装配选择器在搜索框旁边。Orbit 内置 18 个装配，见 "
-":doc:`assemblies`。切换装配时，如果新基因组里也有同名染色体，位点文本会保留。"
-
-#: ../../quickstart.rst:30
-msgid "3. Look at the tracks"
-msgstr "3. 看轨道"
-
-#: ../../quickstart.rst:32
-msgid ""
-"The left column lists tracks. Click a name to open its settings, or use the "
-"checkbox to hide it. From top to bottom you normally see:"
-msgstr "左栏列出所有轨道。点名称打开设置，用复选框隐藏。从上到下通常是："
+"点击主搜索框，输入 ``TP53``，然后按  :kbd:`Enter` 。输入时会出现建议；点击结果，或使用  :kbd:`↑`  /  "
+":kbd:`↓`  和  :kbd:`Enter`  进行选择。基因搜索会打开带侧翼上下文的基因。也可以输入带染色体名称的坐标："
 
 #: ../../quickstart.rst:35
-msgid "**Ideogram** — cytobands with the current view marked"
-msgstr "**染色体示意图** —— 细胞遗传带，标出当前视野"
-
-#: ../../quickstart.rst:36
-msgid "**Ruler** — genomic coordinates and scale"
-msgstr "**标尺** —— 基因组坐标与比例"
-
-#: ../../quickstart.rst:37
-msgid "**RefSeq genes** — gene models, expandable to transcripts"
-msgstr "**RefSeq 基因** —— 基因模型，可展开到转录本"
-
-#: ../../quickstart.rst:38
-msgid "**Signal tracks** — any bigWig you have loaded"
-msgstr "**信号轨道** —— 你载入的任意 bigWig"
-
-#: ../../quickstart.rst:39
-msgid "**GC content** — computed from the sequence on demand"
-msgstr "**GC 含量** —— 按需从序列计算"
+msgid ""
+"Search coordinates are 1-based, with an inclusive end. Do not omit the "
+"chromosome name. Drag horizontally in a track canvas to pan; use the "
+"mouse wheel to zoom around the pointer, double-click to zoom in, or click"
+" **+** / **-** in the toolbar to zoom around the centre."
+msgstr ""
+"搜索坐标从 1 开始，终点包含在内。不要省略染色体名称。在轨道画布中水平拖动可平移；使用鼠标滚轮围绕指针缩放，双击放大，或点击工具栏中的  +  "
+"/  -  围绕中心缩放。"
 
 #: ../../quickstart.rst:40
-msgid "**Sequence** — bases, once you are zoomed in far enough"
-msgstr "**序列** —— 放大到足够近时显示碱基"
-
-#: ../../quickstart.rst:43
-msgid "4. Load your own data"
-msgstr "4. 载入自己的数据"
+msgid "Orbit toolbar, track sidebar, and main genome-view canvas."
+msgstr "Orbit 工具栏、轨道侧栏和主基因组视图画布。"
 
 #: ../../quickstart.rst:45
 msgid ""
-"Drag a file onto the window, or press **Import** in the toolbar. bigWig, "
-"bedGraph, BAM, GTF/GFF and FASTA are recognised by extension. Details in "
-":doc:`data-import`."
+"This overview shows the complete ``ACTB`` gene on hg38. Start at the top-"
+"left assembly selector, then use the adjacent search box. Import, Split, "
+"and Export are separate toolbar buttons; track visibility and selected-"
+"gene details are controlled in the left sidebar."
 msgstr ""
-"把文件拖进窗口，或点工具栏的 **导入**。bigWig、bedGraph、BAM、GTF/GFF 和 FASTA 按扩展名识别。详见 "
-":doc:`data-import`。"
+"此概览显示 hg38 上完整的 ``ACTB`` 基因。从左上角的装配选择器开始，然后使用旁边的搜索框。Import、Split 和 Export"
+" 是独立的工具栏按钮；轨道可见性和所选基因详情在左侧栏中控制。"
 
-#: ../../quickstart.rst:50
+#: ../../quickstart.rst:51
+msgid "3. Look at the tracks"
+msgstr "3. 查看轨道"
+
+#: ../../quickstart.rst:53
+msgid ""
+"Expand **Tracks** in the left sidebar to reveal the built-in checkboxes. "
+"Ideogram, Ruler, RefSeq genes, and the compact whole-genome overview are "
+"on by default. **GC content** and **Sequence** start off. They require a "
+"reference sequence source for the assembly; their checkboxes are disabled"
+" if none is available. After enabling Sequence, zoom in to approximately "
+"``1.2 bp/px`` or closer to see bases."
+msgstr ""
+"展开左侧栏中的  Tracks  以显示内置复选框。染色体示意图、标尺、RefSeq 基因和紧凑的全基因组概览默认开启。 GC 含量  和  序列"
+"  默认关闭。它们需要该装配的参考序列源；如果没有可用序列，复选框会被禁用。启用序列后，放大到约 ``1.2 bp/px`` 或更近即可查看碱基。"
+
+#: ../../quickstart.rst:60
+msgid "To see transcript structure:"
+msgstr "查看转录本结构："
+
+#: ../../quickstart.rst:62
+msgid ""
+"Click the ``TP53`` model or its label in the canvas. **Selection / "
+"details** shows its coordinates, strand, length, and transcript table."
+msgstr "点击画布中的 ``TP53`` 模型或其标签。 选择 / 详情  会显示其坐标、链、长度和转录本表。"
+
+#: ../../quickstart.rst:64
+msgid ""
+"Click the small **+** beside the gene to expand its transcript rows; "
+"click **-** there to collapse it. A single-transcript gene has no "
+"expansion button. The sidebar also offers **Show / Hide transcripts** for"
+" the selected gene."
+msgstr "点击基因旁的小  +  展开其转录本行；点击  -  折叠。单转录本基因没有展开按钮。侧栏还为选定基因提供  显示 / 隐藏转录本 。"
+
+#: ../../quickstart.rst:67
+msgid ""
+"To expand the whole RefSeq track, click the **gear** in its track-label "
+"cell, choose **Expand all**, then **Done**. Choose **Collapse all** to "
+"return to merged gene models. The same controls exist on imported GTF/GFF"
+" gene tracks."
+msgstr ""
+"要展开整个 RefSeq 轨道，请点击其轨道标签格中的  齿轮 ，选择  全部展开 ，然后点击  完成 。选择  全部折叠  "
+"可恢复合并的基因模型。导入的 GTF/GFF 基因轨道也有相同控件。"
+
+#: ../../quickstart.rst:72
+msgid "Gene models expanded into individual transcript rows in Orbit."
+msgstr "Orbit 中展开为独立转录本行的基因模型。"
+
+#: ../../quickstart.rst:77
+msgid ""
+"The ``EGFR`` example on hg38 shows transcripts in separate rows instead "
+"of one merged gene model. Search ``EGFR`` to reproduce this view. Use the"
+" per-gene plus/minus button for one gene, or the track gear's Expand all "
+"/ Collapse all buttons for the entire annotation track."
+msgstr ""
+"hg38 上的 ``EGFR`` 示例将转录本显示在不同的行中，而不是合并为一个基因模型。搜索 ``EGFR`` "
+"可重现此视图。使用单个基因的加号/减号按钮，或使用轨道齿轮中的全部展开 / 全部折叠按钮操作整个注释轨道。"
+
+#: ../../quickstart.rst:83
+msgid "4. Load your own data"
+msgstr "4. 载入自己的数据"
+
+#: ../../quickstart.rst:85
+msgid ""
+"With the matching assembly selected, click **Import** in the top toolbar "
+"and choose a local file, or drag the file onto the window. Accepted "
+"formats include bigWig, bedGraph, BAM, GTF/GFF, BED/peak files, and "
+"FASTA; see :doc:`data-import` for format-specific requirements."
+msgstr ""
+"选中匹配的装配后，点击顶部工具栏中的  导入  并选择本地文件，或将文件拖到窗口中。支持的格式包括 "
+"bigWig、bedGraph、BAM、GTF/GFF、BED/peak 文件和 FASTA；格式要求见  :doc:`data-import` "
+"。"
+
+#: ../../quickstart.rst:89
+msgid ""
+"Wait until the import progress panel reports completion. Signal files "
+"appear under **Signal tracks**; annotations and FASTA appear under "
+"**Imported**. Confirm that the new track's checkbox is on."
+msgstr "等待导入进度面板报告完成。信号文件会出现在  信号轨道  下；注释和 FASTA 会出现在  已导入  下。确认新轨道的复选框已开启。"
+
+#: ../../quickstart.rst:92
+msgid ""
+"Navigate to a region covered by the file. A track with no data at "
+"``TP53`` is not necessarily an import failure. For imported GTF/GFF "
+"genes, use the second **GTF** search box and its track selector to search"
+" your annotation rather than the bundled RefSeq index."
+msgstr ""
+"导航到文件覆盖的区域。在 ``TP53`` 处没有数据的轨道不一定表示导入失败。对于导入的 GTF/GFF 基因，请使用第二个  GTF  "
+"搜索框及其轨道选择器搜索你的注释，而不是内置的 RefSeq 索引。"
+
+#: ../../quickstart.rst:96
+msgid ""
+"For a signal or gene track, click its **gear** (or right-click its canvas"
+" track label) for settings. Signal settings include colour, "
+"automatic/fixed range, log scale, and grouping. Gene settings include "
+"transcript expansion and feature colours. FASTA rows instead have strand "
+"and translation buttons."
+msgstr ""
+"对于信号或基因轨道，点击其  齿轮 "
+"（或右键点击画布中的轨道标签）打开设置。信号设置包括颜色、自动/固定范围、对数刻度和分组。基因设置包括转录本展开和特征颜色。FASTA "
+"行则有链和翻译按钮。"
+
+#: ../../quickstart.rst:101
+msgid ""
+"Use real files generated for your chosen reference assembly. The import "
+"examples in :doc:`data-import` use ``Scr_R1_IP.bw`` (signal) and "
+"``chr1_output.bam`` (alignments) on hg38. To inspect the BAM example, "
+"search ``MTHFR`` or ``CLCN6`` on chromosome 1, not ``TP53``. The "
+"annotation example ``representative_transcripts.gtf`` instead requires "
+"the yeast **sacCer3** assembly. These filenames identify the example "
+"inputs; use your own local files unless you have those datasets."
+msgstr ""
+"使用为所选参考装配生成的真实文件。 :doc:`data-import`  中的导入示例在 hg38 上使用 "
+"``Scr_R1_IP.bw``（信号）和 ``chr1_output.bam``（比对）。要查看 BAM 示例，请在 1 号染色体上搜索 "
+"``MTHFR`` 或 ``CLCN6``，而不是 ``TP53``。注释示例 "
+"``representative_transcripts.gtf`` 则需要酵母  sacCer3  "
+"装配。这些文件名标识示例输入；除非拥有这些数据集，否则请使用自己的本地文件。"
+
+#: ../../quickstart.rst:109
+msgid ""
+"Importing copies files into Orbit's data area. On a fresh page load, "
+"previously imported tracks remain listed but unchecked; tick them again "
+"instead of assuming they were deleted."
+msgstr "导入会将文件复制到 Orbit 的数据区域。重新加载页面时，以前导入的轨道仍会列出但默认未勾选；请重新勾选，不要以为它们已被删除。"
+
+#: ../../quickstart.rst:114
+msgid "Compare several loci"
+msgstr "比较多个位点"
+
+#: ../../quickstart.rst:116
+msgid ""
+"Click **Split** and choose **1 panel** through **5 panels**. New panels "
+"initially copy the active locus. Edit each panel's **Locus** field and "
+"press :kbd:`Enter`, or enter ``TP53, BRCA1`` in the main search box to "
+"open those matches side by side automatically (at most five terms)."
+msgstr ""
+"点击  分屏  并选择  1 个面板  到  5 个面板 。新面板最初会复制活动位点。编辑每个面板的  位点  字段并按  "
+":kbd:`Enter` ，或者在主搜索框中输入 ``TP53, BRCA1``，自动并排打开这些匹配项（最多五个词）。"
+
+#: ../../quickstart.rst:121
+msgid ""
+"Click a panel's position cell to make it active before using the main "
+"search, keyboard navigation, or toolbar zoom. Dragging and pointer-based "
+"zoom operate on the panel under the pointer. Close one panel with its "
+"**x** button or choose **1 panel** to return to a single view. All panels"
+" share the assembly and track list; their loci and zoom levels are "
+"independent."
+msgstr ""
+"在使用主搜索、键盘导航或工具栏缩放前，点击某个面板的位置单元格使其处于活动状态。拖动和基于指针的缩放作用于指针所在的面板。点击面板的  x  "
+"按钮关闭一个面板，或选择  1 个面板  返回单视图。所有面板共享装配和轨道列表，但位点和缩放级别彼此独立。"
+
+#: ../../quickstart.rst:127
+msgid "Four independent locus panels with individual coordinate fields."
+msgstr "带有独立坐标字段的四个位点面板。"
+
+#: ../../quickstart.rst:132
+msgid ""
+"Four-panel comparison of ``ACTB``, ``EGFR``, ``TP53``, and ``MYC`` on "
+"hg38. Reproduce it by submitting ``ACTB, EGFR, TP53, MYC`` in the main "
+"search box. The Locus row supplies one coordinate input and close button "
+"per panel; its highlighted cell identifies the target of main-search and "
+"keyboard actions."
+msgstr ""
+"hg38 上 ``ACTB``、``EGFR``、``TP53`` 和 ``MYC`` 的四面板比较。在主搜索框中提交 ``ACTB, EGFR,"
+" TP53, MYC`` 可重现该视图。位点行向每个面板提供一个坐标输入和关闭按钮；高亮单元格标识主搜索和键盘操作的目标。"
+
+#: ../../quickstart.rst:138
 msgid "5. Export the view"
 msgstr "5. 导出视图"
 
-#: ../../quickstart.rst:52
-msgid ""
-"Press the export button in the toolbar and choose PNG, SVG or PDF. Vector "
-"formats stay editable in Illustrator and Inkscape. Details in :doc:`data-"
-"export`."
-msgstr ""
-"点工具栏的导出按钮，选 PNG、SVG 或 PDF。矢量格式在 Illustrator 和 Inkscape 里仍可编辑。详见 :doc:`data-"
-"export`。"
+#: ../../quickstart.rst:140
+msgid "Finish choosing visible tracks, transcript expansion, and panel positions."
+msgstr "完成可见轨道、转录本展开状态和面板位置的设置。"
 
-#: ../../quickstart.rst:57
+#: ../../quickstart.rst:141
+msgid ""
+"Click **Export**, the download-arrow toolbar button immediately after "
+"**Split**."
+msgstr "点击  导出 ，它是  分屏  后紧邻的下载箭头工具栏按钮。"
+
+#: ../../quickstart.rst:143
+msgid ""
+"Keep **Include track labels** checked for labelled track rows, or clear "
+"it for just the drawing area; then choose **PNG**, **SVG**, or **PDF**."
+msgstr "对于带标签的轨道行，保留  包含轨道标签  的勾选；若只需绘图区则取消勾选，然后选择  PNG 、 SVG  或  PDF 。"
+
+#: ../../quickstart.rst:145
+msgid ""
+"Save the file through the desktop save dialog or your browser's download "
+"handler. Export captures displayed track rows and all current panels, not"
+" the sidebar or toolbar."
+msgstr "通过桌面保存对话框或浏览器下载处理程序保存文件。导出会包含显示的轨道行和当前所有面板，不包含侧栏或工具栏。"
+
+#: ../../quickstart.rst:149
+msgid ""
+"PNG is a 2x raster image. SVG is editable vector output. PDF is vector "
+"with an embedded font when a CJK font is available; otherwise Orbit "
+"reports a raster PDF fallback. See :doc:`data-export` for details."
+msgstr ""
+"PNG 是 2 倍光栅图像。SVG 是可编辑的矢量输出。PDF 是矢量格式；有 CJK 字体时会嵌入字体，否则 Orbit 会报告使用光栅 PDF"
+" 回退。详情见  :doc:`data-export` 。"
+
+#: ../../quickstart.rst:154
 msgid "Keyboard essentials"
 msgstr "常用快捷键"
 
-#: ../../quickstart.rst:63
+#: ../../quickstart.rst:156
+msgid ""
+"These navigation keys work when focus is outside text inputs and the "
+"Motif dialog is closed. They affect the active panel."
+msgstr "当焦点不在文本输入框且 Motif 对话框关闭时，以下导航键有效。它们作用于活动面板。"
+
+#: ../../quickstart.rst:163
 msgid "Key"
 msgstr "按键"
 
-#: ../../quickstart.rst:64
+#: ../../quickstart.rst:164
 msgid "Action"
 msgstr "动作"
 
-#: ../../quickstart.rst:65
+#: ../../quickstart.rst:165
 msgid ":kbd:`←` / :kbd:`→`"
-msgstr ":kbd:`←` / :kbd:`→`"
+msgstr " :kbd:`←`  /  :kbd:`→` "
 
-#: ../../quickstart.rst:66
-msgid "Pan by half a screen"
-msgstr "平移半屏"
+#: ../../quickstart.rst:166
+#, python-format
+msgid "Pan left / right by 35% of the current window"
+msgstr "按当前窗口宽度的 35% 向左 / 向右平移"
 
-#: ../../quickstart.rst:67
-msgid ":kbd:`Shift` + :kbd:`←` / :kbd:`→`"
-msgstr ":kbd:`Shift` + :kbd:`←` / :kbd:`→`"
+#: ../../quickstart.rst:167
+msgid ":kbd:`+` / :kbd:`=`"
+msgstr ":kbd:`+` / :kbd:`=`"
 
-#: ../../quickstart.rst:68
-msgid "Pan by a tenth of a screen"
-msgstr "平移十分之一屏"
+#: ../../quickstart.rst:168
+msgid "Zoom in twofold around the centre"
+msgstr "围绕中心放大两倍"
 
-#: ../../quickstart.rst:69
-msgid ":kbd:`+` / :kbd:`-`"
-msgstr ":kbd:`+` / :kbd:`-`"
+#: ../../quickstart.rst:169
+msgid ":kbd:`-` / :kbd:`_`"
+msgstr ":kbd:`-` / :kbd:`_`"
 
-#: ../../quickstart.rst:70
-msgid "Zoom in / out"
-msgstr "放大 / 缩小"
+#: ../../quickstart.rst:170
+msgid "Zoom out twofold around the centre"
+msgstr "围绕中心缩小两倍"
 
-#: ../../quickstart.rst:71
-msgid ":kbd:`Ctrl` + :kbd:`F`"
-msgstr ":kbd:`Ctrl` + :kbd:`F`"
+#: ../../quickstart.rst:171
+msgid ":kbd:`/`"
+msgstr " :kbd:`/` "
 
-#: ../../quickstart.rst:72
-msgid "Focus the search box"
-msgstr "定位到搜索框"
+#: ../../quickstart.rst:172
+msgid "Focus the main locus search box and select its contents"
+msgstr "聚焦主位点搜索框并选中其内容"
 
-#: ../../quickstart.rst:73
-msgid ":kbd:`Ctrl` + :kbd:`S`"
-msgstr ":kbd:`Ctrl` + :kbd:`S`"
-
-#: ../../quickstart.rst:74
-msgid "Export the current view"
-msgstr "导出当前视图"
-
-#: ../../quickstart.rst:75
+#: ../../quickstart.rst:173
 msgid ":kbd:`Esc`"
-msgstr ":kbd:`Esc`"
+msgstr " :kbd:`Esc` "
 
-#: ../../quickstart.rst:76
-msgid "Close the current dialog or clear the selection"
-msgstr "关闭当前对话框或清除选区"
+#: ../../quickstart.rst:174
+msgid "Dismiss settings/context popovers; outside an input, clear gene selection"
+msgstr "关闭设置/上下文弹出框；在输入框外清除基因选择"
 
-#: ../../quickstart.rst:80
+#: ../../quickstart.rst:178
 msgid ""
-"Dragging horizontally on the ruler pans the view; dragging on a gene track "
-"selects a region and shows its size."
-msgstr "在标尺上横向拖动可平移视图；在基因轨道上拖动会选中一个区域并显示其长度。"
+"Use the toolbar **Export** button, not :kbd:`Ctrl+S`. Orbit does not bind"
+" :kbd:`Ctrl+F`, :kbd:`Ctrl+S`, or a special Shift-plus-arrow pan step."
+msgstr ""
+"使用工具栏的  导出  按钮，而不是  :kbd:`Ctrl+S` 。Orbit 不绑定  :kbd:`Ctrl+F` 、 "
+":kbd:`Ctrl+S` ，也没有特殊的 Shift 加方向键平移步长。"
 
-#~ msgid ""
-#~ "Drag a file onto the window, or use *Tracks → Load from file*. bigWig, "
-#~ "bedGraph, BAM, GTF/GFF and FASTA are recognised by extension. Details in "
-#~ ":doc:`data-import`."
-#~ msgstr ""
