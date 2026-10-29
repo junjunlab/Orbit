@@ -1,6 +1,6 @@
 # Orbit
 
-[![Docs](https://readthedocs.org/projects/orbit-genome-browser/badge/?version=latest)](https://orbit-genome-browser.readthedocs.io/en/latest/)
+[![Docs](https://app.readthedocs.org/projects/orbit-genome-browser/badge/?version=latest)](https://orbit-genome-browser.readthedocs.io/en/latest/)
 [![Release](https://img.shields.io/github/v/release/junjunlab/Orbit)](https://github.com/junjunlab/Orbit/releases)
 [![License](https://img.shields.io/github/license/junjunlab/Orbit)](LICENSE)
 
