@@ -8,15 +8,15 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Orbit 1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-29 14:47+0800\n"
-"PO-Revision-Date: 2026-10-29 15:00+0800\n"
-"Last-Translator: junjunlab\n"
-"Language-Team: zh_CN <LL@li.org>\n"
+"POT-Creation-Date: 2026-10-29 19:56+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: zh_CN\n"
+"Language-Team: zh_CN <LL@li.org>\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=1; plural=0;\n"
 "Generated-By: Babel 2.18.0\n"
 
 #: ../../data-import.rst:2
@@ -26,8 +26,8 @@ msgstr "导入数据"
 #: ../../data-import.rst:4
 msgid ""
 "Orbit reads the common genomics formats directly. Drag a file onto the "
-"window, or press the **Import** button in the toolbar. The format is chosen "
-"by extension."
+"window, or press the **Import** button in the toolbar. The format is "
+"chosen by extension."
 msgstr "Orbit 直接读取常见的基因组格式。把文件拖进窗口，或点工具栏的 **导入**。格式按扩展名判断。"
 
 #: ../../data-import.rst:9
@@ -58,7 +58,7 @@ msgstr "``.bw`` ``.bigWig``"
 msgid "Random access, no indexing step. Best choice for signal."
 msgstr "随机访问，无需建索引。信号轨道的首选。"
 
-#: ../../data-import.rst:21 ../../data-import.rst:49
+#: ../../data-import.rst:21 ../../data-import.rst:57
 msgid "bedGraph"
 msgstr "bedGraph"
 
@@ -70,7 +70,7 @@ msgstr "``.bedGraph`` ``.bdg``"
 msgid "Loaded into memory; fine up to a few hundred MB."
 msgstr "整份读进内存；几百 MB 以内没问题。"
 
-#: ../../data-import.rst:24 ../../data-import.rst:55
+#: ../../data-import.rst:24 ../../data-import.rst:77
 msgid "BAM"
 msgstr "BAM"
 
@@ -79,10 +79,12 @@ msgid "``.bam``"
 msgstr "``.bam``"
 
 #: ../../data-import.rst:26
-msgid "Needs a ``.bai`` next to it. Coverage is computed on the fly."
-msgstr "旁边必须有 ``.bai``。覆盖度是实时计算的。"
+msgid ""
+"Coverage and stacked reads are computed from the file directly; a "
+"``.bai`` is optional."
+msgstr "覆盖度与堆叠 reads 直接从文件计算；``.bai`` 索引可选。"
 
-#: ../../data-import.rst:27 ../../data-import.rst:62
+#: ../../data-import.rst:27 ../../data-import.rst:101
 msgid "GTF / GFF3"
 msgstr "GTF / GFF3"
 
@@ -94,7 +96,7 @@ msgstr "``.gtf`` ``.gff`` ``.gff3``"
 msgid "Becomes a gene track; UTR and CDS features are kept."
 msgstr "变成一个基因轨道；UTR 和 CDS 特征都会保留。"
 
-#: ../../data-import.rst:30 ../../data-import.rst:75
+#: ../../data-import.rst:30 ../../data-import.rst:128
 msgid "FASTA"
 msgstr "FASTA"
 
@@ -103,80 +105,131 @@ msgid "``.fa`` ``.fasta``"
 msgstr "``.fa`` ``.fasta``"
 
 #: ../../data-import.rst:32
-msgid ""
-"Registers the file as a local sequence source for the current assembly."
+msgid "Registers the file as a local sequence source for the current assembly."
 msgstr "把该文件注册为当前装配的本地序列来源。"
 
 #: ../../data-import.rst:37
 msgid ""
 "The recommended format. Orbit parses the index itself, so there is no "
-"``bigWigToBedGraph`` step and no conversion. Multi-sample overlays work best"
-" when the files share a coordinate system."
+"``bigWigToBedGraph`` step and no conversion. Multi-sample overlays work "
+"best when the files share a coordinate system."
 msgstr "推荐格式。Orbit 自己解析索引，不需要 ``bigWigToBedGraph`` 转换。多样本叠加时，文件之间共用坐标系效果最好。"
 
 #: ../../data-import.rst:45
 msgid ""
-"The track appears immediately with autoscale on. Open its label to pin the "
-"range if you want several samples to share one scale."
+"The track appears immediately with autoscale on. Open its label to pin "
+"the range if you want several samples to share one scale."
 msgstr "轨道会立刻出现，默认自动缩放。想让多个样本共用同一量程，就打开轨道标签把范围固定下来。"
 
-#: ../../data-import.rst:51
+#: ../../data-import.rst:52
 msgid ""
-"Plain text, four columns. Convenient for small, hand-made tracks; a genome-"
-"wide file will cost memory, so prefer bigWig above a few hundred megabytes."
-msgstr "纯文本，四列。适合小型手工轨道；全基因组级别会吃内存，超过几百 MB 建议改用 bigWig。"
+"A ribo-seq ``.bw`` track imported onto hg38. The signal is added to the "
+"signal panel with autoscale on, and its label (``Scr_R1_IP``) appears in "
+"the left sidebar."
+msgstr "导入到 hg38 的 ribo-seq ``.bw`` 轨道。信号被加入信号面板并自动缩放，左侧栏显示其标签（``Scr_R1_IP``）。"
 
-#: ../../data-import.rst:57
+#: ../../data-import.rst:59
 msgid ""
-"Orbit needs both ``sample.bam`` and ``sample.bam.bai`` in the same "
-"directory. Coverage is computed from the reads in the visible window only, "
+"Plain text, four columns (``chrom  start  end  value``). Convenient for "
+"small, hand-made tracks; a genome-wide file will cost memory, so prefer "
+"bigWig above a few hundred megabytes. Orbit renders bedGraph exactly like"
+" bigWig — same signal panel, same autoscale, same colour controls."
+msgstr ""
+"纯文本，四列（``chrom  start  end  value``）。适合小型手工轨道；全基因组级别会吃内存，超过几百 MB 建议改用 "
+"bigWig。Orbit 渲染 bedGraph 与 bigWig 完全一致——同一信号面板、同样的自动缩放与配色控件。"
+
+#: ../../data-import.rst:72
+msgid ""
+"A four-column ``.bedGraph`` file on hg38, rendered identically to a "
+"bigWig signal track. Both go through the same drawing path, so you can "
+"mix ``.bw`` and ``.bedGraph`` in one view."
+msgstr ""
+"hg38 上的四列 ``.bedGraph`` 文件，渲染效果与 bigWig 信号轨道完全一致。两者走同一条绘制路径，因此可以在同一视图里混用 "
+"``.bw`` 与 ``.bedGraph``。"
+
+#: ../../data-import.rst:79
+msgid ""
+"Orbit reads the alignments straight from the ``.bam`` — there is no "
+"separate indexing step and a ``.bai`` is optional. Coverage and the "
+"stacked reads are computed from the reads in the visible window only, "
 "which keeps memory flat but means the first draw of a new region takes a "
 "moment."
 msgstr ""
-"Orbit 需要 ``sample.bam`` 和 ``sample.bam.bai`` 放在同一目录。覆盖度只按可见窗口内的 reads "
-"计算，内存占用平稳，代价是第一次画新区域要等一下。"
+"Orbit 直接从 ``.bam`` 读取比对记录——无需单独的建索引步骤，``.bai`` 可选。覆盖度与堆叠 reads 只按可见窗口内的 "
+"reads 计算，内存占用平稳，代价是首次绘制新区域要等一下。"
 
-#: ../../data-import.rst:64
+#: ../../data-import.rst:88
+msgid ""
+"Each BAM produces two linked views: a **coverage** track (the blue area) "
+"and an **alignment** track (the grey stacked reads). Toggle them "
+"independently from the track label."
+msgstr "每个 BAM 会生成两条联动视图：覆盖度轨道（蓝色区域）和比对轨道（灰色堆叠 reads）。可在轨道标签处分别开关。"
+
+#: ../../data-import.rst:96
+msgid ""
+"A BAM imported onto hg38, shown at ``chr1:11.79–11.81 Mb``. The blue "
+"track is read coverage; the striped block below it is the stacked "
+"alignments. The bundled RefSeq track (``MTHFR``, ``CLCN6``) sits above "
+"for context."
+msgstr ""
+"导入到 hg38 的 BAM，显示在 ``chr1:11.79–11.81 Mb``。蓝色轨道是 reads "
+"覆盖度；其下方的条纹块是堆叠的比对记录。上方是内置的 RefSeq 轨道（``MTHFR``、``CLCN6``）作为参照。"
+
+#: ../../data-import.rst:103
 msgid ""
 "Imported annotations become a normal gene track: expandable transcripts, "
-"strand colours, labels. Transcript and CDS features are preserved, so a GTF "
-"exported from StringTie or Ensembl looks the way you expect."
+"strand colours, labels. Transcript and CDS features are preserved, so a "
+"GTF exported from StringTie or Ensembl looks the way you expect. "
+"Chromosome naming is reconciled automatically, so Ensembl-style ``1`` / "
+"``I`` maps onto UCSC-style ``chr1`` / ``chrI``."
 msgstr ""
-"导入的注释会成为普通基因轨道：可展开转录本、按链着色、带标签。转录本与 CDS 特征都会保留，所以 StringTie 或 Ensembl 导出的 "
-"GTF 看起来就是你预期的样子。"
+"导入的注释会成为普通基因轨道：可展开转录本、按链着色、带标签。转录本与 CDS 特征都会保留，所以 StringTie 或 Ensembl 导出的"
+" GTF 看起来就是你预期的样子。染色体命名会自动对齐，因此 Ensembl 风格的 ``1`` / ``I`` 会映射到 UCSC 风格的 "
+"``chr1`` / ``chrI``。"
 
-#: ../../data-import.rst:70
+#: ../../data-import.rst:117
 msgid ""
-"Imported annotations are not converted to the built-in binary format. They "
-"are read on load, which is fine for a few hundred thousand features but "
-"slower than the bundled RefSeq index."
+"A yeast GTF (``representative_transcripts.gtf``) imported onto sacCer3 "
+"and shown directly under the bundled RefSeq track. Gene names and strand "
+"arrows are drawn for both."
+msgstr ""
+"导入到 sacCer3 的酵母 GTF（``representative_transcripts.gtf``），直接显示在内置 RefSeq "
+"轨道下方。两条轨道都会画出基因名与链方向箭头。"
+
+#: ../../data-import.rst:123
+msgid ""
+"Imported annotations are not converted to the built-in binary format. "
+"They are read on load, which is fine for a few hundred thousand features "
+"but slower than the bundled RefSeq index."
 msgstr "导入的注释不会转成内置二进制格式，而是加载时现读。几十万条特征没问题，但比内置的 RefSeq 索引慢。"
 
-#: ../../data-import.rst:77
+#: ../../data-import.rst:130
 msgid ""
-"Loading a FASTA registers it as the local sequence source for the assembly. "
-"This is how you use Orbit fully offline, or work with an assembly that UCSC "
-"does not host."
+"Loading a FASTA registers it as the local sequence source for the "
+"assembly. This is how you use Orbit fully offline, or work with an "
+"assembly that UCSC does not host."
 msgstr "载入 FASTA 会把它注册为该装配的本地序列来源。这是完全离线使用 Orbit 的办法，也适用于 UCSC 上没有的装配。"
 
-#: ../../data-import.rst:85
+#: ../../data-import.rst:138
 msgid ""
-"Large FASTA files are memory-mapped, so a 3 GB genome does not need 3 GB of "
-"RAM — but the first access to a chromosome still costs a disk read."
+"Large FASTA files are memory-mapped, so a 3 GB genome does not need 3 GB "
+"of RAM — but the first access to a chromosome still costs a disk read."
 msgstr "大 FASTA 采用内存映射，3 GB 的基因组不需要 3 GB 内存——但首次访问某条染色体仍要读一次磁盘。"
 
-#: ../../data-import.rst:89
+#: ../../data-import.rst:142
 msgid "Where imported tracks live"
 msgstr "导入的轨道存在哪"
 
-#: ../../data-import.rst:91
+#: ../../data-import.rst:144
 msgid ""
-"Imported files are referenced in place, not copied. If you move or delete "
-"the original, the track breaks on the next launch. Paths are stored in the "
-"session, so reopening Orbit restores the tracks you had."
-msgstr "导入的文件是原地引用，不会复制。移动或删除原文件后，下次启动轨道就会失效。路径记录在会话里，重新打开 Orbit 会恢复之前的轨道。"
+"Importing copies the file into Orbit's per-user data directory "
+"(``data/loaded``, or ``%LOCALAPPDATA%/Orbit/loaded`` when the install "
+"directory is read-only), so the original file is no longer needed after "
+"import. Imported tracks are session-scoped by default: set "
+"``IGV_RESTORE_LOADED=1`` to restore them automatically on the next "
+"launch."
+msgstr ""
+"导入会把文件复制到 Orbit 的用户数据目录（``data/loaded``；当安装目录只读时用 "
+"``%LOCALAPPDATA%/Orbit/loaded``），因此导入后原始文件不再需要保留。导入轨道默认是会话级的：设置 "
+"``IGV_RESTORE_LOADED=1`` 可在下次启动时自动恢复。"
 
-#~ msgid ""
-#~ "Orbit reads the common genomics formats directly. Drag a file onto the "
-#~ "window, or use *Tracks → Load from file*. The format is chosen by extension."
-#~ msgstr ""
