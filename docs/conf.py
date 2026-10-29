@@ -5,6 +5,8 @@ as gettext catalogues. Read the Docs renders the language flyout automatically
 once a translated project is registered for this repository.
 """
 
+import os
+
 project = "Orbit"
 author = "junjunlab"
 copyright = "2026, junjunlab"
@@ -12,7 +14,12 @@ copyright = "2026, junjunlab"
 version = "1.0"
 release = "1.0.1"
 
-language = "en"
+# The Chinese site is a separate Read the Docs project (a "translation") pointing at
+# this same repository. Read the Docs exports READTHEDOCS_LANGUAGE for every build,
+# so the translation project renders zh_CN without duplicating this file.
+# Local builds are unaffected: ``sphinx-build -D language=zh_CN`` still wins, and
+# without the env var we fall back to English.
+language = os.environ.get("READTHEDOCS_LANGUAGE") or "en"
 
 extensions = [
     "sphinx.ext.intersphinx",
