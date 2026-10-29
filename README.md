@@ -13,9 +13,15 @@ ships ~70 MB of annotation instead of 3 GB of genome.
 
 ![Orbit](docs/screenshot.png)
 
-**Documentation** — [English](https://orbit-genome-browser.readthedocs.io/en/latest/) ·
-[简体中文](https://orbit-genome-browser.readthedocs.io/zh-cn/latest/). Both are built from
-`docs/` with Sphinx; use the language flyout at the bottom-left of any page to switch.
+## Documentation
+
+The full manual is available in both languages:
+
+- **[English](https://orbit-genome-browser.readthedocs.io/en/latest/)**
+- **[简体中文](https://orbit-genome-browser.readthedocs.io/zh-cn/latest/)**
+
+Both are built from `docs/` with Sphinx. Use the language flyout at the bottom-left of
+any page to switch between them.
 
 ## Install
 
@@ -82,7 +88,7 @@ bash installer/make_dmg.sh                         # macOS → .dmg
 CI (`.github/workflows/build.yml`) builds all three packages on every tag push and
 attaches them to the release.
 
-## Documentation
+## Building the documentation
 
 The manual lives in `docs/` (Sphinx + reStructuredText, hosted on Read the Docs).
 English is the source language; Chinese is a gettext translation.
