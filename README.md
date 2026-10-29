@@ -1,6 +1,6 @@
 # Orbit
 
-[![Docs](https://app.readthedocs.org/projects/orbit-genome-browser/badge/?version=latest)](https://orbit-genome-browser.readthedocs.io/en/latest/)
+[![Docs](https://img.shields.io/readthedocs/orbit-genome-browser)](https://orbit-genome-browser.readthedocs.io/en/latest/)
 [![Release](https://img.shields.io/github/v/release/junjunlab/Orbit)](https://github.com/junjunlab/Orbit/releases)
 [![License](https://img.shields.io/github/license/junjunlab/Orbit)](LICENSE)
 
@@ -20,8 +20,8 @@ The full manual is available in both languages:
 - **[English](https://orbit-genome-browser.readthedocs.io/en/latest/)**
 - **[简体中文](https://orbit-genome-browser.readthedocs.io/zh-cn/latest/)**
 
-Both are built from `docs/` with Sphinx. Use the language flyout at the bottom-left of
-any page to switch between them.
+Both are built from `docs/` with Sphinx. Use the language selector at the top of the
+left sidebar on any page to switch between them.
 
 ## Install
 

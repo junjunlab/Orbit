@@ -27,7 +27,7 @@ What you get
 .. note::
 
    This documentation is available in English and Chinese. Use the language
-   selector in the bottom-left corner of the page to switch between
+   selector at the top of the left sidebar to switch between
    ``English`` and ``简体中文``. The Chinese translation lives at
    ``/zh-cn/latest/`` on the same site.
 
