@@ -105,6 +105,11 @@ costs time and memory. The current loader caps accepted reads at 6,000,000;
 check the truncation notice for larger files. Coverage and displayed reads
 are then queried for the visible window, and dense alignments may be sampled.
 
+Reads that are unmapped (``0x4``), fail vendor QC (``0x200``) or carry the
+duplicate flag (``0x400``) are not drawn — the same default as IGV. Secondary
+(``0x100``) and supplementary (``0x800``) alignments are kept, because IGV never
+filters those.
+
 .. code-block:: text
 
    Import → select sample.bam
@@ -117,9 +122,9 @@ SAM
 ~~~
 
 ``.sam`` files (the plain-text form of BAM) are parsed the same way and appear
-with an identical coverage row plus stacked reads. All mapped alignments are
-kept, including secondary and supplementary records (flags ``0x100`` / ``0x800``)
-— IGV does not filter those either: the Java implementation never tests the
+with an identical coverage row plus stacked reads. Reads surviving the default
+filters are kept, including secondary and supplementary records (flags ``0x100``
+/ ``0x800``) — IGV does not filter those either: the Java implementation never tests the
 flags, and igv.js keeps them unless ``secondary`` / ``supplementary`` filtering
 is explicitly enabled. ``D``/``N`` and ``I`` CIGAR operations are preserved.
 Chromosome lengths come from the ``@SQ`` header when present. SAM is read into
@@ -127,9 +132,9 @@ memory at import, so use BAM for very large alignment sets.
 
 .. note::
 
-   One deliberate difference from IGV remains: IGV hides duplicate-flagged
-   reads (``0x400``) and vendor-QC failures (``0x200``) by default, whereas
-   Orbit currently draws every mapped read.
+   The same flag defaults apply to SAM: unflagged primary, secondary and
+   supplementary records are drawn, while unmapped, QC-failed and duplicate
+   records are skipped.
 
 .. figure:: examples/import-bam.png
    :align: center

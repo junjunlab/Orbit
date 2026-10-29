@@ -386,6 +386,15 @@ class WigSignal(BedGraphSignal):
 # CIGAR op codes that consume the reference
 _CIGAR_REF = {0, 2, 3, 7, 8}
 _CIGAR_OPS = "MIDNSHP=X"
+# 与 IGV 默认一致：不画未比对(0x4)、厂商质控失败(0x200)、重复(0x400)的 read。
+# 注意 secondary(0x100)/supplementary(0x800) 不在其中 —— IGV 从不检查这两个
+# flag（Java 版全仓无 isSecondaryAlignment 调用，igv.js 的 BamFilter 默认也
+# 不过滤），所以这里同样保留。
+_FLAG_IGV_HIDDEN = 0x4 | 0x200 | 0x400
+
+
+def _passes_igv_defaults(flag: int) -> bool:
+    return not (flag & _FLAG_IGV_HIDDEN)
 # 预编译 struct：BAM 记录头固定 32 字节，前 16 字节含 refID/pos/name_len/mapq/bin/n_cigar/flag
 _REC_HDR = struct.Struct("<iiBBHHH")
 _I32 = struct.Struct("<i")
@@ -640,6 +649,8 @@ class BamSignal(BaseTrack):
                 if len(blk) < 32:
                     break
                 refID, pos, lrn, _mapq, _bin, ncig, flag = hdr_un(blk)
+                if not _passes_igv_defaults(flag):
+                    continue
                 lseq = _I32.unpack_from(blk, 16)[0]
                 if lseq > 0:
                     self.has_seq = True
@@ -804,10 +815,9 @@ class SamSignal(BaseTrack):
                     mapq = int(p[4])
                 except ValueError:
                     continue
-                # IGV 不检查 secondary(0x100)/supplementary(0x800)：Java 版全仓没有
-                # isSecondaryAlignment 调用，igv.js 的 BamFilter 也默认不过滤，
-                # 所以这里同样保留，只跳过未比对的记录。
-                if flag & 0x4:
+                # IGV 默认口径：跳过未比对 / 厂商质控失败 / 重复，
+                # 但 secondary(0x100) 与 supplementary(0x800) 照常显示。
+                if not _passes_igv_defaults(flag):
                     continue
                 start = int(pos_s) - 1
                 ops = []
