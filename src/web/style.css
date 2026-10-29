@@ -248,6 +248,13 @@ button { font-family: inherit; color: inherit; }
 .nbtn.sq { width: 32px; padding: 0; font-size: 16px; line-height: 1; }
 .nbtn.ghost { margin-left: auto; }
 
+/* 语言切换：中 / EN 两个字符宽度差很多，固定 36px 免得切换时工具栏抖动 */
+.nbtn.lang-btn {
+  width: 36px; padding: 0;
+  font-size: 12px; font-weight: 600; letter-spacing: .02em;
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+
 /* -------------------------------------------------------------------- main */
 main {
   display: grid;

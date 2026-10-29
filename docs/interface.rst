@@ -12,6 +12,9 @@ Toolbar
 * **Zoom controls** — plus, minus, and a fit-to-window button
 * **Export** — PNG, SVG or PDF for the current view
 * **Split view** — show two, three or four independent loci side by side
+* **Language** — the ``中`` / ``EN`` button at the far right switches the whole
+  interface between Chinese and English. The choice is remembered across
+  launches, and the view you are looking at is restored.
 
 Track labels
 ------------

@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Orbit 1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-29 14:43+0800\n"
-"PO-Revision-Date: 2026-10-29 18:00+0800\n"
+"POT-Creation-Date: 2026-10-29 15:18+0800\n"
+"PO-Revision-Date: 2026-10-29 19:00+0800\n"
 "Last-Translator: junjunlab\n"
 "Language-Team: zh_CN <LL@li.org>\n"
 "Language: zh_CN\n"
@@ -54,188 +54,197 @@ msgstr "**导出** — 把当前视图存成 PNG、SVG 或 PDF"
 msgid "**Split view** — show two, three or four independent loci side by side"
 msgstr "**分屏视图** — 并排显示两、三或四个相互独立的位点"
 
-#: ../../interface.rst:17
+#: ../../interface.rst:15
+msgid ""
+"**Language** — the ``中`` / ``EN`` button at the far right switches the whole"
+" interface between Chinese and English. The choice is remembered across "
+"launches, and the view you are looking at is restored."
+msgstr ""
+"**界面语言** — 最右侧的 ``中`` / ``EN`` "
+"按钮可在中英文之间整体切换界面。选择会被记住，下次启动依然生效，当前浏览的视野也会一并恢复。"
+
+#: ../../interface.rst:20
 msgid "Track labels"
 msgstr "轨道标签"
 
-#: ../../interface.rst:19
+#: ../../interface.rst:22
 msgid "Every track has a label cell on the left. The label carries:"
 msgstr "每条轨道左侧都有一个标签格。标签中包含："
 
-#: ../../interface.rst:21
+#: ../../interface.rst:24
 msgid "a checkbox to show or hide the track,"
 msgstr "显示或隐藏该轨道的复选框，"
 
-#: ../../interface.rst:22
+#: ../../interface.rst:25
 msgid "the track name (click to open settings),"
 msgstr "轨道名称（点击可打开设置），"
 
-#: ../../interface.rst:23
+#: ../../interface.rst:26
 msgid "a one-line summary — gene count, signal range, or data source,"
 msgstr "一行摘要 — 基因数量、信号范围或数据来源，"
 
-#: ../../interface.rst:24
+#: ../../interface.rst:27
 msgid "for imported tracks, a menu with *remove*, *rename* and *reload*."
 msgstr "对于导入的轨道，还有一个菜单，包含 *移除*、*重命名* 和 *重新加载*。"
 
-#: ../../interface.rst:27
+#: ../../interface.rst:30
 msgid "Track types"
 msgstr "轨道类型"
 
-#: ../../interface.rst:33
+#: ../../interface.rst:36
 msgid "Track"
 msgstr "轨道"
 
-#: ../../interface.rst:34
+#: ../../interface.rst:37
 msgid "What it draws"
 msgstr "绘制内容"
 
-#: ../../interface.rst:35
+#: ../../interface.rst:38
 msgid "Ideogram"
 msgstr "染色体示意图"
 
-#: ../../interface.rst:36
+#: ../../interface.rst:39
 msgid ""
 "Cytobands for the whole chromosome, with a marker for the visible window"
 msgstr "整条染色体的细胞遗传带，并用标记框出当前可见范围"
 
-#: ../../interface.rst:37
+#: ../../interface.rst:40
 msgid "Ruler"
 msgstr "标尺"
 
-#: ../../interface.rst:38
+#: ../../interface.rst:41
 msgid "Tick marks and coordinates; the scale switches units as you zoom"
 msgstr "刻度线与坐标；缩放时刻度会自动切换单位"
 
-#: ../../interface.rst:39
+#: ../../interface.rst:42
 msgid "RefSeq genes"
 msgstr "RefSeq 基因"
 
-#: ../../interface.rst:40
+#: ../../interface.rst:43
 msgid "Gene models; click a gene to expand its transcripts"
 msgstr "基因模型；点击某个基因可展开其转录本"
 
-#: ../../interface.rst:41
+#: ../../interface.rst:44
 msgid "Signal"
 msgstr "信号"
 
-#: ../../interface.rst:42
+#: ../../interface.rst:45
 msgid "bigWig or bedGraph values as a filled area, autoscaled or fixed"
 msgstr "以填充面积形式绘制 bigWig 或 bedGraph 数值，可自动缩放或固定范围"
 
-#: ../../interface.rst:43
+#: ../../interface.rst:46
 msgid "GC content"
 msgstr "GC 含量"
 
-#: ../../interface.rst:44
+#: ../../interface.rst:47
 msgid "GC percentage in windows across the visible range"
 msgstr "按窗口统计可见范围内的 GC 百分比"
 
-#: ../../interface.rst:45
+#: ../../interface.rst:48
 msgid "Sequence"
 msgstr "序列"
 
-#: ../../interface.rst:46
+#: ../../interface.rst:49
 msgid "Coloured bases, shown once each base has enough pixels"
 msgstr "彩色碱基；只有当每个碱基分到足够像素时才会显示"
 
-#: ../../interface.rst:49
+#: ../../interface.rst:52
 msgid "Gene track settings"
 msgstr "基因轨道设置"
 
-#: ../../interface.rst:51
+#: ../../interface.rst:54
 msgid "Click the gene track label to open its panel."
 msgstr "点击基因轨道标签即可打开其设置面板。"
 
-#: ../../interface.rst:57 ../../interface.rst:75
+#: ../../interface.rst:60 ../../interface.rst:78
 msgid "Setting"
 msgstr "设置项"
 
-#: ../../interface.rst:58 ../../interface.rst:76
+#: ../../interface.rst:61 ../../interface.rst:79
 msgid "Effect"
 msgstr "作用"
 
-#: ../../interface.rst:59
+#: ../../interface.rst:62
 msgid "Display mode"
 msgstr "显示模式"
 
-#: ../../interface.rst:60
+#: ../../interface.rst:63
 msgid "*Expanded* draws every transcript; *Collapsed* draws one row per gene"
 msgstr "*展开* 绘制每个转录本；*折叠* 每个基因只占一行"
 
-#: ../../interface.rst:61
+#: ../../interface.rst:64
 msgid "Colour by"
 msgstr "着色依据"
 
-#: ../../interface.rst:62
+#: ../../interface.rst:65
 msgid "Strand, or a single colour"
 msgstr "按链着色，或统一使用单一颜色"
 
-#: ../../interface.rst:63
+#: ../../interface.rst:66
 msgid "Labels"
 msgstr "标签"
 
-#: ../../interface.rst:64
+#: ../../interface.rst:67
 msgid "Show gene symbols, transcript accessions, or nothing"
 msgstr "显示基因符号、转录本编号，或什么都不显示"
 
-#: ../../interface.rst:65
+#: ../../interface.rst:68
 msgid "Height"
 msgstr "高度"
 
-#: ../../interface.rst:66
+#: ../../interface.rst:69
 msgid "Row height in pixels, which also controls how many genes fit"
 msgstr "行高（像素），同时也决定了能容纳多少基因"
 
-#: ../../interface.rst:69
+#: ../../interface.rst:72
 msgid "Signal track settings"
 msgstr "信号轨道设置"
 
-#: ../../interface.rst:77
+#: ../../interface.rst:80
 msgid "Scale"
 msgstr "刻度"
 
-#: ../../interface.rst:78
+#: ../../interface.rst:81
 msgid "*Autoscale* fits the visible window; *Fixed* pins the range"
 msgstr "*自动* 随可见窗口调整；*固定* 则锁定范围"
 
-#: ../../interface.rst:79
+#: ../../interface.rst:82
 msgid "Range"
 msgstr "范围"
 
-#: ../../interface.rst:80
+#: ../../interface.rst:83
 msgid "Min and max when the scale is fixed"
 msgstr "刻度固定时的最小值与最大值"
 
-#: ../../interface.rst:81
+#: ../../interface.rst:84
 msgid "Colour"
 msgstr "颜色"
 
-#: ../../interface.rst:82
+#: ../../interface.rst:85
 msgid "Per-track colour; groups can share one tint"
 msgstr "按轨道单独设色；同一分组可共用一种色调"
 
-#: ../../interface.rst:83
+#: ../../interface.rst:86
 msgid "Draw mode"
 msgstr "绘制方式"
 
-#: ../../interface.rst:84
+#: ../../interface.rst:87
 msgid "Filled area, bar, or line"
 msgstr "填充面积、柱状或折线"
 
-#: ../../interface.rst:85
+#: ../../interface.rst:88
 msgid "Overlay"
 msgstr "叠加"
 
-#: ../../interface.rst:86
+#: ../../interface.rst:89
 msgid "Stack tracks, or overlay several samples in one row"
 msgstr "轨道上下堆叠，或把多个样本叠加在同一行"
 
-#: ../../interface.rst:89
+#: ../../interface.rst:92
 msgid "Display options"
 msgstr "显示选项"
 
-#: ../../interface.rst:91
+#: ../../interface.rst:94
 msgid ""
 "The appearance menu toggles the dark theme, the label density, and whether "
 "the whole-genome overview starts expanded. Preferences are stored per user "

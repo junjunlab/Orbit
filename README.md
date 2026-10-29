@@ -41,6 +41,7 @@ Download the package for your platform from [Releases](https://github.com/junjun
 - Split view for comparing several loci side by side
 - Deep links (`?db=hg38&locus=chr17:7,658,827-7,697,125`) for sharing a view
 - Export the current view to PNG, SVG, or PDF
+- Chinese and English interface, switched from the toolbar and remembered across launches
 - Dark mode, session persistence, keyboard navigation
 
 ## Built-in assemblies

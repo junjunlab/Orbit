@@ -5,6 +5,9 @@
   const $ = (sel) => document.querySelector(sel);
   const $$ = (sel) => Array.from(document.querySelectorAll(sel));
 
+  // 界面文案：中文原文 → 当前语言（见 i18n.js）
+  const T = (s) => window.I18N.t(s);
+
   const api = async (path, params) => {
     const qs = new URLSearchParams(params || {}).toString();
     const res = await fetch(`api/${path}${qs ? '?' + qs : ''}`);
@@ -164,11 +167,11 @@
       const cat = await api('catalog');
       S.assemblies = cat.assemblies || [];
     } catch (err) {
-      toast('无法连接本地服务：' + err.message);
+      toast(T('无法连接本地服务：') + err.message);
       return;
     }
     if (!S.assemblies.length) {
-      toast('data/catalog.json 为空，请先运行构建脚本');
+      toast(T('data/catalog.json 为空，请先运行构建脚本'));
       return;
     }
     renderAsmMenu();
@@ -224,13 +227,13 @@
       const el = document.createElement('div');
       el.className = 'asm-item' + (S.asm && a.id === S.asm.id ? ' active' : '');
       el.dataset.id = a.id;
-      el.innerHTML = `
+      el.innerHTML = T(`
         <div class="t">${a.organism}<small>${a.id}</small></div>
         <div class="d">${a.scientificName || ''} · ${a.description || ''}</div>
         <div class="tags">
-          <span class="tag ${a.hasSeq ? 'ok' : 'no'}">${a.hasSeq ? (a.seqRemote ? '序列·联网' : '序列已内置') : '仅注释'}</span>
-          <span class="tag ${a.hasGenes ? 'ok' : 'no'}">${a.geneCount ? fmt(a.geneCount) + ' 基因' : '无注释'}</span>
-        </div>`;
+          <span class="tag ${a.hasSeq ? 'ok' : 'no'}">${a.hasSeq ? (a.seqRemote ? T('序列·联网') : T('序列已内置')) : T('仅注释')}</span>
+          <span class="tag ${a.hasGenes ? 'ok' : 'no'}">${a.geneCount ? fmt(a.geneCount) + T(' 基因') : T('无注释')}</span>
+        </div>`);
       el.onclick = () => { menu.classList.remove('open'); selectAssembly(a.id); };
       menu.appendChild(el);
     }
@@ -251,7 +254,7 @@
       const lab = cb.closest('label');
       if (lab) {
         lab.classList.toggle('na', !has);
-        lab.title = has ? '' : '此装配未内置序列（data/genomes 里没有对应 .2bit）';
+        lab.title = has ? '' : T('此装配未内置序列（data/genomes 里没有对应 .2bit）');
       }
       if (!has) { S.tracks[name] = false; cb.checked = false; }
     }
@@ -306,7 +309,7 @@
       syncPaneHeads();
     }
     // P2-2：placeholder 只留最短提示，完整用法放 title（见 index.html）
-    if (first) $('#locus').placeholder = '搜索基因 / 位置';
+    if (first) $('#locus').placeholder = T('搜索基因 / 位置');
   }
 
   function primaryChroms() {
@@ -467,7 +470,7 @@
         })
         .catch((err) => {
           P.bwData[t.id] = { chrom: view.chrom, start: need.start, end: need.end,
-            values: null, reason: '读取失败：' + err.message };
+            values: null, reason: T('读取失败：') + err.message };
         }));
     }
     // BAM 比对视图：一次最多取 1500 条 read，超出就等距抽样（等价 IGV 的 downsampling）
@@ -485,16 +488,16 @@
         })
         .catch((err) => {
           P.alignData[t.id] = { chrom: view.chrom, start: need.start, end: need.end,
-            reads: null, reason: '读取失败：' + err.message };
+            reads: null, reason: T('读取失败：') + err.message };
         }));
     }
     try {
       await Promise.all(jobs);
     } catch (err) {
-      toast('数据加载失败：' + err.message);
+      toast(T('数据加载失败：') + err.message);
     } finally {      S.pending--;
       if (S.pending <= 0) setLoading(false);
-      $('#stPerf').textContent = `载入 ${(performance.now() - t0).toFixed(0)} ms`;
+      $('#stPerf').textContent = T(`载入 ${(performance.now() - t0).toFixed(0)} ms`);
       scheduleRender();
     }
   }
@@ -675,11 +678,11 @@
         const inp = document.createElement('input');
         inp.className = 'ph-in';
         inp.spellcheck = false;
-        inp.title = '输入基因名或位置后回车：TP53 / chr17:7,660,000-7,690,000';
+        inp.title = T('输入基因名或位置后回车：TP53 / chr17:7,660,000-7,690,000');
         const x = document.createElement('button');
         x.className = 'ph-x';
         x.textContent = '×';
-        x.title = '关闭这一屏';
+        x.title = T('关闭这一屏');
         x.onclick = (ev) => { ev.stopPropagation(); closePanel(i); };
         inp.addEventListener('focus', () => setActivePanel(i));
         inp.addEventListener('click', (ev) => ev.stopPropagation());
@@ -713,14 +716,14 @@
         const r = await api('search', { db: S.asm.id, q: raw });
         const hits = r.hits || [];
         const hit = hits.find((h) => h.type === 'gene') || hits[0];
-        if (!hit) { toast(`没找到：${raw}`); return; }
+        if (!hit) { toast(T(`没找到：${raw}`)); return; }
         if (hit.type === 'locus') {
           v = { chrom: hit.chrom, start: hit.start, end: hit.end };
         } else {
           const pad = Math.max(3000, Math.round((hit.end - hit.start) * 0.35));
           v = { chrom: hit.chrom, start: hit.start - pad, end: hit.end + pad };
         }
-      } catch (err) { toast('搜索失败：' + err.message); return; }
+      } catch (err) { toast(T('搜索失败：') + err.message); return; }
     }
     setActivePanel(idx);
     await navigatePanel(idx, v.chrom, v.start, v.end, { force: true });
@@ -792,21 +795,21 @@
     const btn = $('#btnSplit');
     if (btn) {
       btn.classList.toggle('on', n > 1);
-      btn.title = n > 1 ? `当前 ${n} 屏 · 每屏可独立导航` : '多位置分屏：同时看多个基因';
+      btn.title = n > 1 ? T(`当前 ${n} 屏 · 每屏可独立导航`) : T('多位置分屏：同时看多个基因');
     }
     box.innerHTML = '';
     for (let i = 1; i <= 5; i++) {
       const b = document.createElement('button');
       b.className = 'sm-item' + (i === n ? ' on' : '');
-      b.innerHTML = `<span>${i} 屏</span><span class="muted">${i === 1 ? '单视图' : '并排'}</span>`;
+      b.innerHTML = T(`<span>${i} 屏</span><span class="muted">${i === 1 ? T('单视图') : T('并排')}</span>`);
       b.onclick = () => { setPanelCount(i); box.hidden = true; };
       box.appendChild(b);
     }
     const hint = document.createElement('div');
     hint.className = 'sm-hint';
     hint.textContent = n > 1
-      ? '点某一屏成为活动面板后，搜索框/键盘只作用于该屏；也可在「位置」行直接输入基因名。'
-      : '分屏后每屏独立导航，可同时看多个基因。';
+      ? T('点某一屏成为活动面板后，搜索框/键盘只作用于该屏；也可在「位置」行直接输入基因名。')
+      : T('分屏后每屏独立导航，可同时看多个基因。');
     box.appendChild(hint);
   }
 
@@ -1020,7 +1023,7 @@
     render();
     try {
       const rows = plotRows();
-      if (!rows.length) throw new Error('没有可导出的轨道');
+      if (!rows.length) throw new Error(T('没有可导出的轨道'));
       const withLabels = S.expLabels;
       const leftOf = (r) => (withLabels && r.label ? r.label.rect.left : r.br.left);
       const x0 = Math.min(...rows.map(leftOf));
@@ -1045,7 +1048,7 @@
         if (sepX) {
           ctx.fillStyle = C.panel;
           ctx.fillRect(0, 0, sepX, headH);
-          drawExportLabelText(ctx, '位置', 0, 0, headH);
+          drawExportLabelText(ctx, T('位置'), 0, 0, headH);
         }
         drawExportHead(ctx, x0, cssW, headH, sepX);
         ctx.restore();
@@ -1080,7 +1083,7 @@
      线段/矩形/文字，而不是像素。PNG 仍走 composePlot（位图）。            */
   async function composeVector() {
     const rows = plotRows();
-    if (!rows.length) throw new Error('没有可导出的轨道');
+    if (!rows.length) throw new Error(T('没有可导出的轨道'));
     const withLabels = S.expLabels;
     const leftOf = (r) => (withLabels && r.label ? r.label.rect.left : r.br.left);
     const x0 = Math.min(...rows.map(leftOf));
@@ -1108,7 +1111,7 @@
       if (sepX) {
         rec.fillStyle = C.panel;
         rec.fillRect(0, 0, sepX, headH);
-        drawExportLabelText(rec, '位置', 0, 0, headH);
+        drawExportLabelText(rec, T('位置'), 0, 0, headH);
       }
       drawExportHead(rec, x0, w, headH, sepX);
       rec.restore();
@@ -1153,7 +1156,7 @@
         return CJK_FONT;
       } catch { /* 换下一个来源 */ }
     }
-    throw new Error('没有可用的中文字体：可在 web/font/cjk.ttf 放一份，或用环境变量 IGV_FONT 指定');
+    throw new Error(T('没有可用的中文字体：可在 web/font/cjk.ttf 放一份，或用环境变量 IGV_FONT 指定'));
   }
 
   function exportName(ext) {
@@ -1236,14 +1239,14 @@
   }
 
   async function doExport(kind) {
-    if (!S.asm || !S.view.chrom) { toast('先选择一个位置'); return; }
-    toast(`正在导出 ${kind.toUpperCase()}…`);
+    if (!S.asm || !S.view.chrom) { toast(T('先选择一个位置')); return; }
+    toast(T(`正在导出 ${kind.toUpperCase()}…`));
     try {
       if (kind === 'png') {
         const cv = composePlot(EXPORT_SCALE);
         const blob = await new Promise((res) => cv.toBlob(res, 'image/png'));
         downloadBlob(blob, exportName('png'));
-        toast(`已导出 PNG（${cv.width}×${cv.height}）`);
+        toast(T(`已导出 PNG（${cv.width}×${cv.height}）`));
         return;
       }
       const vec = await composeVector();
@@ -1251,7 +1254,7 @@
       if (kind === 'svg') {
         const txt = VEX.toSVG(vec.ops, vec.w, vec.h, { title });
         downloadBlob(new Blob([txt], { type: 'image/svg+xml' }), title);
-        toast(`已导出矢量 SVG（${Math.round(vec.w)}×${Math.round(vec.h)}，${vec.ops.length} 个图元）`);
+        toast(T(`已导出矢量 SVG（${Math.round(vec.w)}×${Math.round(vec.h)}，${vec.ops.length} 个图元）`));
         return;
       }
       // PDF：矢量 + 嵌入中文字体；拿不到系统字体时退回位图 PDF，保证还能出图
@@ -1260,15 +1263,15 @@
       if (font) {
         const blob = await VEX.toPDF(vec.ops, vec.w, vec.h, font, { title });
         downloadBlob(blob, title);
-        toast(`已导出矢量 PDF（${Math.round(vec.w)}×${Math.round(vec.h)}，${Math.round(blob.size / 1024)} KB）`);
+        toast(T(`已导出矢量 PDF（${Math.round(vec.w)}×${Math.round(vec.h)}，${Math.round(blob.size / 1024)} KB）`));
       } else {
         const cv = composePlot(EXPORT_SCALE);
         const blob = await pdfFromCanvas(cv, EXPORT_SCALE);
         downloadBlob(blob, title);
-        toast('未找到系统中文字体，已导出位图 PDF（IGV_FONT 可指定字体）');
+        toast(T('未找到系统中文字体，已导出位图 PDF（IGV_FONT 可指定字体）'));
       }
     } catch (err) {
-      toast('导出失败：' + err.message);
+      toast(T('导出失败：') + err.message);
     }
   }
 
@@ -1285,12 +1288,12 @@
       S.expLabels = cb.checked;
       try { localStorage.setItem('orbit.expLabels', cb.checked ? '1' : '0'); } catch { /* ignore */ }
     };
-    chk.append(cb, Object.assign(document.createElement('span'), { textContent: '包含左侧轨道名' }));
+    chk.append(cb, Object.assign(document.createElement('span'), { textContent: T('包含左侧轨道名') }));
     box.appendChild(chk);
     const items = [
-      ['png', 'PNG', `位图 ${EXPORT_SCALE}×`],
-      ['svg', 'SVG', '矢量（可编辑）'],
-      ['pdf', 'PDF', '矢量 · 内嵌字体'],
+      ['png', 'PNG', T(`位图 ${EXPORT_SCALE}×`)],
+      ['svg', 'SVG', T('矢量（可编辑）')],
+      ['pdf', 'PDF', T('矢量 · 内嵌字体')],
     ];
     for (const [kind, label, note] of items) {
       const b = document.createElement('button');
@@ -1301,7 +1304,7 @@
     }
     const hint = document.createElement('div');
     hint.className = 'sm-hint';
-    hint.textContent = 'SVG / PDF 为矢量：线条与文字都能在 Illustrator 里逐个选中删除（PDF 已内嵌中文字体）。PNG 为 ' + EXPORT_SCALE + '× 位图。';
+    hint.textContent = T('SVG / PDF 为矢量：线条与文字都能在 Illustrator 里逐个选中删除（PDF 已内嵌中文字体）。PNG 为 ') + EXPORT_SCALE + T('× 位图。');
     box.appendChild(hint);
   }
 
@@ -1392,7 +1395,7 @@
     const gc = $('#geneCount');
     if (gc && S.tracks.genes) {
       const cnt = (d.genes || []).length;
-      gc.textContent = cnt ? `${cnt}${d.truncated ? '+' : ''} 个` : '无';
+      gc.textContent = cnt ? T(`${cnt}${d.truncated ? '+' : ''} 个`) : T('无');
     }
   }
 
@@ -1955,13 +1958,13 @@
     const { ctx } = fitCanvas(canvas, h);
 
     $('#geneCount').textContent = count
-      ? `${count}${S.data.truncated ? '+' : ''} 个` : '无';
+      ? T(`${count}${S.data.truncated ? '+' : ''} 个`) : T('无');
 
     if (!count) {
       ctx.fillStyle = C.muted;
       ctx.font = '11.5px system-ui, sans-serif';
       ctx.textBaseline = 'middle';
-      ctx.fillText(S.asm.hasGenes ? '此区域无基因注释' : '该版本未内置基因注释', 12, h / 2);
+      ctx.fillText(S.asm.hasGenes ? T('此区域无基因注释') : T('该版本未内置基因注释'), 12, h / 2);
       return;
     }
 
@@ -2096,7 +2099,7 @@
       ctx.fillStyle = C.muted;
       ctx.font = '10.5px system-ui, sans-serif';
       ctx.textAlign = 'right';
-      ctx.fillText(`仅显示前 ${fmt(count)} 个基因，请放大查看`, w - 8, 10);
+      ctx.fillText(T(`仅显示前 ${fmt(count)} 个基因，请放大查看`), w - 8, 10);
       ctx.textAlign = 'left';
     }
   }
@@ -2110,14 +2113,14 @@
       ctx.fillStyle = C.muted;
       ctx.font = '11.5px system-ui, sans-serif';
       ctx.textBaseline = 'middle';
-      ctx.fillText('该版本未内置序列文件', 12, h / 2);
+      ctx.fillText(T('该版本未内置序列文件'), 12, h / 2);
       return;
     }
     if (!gc || !S.data.gcRange) {
       ctx.fillStyle = C.muted;
       ctx.font = '11.5px system-ui, sans-serif';
       ctx.textBaseline = 'middle';
-      ctx.fillText('计算中…', 12, h / 2);
+      ctx.fillText(T('计算中…'), 12, h / 2);
       return;
     }
     const r = S.data.gcRange;
@@ -2186,58 +2189,58 @@
   const STANDARD_AA = 'FFLLSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG';
 
   const GENETIC_TABLES = [
-    { id: 1, name: 'Standard', cn: '标准', species: '通用（默认）' },
-    { id: 2, name: 'Vertebrate Mitochondrial', cn: '脊椎动物线粒体', species: '脊椎动物',
+    { id: 1, name: 'Standard', cn: T('标准'), species: T('通用（默认）') },
+    { id: 2, name: 'Vertebrate Mitochondrial', cn: T('脊椎动物线粒体'), species: T('脊椎动物'),
       over: [['AGA', '*'], ['AGG', '*'], ['ATA', 'M'], ['TGA', 'W']] },
-    { id: 3, name: 'Yeast Mitochondrial', cn: '酵母线粒体', species: '酿酒酵母等',
+    { id: 3, name: 'Yeast Mitochondrial', cn: T('酵母线粒体'), species: T('酿酒酵母等'),
       over: [['ATA', 'M'], ['CTA', 'T'], ['CTC', 'T'], ['CTG', 'T'], ['CTT', 'T'], ['TGA', 'W']] },
     { id: 4, name: 'Mold / Protozoan / Coelenterate Mitochondrial; Mycoplasma; Spiroplasma',
-      cn: '霉菌·原生动物·腔肠动物线粒体；支原体；螺旋体', species: '多种',
+      cn: T('霉菌·原生动物·腔肠动物线粒体；支原体；螺旋体'), species: T('多种'),
       over: [['TGA', 'W']] },
-    { id: 5, name: 'Invertebrate Mitochondrial', cn: '无脊椎动物线粒体', species: '果蝇等',
+    { id: 5, name: 'Invertebrate Mitochondrial', cn: T('无脊椎动物线粒体'), species: T('果蝇等'),
       over: [['AGA', 'S'], ['AGG', 'S'], ['ATA', 'M'], ['TGA', 'W']] },
-    { id: 6, name: 'Ciliate / Dasycladacean / Hexamita Nuclear', cn: '纤毛虫·绒枝藻·六鞭毛虫核',
-      species: '四膜虫等', over: [['TAA', 'Q'], ['TAG', 'Q']] },
-    { id: 9, name: 'Echinoderm / Flatworm Mitochondrial', cn: '棘皮动物·扁形动物线粒体', species: '海胆、涡虫等',
+    { id: 6, name: 'Ciliate / Dasycladacean / Hexamita Nuclear', cn: T('纤毛虫·绒枝藻·六鞭毛虫核'),
+      species: T('四膜虫等'), over: [['TAA', 'Q'], ['TAG', 'Q']] },
+    { id: 9, name: 'Echinoderm / Flatworm Mitochondrial', cn: T('棘皮动物·扁形动物线粒体'), species: T('海胆、涡虫等'),
       over: [['AAA', 'N'], ['AGA', 'S'], ['AGG', 'S'], ['TGA', 'W']] },
-    { id: 10, name: 'Euplotid Nuclear', cn: '游仆虫核', species: 'Euplotes',
+    { id: 10, name: 'Euplotid Nuclear', cn: T('游仆虫核'), species: 'Euplotes',
       over: [['TGA', 'C']] },
-    { id: 11, name: 'Bacterial, Archaeal and Plant Plastid', cn: '细菌·古菌·植物质体', species: '大肠杆菌、叶绿体等' },
-    { id: 12, name: 'Alternative Yeast Nuclear', cn: '替代酵母核', species: '假丝酵母等',
+    { id: 11, name: 'Bacterial, Archaeal and Plant Plastid', cn: T('细菌·古菌·植物质体'), species: T('大肠杆菌、叶绿体等') },
+    { id: 12, name: 'Alternative Yeast Nuclear', cn: T('替代酵母核'), species: T('假丝酵母等'),
       over: [['CTG', 'S']] },
-    { id: 13, name: 'Ascidian Mitochondrial', cn: '海鞘线粒体', species: '海鞘',
+    { id: 13, name: 'Ascidian Mitochondrial', cn: T('海鞘线粒体'), species: T('海鞘'),
       over: [['AGA', 'G'], ['AGG', 'G'], ['ATA', 'M'], ['TGA', 'W']] },
-    { id: 14, name: 'Alternative Flatworm Mitochondrial', cn: '替代扁形动物线粒体', species: '扁形动物',
+    { id: 14, name: 'Alternative Flatworm Mitochondrial', cn: T('替代扁形动物线粒体'), species: T('扁形动物'),
       over: [['AAA', 'N'], ['AGA', 'S'], ['AGG', 'S'], ['TAA', 'Y'], ['TGA', 'W']] },
-    { id: 15, name: 'Blepharisma Macronuclear', cn: '赭纤虫大核', species: 'Blepharisma',
+    { id: 15, name: 'Blepharisma Macronuclear', cn: T('赭纤虫大核'), species: 'Blepharisma',
       over: [['TAG', 'Q']] },
-    { id: 16, name: 'Chlorophycean Mitochondrial', cn: '绿藻线粒体', species: '绿藻',
+    { id: 16, name: 'Chlorophycean Mitochondrial', cn: T('绿藻线粒体'), species: T('绿藻'),
       over: [['TAG', 'L']] },
-    { id: 21, name: 'Trematode Mitochondrial', cn: '吸虫线粒体', species: '血吸虫等',
+    { id: 21, name: 'Trematode Mitochondrial', cn: T('吸虫线粒体'), species: T('血吸虫等'),
       over: [['AAA', 'N'], ['AGA', 'S'], ['AGG', 'S'], ['ATA', 'M'], ['TGA', 'W']] },
-    { id: 22, name: 'Scenedesmus obliquus Mitochondrial', cn: '斜生栅藻线粒体', species: '斜生栅藻',
+    { id: 22, name: 'Scenedesmus obliquus Mitochondrial', cn: T('斜生栅藻线粒体'), species: T('斜生栅藻'),
       over: [['TCA', '*'], ['TAG', 'L']] },
-    { id: 23, name: 'Thraustochytrium Mitochondrial', cn: '破囊壶菌线粒体', species: 'Thraustochytrium',
+    { id: 23, name: 'Thraustochytrium Mitochondrial', cn: T('破囊壶菌线粒体'), species: 'Thraustochytrium',
       over: [['TTA', '*']] },
-    { id: 24, name: 'Pterobranchia Mitochondrial', cn: '翼鳃类线粒体', species: '翼鳃类',
+    { id: 24, name: 'Pterobranchia Mitochondrial', cn: T('翼鳃类线粒体'), species: T('翼鳃类'),
       over: [['AGA', 'S'], ['AGG', 'K'], ['TGA', 'W']] },
-    { id: 25, name: 'Candidate Division SR1 and Gracilibacteria', cn: '候选门 SR1 与 Gracilibacteria', species: '细菌',
+    { id: 25, name: 'Candidate Division SR1 and Gracilibacteria', cn: T('候选门 SR1 与 Gracilibacteria'), species: T('细菌'),
       over: [['TGA', 'G']] },
-    { id: 26, name: 'Pachysolen tannophilus Nuclear', cn: '嗜鞣管囊酵母核', species: 'Pachysolen',
+    { id: 26, name: 'Pachysolen tannophilus Nuclear', cn: T('嗜鞣管囊酵母核'), species: 'Pachysolen',
       over: [['CTG', 'A']] },
-    { id: 27, name: 'Karyorelict Nuclear', cn: '核残迹虫核', species: 'Karyorelict',
+    { id: 27, name: 'Karyorelict Nuclear', cn: T('核残迹虫核'), species: 'Karyorelict',
       over: [['TAA', 'Q'], ['TAG', 'Q'], ['TGA', 'W']] },
-    { id: 28, name: 'Condylostoma Nuclear', cn: '齿口虫核', species: 'Condylostoma',
+    { id: 28, name: 'Condylostoma Nuclear', cn: T('齿口虫核'), species: 'Condylostoma',
       over: [['TAA', 'Q'], ['TAG', 'Q'], ['TGA', 'W']] },
-    { id: 29, name: 'Mesodinium Nuclear', cn: '中缢虫核', species: 'Mesodinium',
+    { id: 29, name: 'Mesodinium Nuclear', cn: T('中缢虫核'), species: 'Mesodinium',
       over: [['TAA', 'Y'], ['TAG', 'Y']] },
-    { id: 30, name: 'Peritrich Nuclear', cn: '缘毛虫核', species: '缘毛虫',
+    { id: 30, name: 'Peritrich Nuclear', cn: T('缘毛虫核'), species: T('缘毛虫'),
       over: [['TAA', 'E'], ['TAG', 'E']] },
-    { id: 31, name: 'Blastocrithidia Nuclear', cn: '芽生短膜虫核', species: 'Blastocrithidia',
+    { id: 31, name: 'Blastocrithidia Nuclear', cn: T('芽生短膜虫核'), species: 'Blastocrithidia',
       over: [['TAA', 'E'], ['TAG', 'E']] },
-    { id: 32, name: 'Balanophoraceae Plastid', cn: '蛇菰科质体', species: '蛇菰科',
+    { id: 32, name: 'Balanophoraceae Plastid', cn: T('蛇菰科质体'), species: T('蛇菰科'),
       over: [['TAG', 'W']] },
-    { id: 33, name: 'Cephalodiscidae Mitochondrial', cn: '头盘虫科线粒体', species: '头盘虫科',
+    { id: 33, name: 'Cephalodiscidae Mitochondrial', cn: T('头盘虫科线粒体'), species: T('头盘虫科'),
       over: [['TAA', 'Y'], ['TAG', 'L'], ['AGA', 'S'], ['AGG', 'K'], ['TGA', 'W']] },
   ];
 
@@ -2305,8 +2308,8 @@
       const on = transOnFor(key);
       b.setAttribute('aria-pressed', on ? 'true' : 'false');
       b.title = on
-        ? `氨基酸翻译：开（${tableLabel(geneticCode(transTableFor(key)))}）`
-        : '显示氨基酸翻译';
+        ? T(`氨基酸翻译：开（${tableLabel(geneticCode(transTableFor(key)))}）`)
+        : T('显示氨基酸翻译');
     }
   }
 
@@ -2324,7 +2327,7 @@
     pop.innerHTML = '';
 
     const h5 = document.createElement('h5');
-    h5.textContent = '氨基酸翻译';
+    h5.textContent = T('氨基酸翻译');
     pop.appendChild(h5);
 
     const rowOn = document.createElement('div');
@@ -2341,7 +2344,7 @@
     cb.checked = transOnFor(tkey);
     cb.onchange = () => setTrans(tkey, cb.checked);
     const cbTxt = document.createElement('span');
-    cbTxt.textContent = '显示翻译';
+    cbTxt.textContent = T('显示翻译');
     lab.append(cb, cbTxt);
     rowOn.appendChild(lab);
     pop.appendChild(rowOn);
@@ -2350,7 +2353,7 @@
     rowT.className = 'row';
     const l2 = document.createElement('span');
     l2.className = 'lbl';
-    l2.textContent = '翻译表';
+    l2.textContent = T('翻译表');
     const sel = document.createElement('select');
     sel.id = 'transTable';
     for (const t of GENETIC_TABLES) {
@@ -2387,8 +2390,8 @@
 
   function codeHint(key) {
     const c = geneticCode(transTableFor(key || 'seq'));
-    return `${c.name} — ${c.species}。三行分别是 3 个读码框（密码子按基因组坐标每 3 bp 划分）；`
-      + `点轨道上的 ⇄ 翻转后按互补链翻译。需放大到约 0.33 bp/px 以上才显示。`;
+    return T(`${c.name} — ${c.species}。三行分别是 3 个读码框（密码子按基因组坐标每 3 bp 划分）；`)
+      + T(`点轨道上的 ⇄ 翻转后按互补链翻译。需放大到约 0.33 bp/px 以上才显示。`);
   }
 
   function setSeqFlip(v) {
@@ -2519,15 +2522,15 @@
       ctx.fillStyle = C.muted;
       ctx.font = '11.5px system-ui, sans-serif';
       ctx.textBaseline = 'middle';
-      ctx.fillText('该版本未内置序列文件（可从 UCSC 下载 2bit 后放入 data/genomes）', 12, h / 2);
-      $('#seqHint').textContent = '未内置';
+      ctx.fillText(T('该版本未内置序列文件（可从 UCSC 下载 2bit 后放入 data/genomes）'), 12, h / 2);
+      $('#seqHint').textContent = T('未内置');
       return;
     }
     if (bpPerPx > 1.2) {
       ctx.fillStyle = C.muted;
       ctx.font = '11.5px system-ui, sans-serif';
       ctx.textBaseline = 'middle';
-      ctx.fillText('继续放大以显示碱基序列', 12, h / 2);
+      ctx.fillText(T('继续放大以显示碱基序列'), 12, h / 2);
       $('#seqHint').textContent = `${bpPerPx.toFixed(0)} bp/px`;
       return;
     }
@@ -2537,7 +2540,7 @@
       ctx.fillStyle = C.muted;
       ctx.font = '11.5px system-ui, sans-serif';
       ctx.textBaseline = 'middle';
-      ctx.fillText('读取序列…', 12, h / 2);
+      ctx.fillText(T('读取序列…'), 12, h / 2);
       return;
     }
     const seqStart = S.data.seqStart ?? S.data.range.start;
@@ -2586,7 +2589,7 @@
       // amino-acid style ticks every 3 bases are skipped for clarity
       ctx.fillStyle = C.muted;
       ctx.font = '10.5px ui-monospace, Menlo, Consolas, monospace';
-      ctx.fillText(flip ? '5′←3′ (−) 链' : '5′→3′ (+) 链', 4, h - 6);
+      ctx.fillText(flip ? T('5′←3′ (−) 链') : T('5′→3′ (+) 链'), 4, h - 6);
     }
   }
 
@@ -2618,7 +2621,7 @@
       const aMb = (S.view.start / 1e6).toFixed(2);
       const bMb = (S.view.end / 1e6).toFixed(2);
       const totMb = (len / 1e6).toFixed(1);
-      const txt = `${aMb}–${bMb} Mb · 共 ${totMb} Mb`;
+      const txt = T(`${aMb}–${bMb} Mb · 共 ${totMb} Mb`);
       const tw = ctx.measureText(txt).width;
       const bw = Math.max(14, w - OV.left - tw - 20);
       // 条带
@@ -2670,7 +2673,7 @@
       btn.textContent = S.overviewExpanded ? '▴' : '▾';
     }
     const sub = $('#ovSub');
-    if (sub) sub.textContent = S.overviewExpanded ? overviewChroms().length + ' 条染色体' : '点击展开全部';
+    if (sub) sub.textContent = S.overviewExpanded ? overviewChroms().length + T(' 条染色体') : T('点击展开全部');
   }
 
   function overviewHit(y) {
@@ -2769,11 +2772,11 @@
       ctx.beginPath(); ctx.moveTo(0, mid); ctx.lineTo(w, mid); ctx.stroke();
       ctx.restore();
       if (!v.chrom) continue;
-      if (span > MOTIF_VIS) { hint(ctx, '视野超过 1 Mb，motif 轨道已隐藏（放大后自动出现）'); continue; }
+      if (span > MOTIF_VIS) { hint(ctx, T('视野超过 1 Mb，motif 轨道已隐藏（放大后自动出现）')); continue; }
       const rec = motifData(t);
-      if (!rec) { hint(ctx, '查找中…'); continue; }
+      if (!rec) { hint(ctx, T('查找中…')); continue; }
       if (rec.error) { hint(ctx, rec.error); continue; }
-      if (rec.reason) { hint(ctx, rec.reason); continue; }
+      if (rec.reason) { hint(ctx, T(rec.reason)); continue; }
       const bp = span / w;
       let n = 0;
       ctx.save();
@@ -2787,7 +2790,7 @@
         n++;
       }
       ctx.restore();
-      if (!n) hint(ctx, '该视野内没有位点');
+      if (!n) hint(ctx, T('该视野内没有位点'));
     }
   }
 
@@ -2800,13 +2803,13 @@
       if (!row) continue;
       const sub = row.querySelector('.track-label .sub');
       if (!sub) continue;
-      if (wide) { sub.textContent = '视野过大，已隐藏'; continue; }
+      if (wide) { sub.textContent = T('视野过大，已隐藏'); continue; }
       const rec = S.motif.cache[motifKey(t, v)];
-      if (!rec) { sub.textContent = '查找中…'; continue; }
-      if (rec.error) { sub.textContent = '出错'; continue; }
-      if (rec.reason) { sub.textContent = '无序列'; continue; }
+      if (!rec) { sub.textContent = T('查找中…'); continue; }
+      if (rec.error) { sub.textContent = T('出错'); continue; }
+      if (rec.reason) { sub.textContent = T('无序列'); continue; }
       const n = motifCount(t, rec);
-      sub.textContent = (rec.truncated ? '≥ ' : '') + n + ' 个位点';
+      sub.textContent = (rec.truncated ? '≥ ' : '') + n + T(' 个位点');
     }
   }
 
@@ -2822,7 +2825,7 @@
         el.dataset.motif = t.id;
         el.dataset.tkey = 'motif:' + t.id;
         el.innerHTML = '<div class="track-label"><span class="nm"></span><div class="sub"></div>'
-          + '<button class="mx" title="移除这条 motif 轨道">×</button></div>'
+          + T('<button class="mx" title="移除这条 motif 轨道">×</button></div>')
           + '<div class="track-body" data-split><canvas></canvas></div>';
         const nm = el.querySelector('.nm');
         nm.textContent = t.name;
@@ -2881,8 +2884,8 @@
     if (!pat || !pos || !neg) return;
     const lines = motifLines(pat.value);
     if (lines.length > 1) {
-      pos.value = '自动命名';
-      neg.value = '自动命名';
+      pos.value = T('自动命名');
+      neg.value = T('自动命名');
       pos.disabled = true;
       neg.disabled = true;
       return;
@@ -2917,12 +2920,12 @@
   function submitMotif() {
     const raw = ($('#motifPattern') || {}).value || '';
     const lines = motifLines(raw);
-    if (!lines.length) { setMotifErr('请填写要查找的序列或正则'); return; }
+    if (!lines.length) { setMotifErr(T('请填写要查找的序列或正则')); return; }
     for (const line of lines) {
       if (!motifMode(line)) {
-        setMotifErr(`「${line}」不是合法的查找模式：\n`
-          + '· IUPAC 简并碱基写法不能含特殊字符（例如 AARNNR）\n'
-          + '· 正则写法除特殊字符外只能是 ACGTN（例如 TATAAA(A){3,}）');
+        setMotifErr(T(`「${line}」不是合法的查找模式：\n`)
+          + T('· IUPAC 简并碱基写法不能含特殊字符（例如 AARNNR）\n')
+          + T('· 正则写法除特殊字符外只能是 ACGTN（例如 TATAAA(A){3,}）'));
         return;
       }
     }
@@ -2933,7 +2936,7 @@
       if (!posName) posName = motifAutoName(lines[0]);
       if (!negName) negName = posName + ' Negative';
       if (posName.toLowerCase() === negName.toLowerCase()) {
-        setMotifErr('正链和负链的轨道名不能相同');
+        setMotifErr(T('正链和负链的轨道名不能相同'));
         return;
       }
     }
@@ -3096,7 +3099,7 @@
 
   function createGroup() {
     const n = S.bw.groups.length + 1;
-    const g = { id: 'g' + Date.now().toString(36), name: '分组 ' + n, shared: true };
+    const g = { id: 'g' + Date.now().toString(36), name: T('分组 ') + n, shared: true };
     S.bw.groups.push(g);
     savePrefs();
     return g;
@@ -3175,13 +3178,13 @@
     // native picker = 任意颜色
     const custom = document.createElement('label');
     custom.className = 'chip-custom';
-    custom.title = '自定义任意颜色';
+    custom.title = T('自定义任意颜色');
     const native = document.createElement('input');
     native.type = 'color';
     native.value = current;
     native.oninput = (e) => { markSel(null); onPick(e.target.value); };
     const txt = document.createElement('span');
-    txt.textContent = '自定义';
+    txt.textContent = T('自定义');
     custom.append(native, txt);
     wrap.appendChild(custom);
     return wrap;
@@ -3208,11 +3211,11 @@
     foot.className = 'foot';
     const reset = document.createElement('button');
     reset.className = 'btn';
-    reset.textContent = '重置';
+    reset.textContent = T('重置');
     reset.onclick = onReset;
     const done = document.createElement('button');
     done.className = 'btn pri';
-    done.textContent = '完成';
+    done.textContent = T('完成');
     done.onclick = closeTrackPop;
     foot.append(reset, done);
     pop.appendChild(foot);
@@ -3238,16 +3241,16 @@
   function renderPopBw(pop, tid) {
     const cfg = bwCfg(tid);
     const d = S.bw.data[tid];
-    popHead(pop, `信号轨道 · ${tid}`);
+    popHead(pop, T(`信号轨道 · ${tid}`));
 
     // colour
-    const cRow = popRow(pop, '颜色');
+    const cRow = popRow(pop, T('颜色'));
     cRow.appendChild(colorRow(cfg.color, (c) => setBwCfg(tid, { color: c })));
 
     popSep(pop);
 
     // range mode
-    const modeRow = popRow(pop, '数据范围');
+    const modeRow = popRow(pop, T('数据范围'));
     const mkRadio = (val, text) => {
       const l = document.createElement('label');
       l.className = 'rad';
@@ -3268,9 +3271,9 @@
       l.append(i, document.createTextNode(' ' + text));
       return l;
     };
-    modeRow.append(mkRadio('auto', '自动'), mkRadio('fixed', '固定'));
+    modeRow.append(mkRadio('auto', T('自动')), mkRadio('fixed', T('固定')));
 
-    const numRow = popRow(pop, '最小 / 最大');
+    const numRow = popRow(pop, T('最小 / 最大'));
     const mkNum = (val, key) => {
       const i = document.createElement('input');
       i.type = 'number';
@@ -3288,13 +3291,13 @@
     const hint = document.createElement('div');
     hint.className = 'hint';
     if (cfg.log) {
-      hint.textContent = '对数刻度（log10）：纵轴从窗口内最小正值起算，适合跨数量级的信号。';
+      hint.textContent = T('对数刻度（log10）：纵轴从窗口内最小正值起算，适合跨数量级的信号。');
     } else if (cfg.mode === 'fixed') {
-      hint.textContent = '固定后纵轴不再随窗口变化；最小值可设负数（如 log2 比值）。';
+      hint.textContent = T('固定后纵轴不再随窗口变化；最小值可设负数（如 log2 比值）。');
     } else if (d && d.values) {
-      hint.textContent = `当前窗口峰值 ${formatVal(d.peak || 0)}，纵轴自动取整。`;
+      hint.textContent = T(`当前窗口峰值 ${formatVal(d.peak || 0)}，纵轴自动取整。`);
     } else {
-      hint.textContent = '纵轴按当前窗口峰值自动缩放。';
+      hint.textContent = T('纵轴按当前窗口峰值自动缩放。');
     }
     pop.appendChild(hint);
 
@@ -3310,7 +3313,7 @@
     const logTxt = document.createElement('span');
     logTxt.className = 'lbl';
     logTxt.style.flex = 'none';
-    logTxt.textContent = '对数刻度（log10）';
+    logTxt.textContent = T('对数刻度（log10）');
     logRow.append(logCb, logTxt);
     pop.appendChild(logRow);
 
@@ -3329,7 +3332,7 @@
       const sTxt = document.createElement('span');
       sTxt.className = 'lbl';
       sTxt.style.flex = 'none';
-      sTxt.textContent = '比对视图按链着色';
+      sTxt.textContent = T('比对视图按链着色');
       sRow.append(sCb, sTxt);
       pop.appendChild(sRow);
     }
@@ -3337,11 +3340,11 @@
     popSep(pop);
 
     // group
-    const gRow = popRow(pop, '轨道分组');
+    const gRow = popRow(pop, T('轨道分组'));
     const sel = document.createElement('select');
     const optNone = document.createElement('option');
     optNone.value = '';
-    optNone.textContent = '（不分组）';
+    optNone.textContent = T('（不分组）');
     sel.appendChild(optNone);
     for (const g of S.bw.groups) {
       const o = document.createElement('option');
@@ -3351,7 +3354,7 @@
     }
     const optNew = document.createElement('option');
     optNew.value = '__new';
-    optNew.textContent = '+ 新建分组…';
+    optNew.textContent = T('+ 新建分组…');
     sel.appendChild(optNew);
     sel.value = cfg.group;
     sel.onchange = () => {
@@ -3382,14 +3385,14 @@
       const t = document.createElement('span');
       t.className = 'lbl';
       t.style.flex = 'none';
-      t.textContent = '组内共享纵轴（group autoscale）';
+      t.textContent = T('组内共享纵轴（group autoscale）');
       shareRow.append(cb, t);
       pop.appendChild(shareRow);
 
       const cnt = S.bw.list.filter((x) => bwCfg(x.id).group === g.id).length;
       const gh = document.createElement('div');
       gh.className = 'hint';
-      gh.textContent = `本组 ${cnt} 条轨道；开启后取组内最大范围统一缩放。`;
+      gh.textContent = T(`本组 ${cnt} 条轨道；开启后取组内最大范围统一缩放。`);
       pop.appendChild(gh);
     }
 
@@ -3397,7 +3400,7 @@
     popSep(pop);
     const delBtn = document.createElement('button');
     delBtn.className = 'btn danger';
-    delBtn.textContent = '删除该轨道';
+    delBtn.textContent = T('删除该轨道');
     delBtn.style.width = '100%';
     delBtn.onclick = () => { bwDelete([tid]); };
     pop.appendChild(delBtn);
@@ -3427,29 +3430,29 @@
 
   function renderPopGenes(pop, trackId) {
     const isLoaded = !!trackId;
-    popHead(pop, isLoaded ? `基因轨道 · ${trackId}` : '基因轨道 · RefSeq');
+    popHead(pop, isLoaded ? T(`基因轨道 · ${trackId}`) : T('基因轨道 · RefSeq'));
     const pal = geneTint(trackId || null);
 
     // 一键展开 / 收起：开了之后平移缩放新出现的基因也保持展开
     const allOn = expandAllOn(trackId || null);
-    const expRow = popRow(pop, '转录本');
+    const expRow = popRow(pop, T('转录本'));
     const bAll = document.createElement('button');
     bAll.className = 'btn' + (allOn ? ' pri' : '');
-    bAll.textContent = '全部展开';
-    bAll.title = '一次展开这条轨道上所有基因的转录本（平移/缩放后新出现的基因也保持展开）';
+    bAll.textContent = T('全部展开');
+    bAll.title = T('一次展开这条轨道上所有基因的转录本（平移/缩放后新出现的基因也保持展开）');
     bAll.onclick = () => { setExpandAll(trackId || null, true); renderPop(); };
     const bNone = document.createElement('button');
     bNone.className = 'btn' + (allOn ? '' : ' pri');
-    bNone.textContent = '全部收起';
-    bNone.title = '所有基因只画合并后的基因模型';
+    bNone.textContent = T('全部收起');
+    bNone.title = T('所有基因只画合并后的基因模型');
     bNone.onclick = () => { setExpandAll(trackId || null, false); renderPop(); };
     expRow.append(bAll, bNone);
 
     const rows = [
-      ['正链颜色', 'genesPlus', pal.plus],
-      ['负链颜色', 'genesMinus', pal.minus],
-      ['CDS 颜色', 'cds', pal.cds],
-      ['UTR 颜色', 'utr', pal.utr],
+      [T('正链颜色'), 'genesPlus', pal.plus],
+      [T('负链颜色'), 'genesMinus', pal.minus],
+      [T('CDS 颜色'), 'cds', pal.cds],
+      [T('UTR 颜色'), 'utr', pal.utr],
     ];
     for (const [label, key, cur] of rows) {
       const row = popRow(pop, label);
@@ -3458,11 +3461,11 @@
     const hint = document.createElement('div');
     hint.className = 'hint';
     hint.textContent = (isLoaded
-      ? '仅作用于这条导入轨道；未设置的颜色沿用 RefSeq 轨道的设置。'
-      : '作用于 RefSeq 轨道；导入的 GTF 轨道默认跟随这里的设置。')
+      ? T('仅作用于这条导入轨道；未设置的颜色沿用 RefSeq 轨道的设置。')
+      : T('作用于 RefSeq 轨道；导入的 GTF 轨道默认跟随这里的设置。'))
       + (allOn
-        ? ' 当前：全部展开（单独点某个基因的 − 可以只收起它）。'
-        : ' 当前：按需展开（点基因右侧的 + 展开单个基因）。');
+        ? T(' 当前：全部展开（单独点某个基因的 − 可以只收起它）。')
+        : T(' 当前：按需展开（点基因右侧的 + 展开单个基因）。'));
     pop.appendChild(hint);
     popFoot(pop, () => {
       for (const [, key] of rows) setGeneTint(trackId, key, null, true);
@@ -3474,14 +3477,14 @@
   }
 
   function renderPopGC(pop) {
-    popHead(pop, 'GC 轨道');
-    const row = popRow(pop, '曲线颜色');
+    popHead(pop, T('GC 轨道'));
+    const row = popRow(pop, T('曲线颜色'));
     row.appendChild(colorRow(S.tint.gc || '#7d8b9c', (c) => {
       S.tint.gc = c; savePrefs(); scheduleRender();
     }));
     const hint = document.createElement('div');
     hint.className = 'hint';
-    hint.textContent = '纵轴固定为 30%–70%，窗口过窄时按每格 ≥20 bp 合并。';
+    hint.textContent = T('纵轴固定为 30%–70%，窗口过窄时按每格 ≥20 bp 合并。');
     pop.appendChild(hint);
     popFoot(pop, () => {
       S.tint.gc = null; savePrefs(); scheduleRender(); renderPop();
@@ -3530,8 +3533,8 @@
         + (S.bw.sel.has(t.id) ? ' sel' : '');
       el.dataset.bwid = t.id;
       el.title = ok
-        ? `${t.id}\n点名称选择（Ctrl 多选）；右键可统一纵轴 / 批量删除`
-        : `${t.id}\n该轨道不属于当前装配（染色体长度不匹配）`;
+        ? T(`${t.id}\n点名称选择（Ctrl 多选）；右键可统一纵轴 / 批量删除`)
+        : T(`${t.id}\n该轨道不属于当前装配（染色体长度不匹配）`);
 
       const cb = document.createElement('input');
       cb.type = 'checkbox';
@@ -3569,7 +3572,7 @@
         const ar = document.createElement('div');
         ar.className = 'trk bw-trk align-trk' + (ok ? '' : ' off-asm');
         ar.dataset.bwidalign = t.id;
-        ar.title = `${t.id} 比对视图\n勾选显示 reads 堆叠（灰块）；右键该 BAM 可批量删除`;
+        ar.title = T(`${t.id} 比对视图\n勾选显示 reads 堆叠（灰块）；右键该 BAM 可批量删除`);
         const acb = document.createElement('input');
         acb.type = 'checkbox';
         acb.className = 'on';
@@ -3586,7 +3589,7 @@
         asw.style.background = 'var(--read, #c9c9c9)';
         const anm = document.createElement('span');
         anm.className = 'nm';
-        anm.textContent = '比对';
+        anm.textContent = T('比对');
         const ab = document.createElement('span');
         ab.className = 'grp';
         ab.textContent = 'BAM';
@@ -3597,8 +3600,8 @@
     if (S.bw.hidden.size) {
       const r = document.createElement('div');
       r.className = 'bw-restore';
-      r.textContent = `已隐藏 ${S.bw.hidden.size} 条 · 点此恢复`;
-      r.title = '恢复被隐藏的内置信号轨道';
+      r.textContent = T(`已隐藏 ${S.bw.hidden.size} 条 · 点此恢复`);
+      r.title = T('恢复被隐藏的内置信号轨道');
       r.onclick = () => { S.bw.hidden.clear(); savePrefs(); loadBwTracks(); };
       box.appendChild(r);
     }
@@ -3654,16 +3657,16 @@
     const ids = [...S.bw.sel];
     const head = document.createElement('div');
     head.className = 'ctx-head';
-    head.textContent = `已选 ${ids.length} 条信号轨道`;
+    head.textContent = T(`已选 ${ids.length} 条信号轨道`);
     menu.appendChild(head);
-    menu.appendChild(ctxItem('Group Autoscale · 统一纵轴', () => bwGroupAutoscale(ids)));
+    menu.appendChild(ctxItem(T('Group Autoscale · 统一纵轴'), () => bwGroupAutoscale(ids)));
     if (commonGroup(ids)) {
-      menu.appendChild(ctxItem('取消分组', () => bwUngroup(ids)));
+      menu.appendChild(ctxItem(T('取消分组'), () => bwUngroup(ids)));
     }
     const sep = document.createElement('div');
     sep.className = 'ctx-sep';
     menu.appendChild(sep);
-    menu.appendChild(ctxItem('清除选择', () => { S.bw.sel.clear(); renderBwList(); closeBwCtx(); }));
+    menu.appendChild(ctxItem(T('清除选择'), () => { S.bw.sel.clear(); renderBwList(); closeBwCtx(); }));
 
     // 统一颜色：把选中的所有轨道一起改色
     const sep2 = document.createElement('div');
@@ -3671,7 +3674,7 @@
     menu.appendChild(sep2);
     const cl = document.createElement('div');
     cl.className = 'ctx-head';
-    cl.textContent = `统一颜色 · ${ids.length} 条轨道`;
+    cl.textContent = T(`统一颜色 · ${ids.length} 条轨道`);
     menu.appendChild(cl);
     const cur = bwCfg(ids[0]).color;
     const row = colorRow(cur, (c) => bwSetColor(ids, c));
@@ -3682,7 +3685,7 @@
     const sep3 = document.createElement('div');
     sep3.className = 'ctx-sep';
     menu.appendChild(sep3);
-    menu.appendChild(ctxItem(`删除选中的 ${ids.length} 条轨道`, () => bwDelete(ids), { danger: true }));
+    menu.appendChild(ctxItem(T(`删除选中的 ${ids.length} 条轨道`), () => bwDelete(ids), { danger: true }));
 
     menu.hidden = false;
     const w = menu.offsetWidth;
@@ -3709,7 +3712,7 @@
     ensureAll(true);
     scheduleRender();
     closeBwCtx();
-    toast(`已为 ${ids.length} 条轨道启用 Group Autoscale（${groupTag(g.id)}）`);
+    toast(T(`已为 ${ids.length} 条轨道启用 Group Autoscale（${groupTag(g.id)}）`));
   }
 
   function bwUngroup(ids) {
@@ -3751,9 +3754,9 @@
     const loaded = items.filter((t) => t.loaded);
     const bundled = items.filter((t) => !t.loaded);
     const lines = [];
-    if (bundled.length) lines.push(`· ${bundled.length} 条内置轨道：仅从列表隐藏，可随时恢复`);
-    if (loaded.length) lines.push(`· ${loaded.length} 条已导入轨道：会删除 data/loaded 下的副本文件`);
-    if (!confirm(`确定删除选中的 ${items.length} 条信号轨道？\n${lines.join('\n')}`)) return;
+    if (bundled.length) lines.push(T(`· ${bundled.length} 条内置轨道：仅从列表隐藏，可随时恢复`));
+    if (loaded.length) lines.push(T(`· ${loaded.length} 条已导入轨道：会删除 data/loaded 下的副本文件`));
+    if (!confirm(T(`确定删除选中的 ${items.length} 条信号轨道？\n${lines.join('\n')}`))) return;
     closeBwCtx();
     closeTrackPop();
     // 先从界面/状态移除，避免渲染器继续为已删轨道发请求
@@ -3785,9 +3788,9 @@
     // 再并发删除服务端副本
     await Promise.all(loaded.map(async (t) => {
       try { await fetch(`api/loaded?id=${encodeURIComponent(t.id)}`, { method: 'DELETE' }); }
-      catch (err) { toast('删除失败：' + err.message); }
+      catch (err) { toast(T('删除失败：') + err.message); }
     }));
-    toast(`已删除 ${items.length} 条信号轨道`);
+    toast(T(`已删除 ${items.length} 条信号轨道`));
   }
 
   function ensureBwTrackEls() {
@@ -3799,10 +3802,10 @@
         el = document.createElement('div');
         el.className = 'track';
         el.dataset.bw = t.id;
-        el.innerHTML = `<div class="track-label bw-label"><span class="nm" title="${t.id}">${t.id}</span>
+        el.innerHTML = T(`<div class="track-label bw-label"><span class="nm" title="${t.id}">${t.id}</span>
           <div class="sub"></div>
           <button class="tgear" data-gear="bw" data-bwid="${t.id}" title="轨道设置">⚙</button></div>
-          <div class="track-body" data-split><canvas></canvas></div>`;
+          <div class="track-body" data-split><canvas></canvas></div>`);
         view.insertBefore(el, anchor);
       }
       el.hidden = !bwActive(t);
@@ -3813,9 +3816,9 @@
         ae = document.createElement('div');
         ae.className = 'track';
         ae.dataset.align = t.id;
-        ae.innerHTML = `<div class="track-label bw-label"><span class="nm" title="${t.id} 比对">${t.id}</span>
+        ae.innerHTML = T(`<div class="track-label bw-label"><span class="nm" title="${t.id} 比对">${t.id}</span>
           <div class="sub"></div></div>
-          <div class="track-body" data-split><canvas></canvas></div>`;
+          <div class="track-body" data-split><canvas></canvas></div>`);
       }
       el.after(ae);
       ae.hidden = !alignActive(t);
@@ -3876,7 +3879,7 @@
         ctx.fillStyle = C.muted;
         ctx.font = '11.5px system-ui, sans-serif';
         ctx.textBaseline = 'middle';
-        ctx.fillText(d && d.reason ? d.reason : '读取中…', 12, h / 2);
+        ctx.fillText(d && d.reason ? T(d.reason) : T('读取中…'), 12, h / 2);
         if (sub) sub.textContent = '';
         continue;
       }
@@ -3970,13 +3973,13 @@
       if (!anyVal) {
         ctx.fillStyle = C.muted;
         ctx.font = '11.5px system-ui, sans-serif';
-        ctx.fillText('该区域无信号', 44, h / 2);
+        ctx.fillText(T('该区域无信号'), 44, h / 2);
       }
       if (sub) {
         const bits = [`${formatVal(lo)}–${formatVal(hi)}`];
-        if (cfg.mode === 'fixed') bits.push('固定');
+        if (cfg.mode === 'fixed') bits.push(T('固定'));
         if (cfg.log) bits.push('log');
-        if (gr) bits.push('共享');
+        if (gr) bits.push(T('共享'));
         sub.textContent = bits.join(' · ');
         sub.style.color = cfg.mode === 'fixed' ? 'var(--accent)' : '';
       }
@@ -4041,8 +4044,8 @@
         ctx.fillText(txt, 12, h / 2);
         if (sub) sub.textContent = '';
       };
-      if (!d || !d.reads) { hint(d && d.reason ? d.reason : '读取中…'); continue; }
-      if (!d.reads.length) { hint(d.reason || '该区域没有比对记录'); continue; }
+      if (!d || !d.reads) { hint(d && d.reason ? T(d.reason) : T('读取中…')); continue; }
+      if (!d.reads.length) { hint(T(d.reason) || T('该区域没有比对记录')); continue; }
 
       // 行数多时压缩行高，而不是丢掉 read：高深度区域压成密堆积，
       // 看起来才和 IGV 一致（丢掉超出的行会让轨道顶部突然「截断」）
@@ -4136,11 +4139,11 @@
 
       if (sub) {
         const shown = reads.length;
-        const bits = [`${shown}${shown !== d.total ? ` / ${d.total}` : ''} 条 read`];
+        const bits = [T(`${shown}${shown !== d.total ? ` / ${d.total}` : ''} 条 read`)];
         if (d.sampled) {
-          bits.push(`已抽样 ${Math.max(1, Math.round((shown / d.total) * 100))}%`);
+          bits.push(T(`已抽样 ${Math.max(1, Math.round((shown / d.total) * 100))}%`));
         }
-        if (d.hasSeq === false) bits.push('无碱基序列');
+        if (d.hasSeq === false) bits.push(T('无碱基序列'));
         sub.textContent = bits.join(' · ');
       }
     }
@@ -4176,7 +4179,7 @@
     const w = trackWidth();
     const bpPerPx = (end - start) / w;
     const tag = S.panels.length > 1 && S.selPane >= 0
-      ? `  [屏 ${S.selPane + 1}/${S.panels.length}]` : '';
+      ? T(`  [屏 ${S.selPane + 1}/${S.panels.length}]`) : '';
     $('#stLocus').textContent = `${S.asm.id}  ${chrom}:${fmt(start + 1)}-${fmt(end)}${tag}`;
     const size = end - start;
     $('#stWindow').textContent = size >= 1e6 ? `${(size / 1e6).toFixed(2)} Mb` : `${fmt(size)} bp`;
@@ -4188,7 +4191,7 @@
     const box = $('#info');
     const g = S.sel;
     if (!g) {
-      box.innerHTML = '<p class="muted">点击基因查看转录本详情</p>';
+      box.innerHTML = T('<p class="muted">点击基因查看转录本详情</p>');
       return;
     }
     const rows = g.tx.slice().sort((a, b) => (b.end - b.start) - (a.end - a.start));
@@ -4198,20 +4201,20 @@
     // expand state (keyed by track id + gene)
     const ltrack = S.selTrack ? S.loaded.list.find((x) => x.id === S.selTrack) : null;
     const expandedNow = ltrack ? isLoadedExpanded(ltrack, g) : isExpanded(g);
-    box.innerHTML = `
+    box.innerHTML = T(`
       <h4>${g.name}</h4>
       <div class="kv"><b>位置</b><span>${g.chrom}:${fmt(g.start + 1)}-${fmt(g.end)}</span></div>
       <div class="kv"><b>链</b><span class="${g.strand === '-' ? 'strand-m' : 'strand-p'}">${g.strand}</span></div>
       <div class="kv"><b>长度</b><span>${fmt(g.end - g.start)} bp</span></div>
       <div class="kv"><b>转录本</b><span>${g.tx.length} 个</span></div>
-      ${multi ? `<div class="kv expand-row"><span class="link" id="expandToggle">${expandedNow ? '▾ 收起 ' + g.tx.length + ' 个转录本' : '▸ 展开 ' + g.tx.length + ' 个转录本'}</span></div>` : ''}
+      ${multi ? T(`<div class="kv expand-row"><span class="link" id="expandToggle">${expandedNow ? T('▾ 收起 ') + g.tx.length + T(' 个转录本') : T('▸ 展开 ') + g.tx.length + T(' 个转录本')}</span></div>`) : ''}
       <table>
         <thead><tr><th>转录本</th><th>外显子</th><th>CDS</th></tr></thead>
         <tbody>${rows.slice(0, 12).map((t, i) => `
           <tr><td>${t.name}</td><td>${t.exons.length}</td><td>${fmt(cdsLen[i])}</td></tr>`).join('')}
         </tbody>
       </table>
-      ${rows.length > 12 ? `<p class="muted">…共 ${rows.length} 个转录本</p>` : ''}`;
+      ${rows.length > 12 ? T(`<p class="muted">…共 ${rows.length} 个转录本</p>`) : ''}`);
     const et = box.querySelector('#expandToggle');
     if (et) {
       et.onclick = () => {
@@ -4575,7 +4578,7 @@
         const loc = parseLocus(text, S.asm.chroms);
         if (loc) { hide(); input.blur(); navigate(loc.chrom, loc.start, loc.end); return; }
         const v = await resolveGtfTerm(text);
-        if (!v) { toast(`未在导入注释中找到「${text}」`); return; }
+        if (!v) { toast(T(`未在导入注释中找到「${text}」`)); return; }
         if (v.hit) { go(v.hit); return; }
         hide(); input.blur(); navigate(v.chrom, v.start, v.end);
         return;
@@ -4588,7 +4591,7 @@
         if (v) targets.push(v); else missing.push(t);
       }
       if (!targets.length) {
-        toast(`未在导入注释中找到：${missing.join(' / ')}`);
+        toast(T(`未在导入注释中找到：${missing.join(' / ')}`));
         return;
       }
 
@@ -4596,7 +4599,7 @@
       input.blur();
       if (targets.length === 1) {
         navigate(targets[0].chrom, targets[0].start, targets[0].end);
-        if (missing.length) toast(`未找到：${missing.join(' / ')}`);
+        if (missing.length) toast(T(`未找到：${missing.join(' / ')}`));
         return;
       }
       // 多屏：与主搜索框的多位置逻辑完全一致
@@ -4610,8 +4613,8 @@
       syncPaneHeads();
       scheduleRender();
       toast(missing.length
-        ? `${targets.length} 屏（未找到：${missing.join(' / ')}）`
-        : `${terms.slice(0, targets.length).join(' / ')} → ${targets.length} 屏`);
+        ? T(`${targets.length} 屏（未找到：${missing.join(' / ')}）`)
+        : T(`${terms.slice(0, targets.length).join(' / ')} → ${targets.length} 屏`));
     }
 
     input.addEventListener('input', () => {
@@ -4661,7 +4664,7 @@
       wrap.hidden = tracks.length === 0;
       if (!tracks.length) { hide(); return; }
       const cur = sel.value;
-      sel.innerHTML = '<option value="all">全部轨道</option>' +
+      sel.innerHTML = T('<option value="all">全部轨道</option>') +
         tracks.map((t) => `<option value="${esc(t.id)}">${esc(t.name)}</option>`).join('');
       sel.value = (cur && (cur === 'all' || tracks.some((t) => t.id === cur))) ? cur : 'all';
     };
@@ -4912,12 +4915,12 @@
       sugSel = -1;
       box.innerHTML = hits.map((h, i) => {
         if (h.type === 'locus') {
-          return `<div class="sg" data-i="${i}"><span class="k">位置</span>
-            <span class="n">${h.label}</span></div>`;
+          return T(`<div class="sg" data-i="${i}"><span class="k">位置</span>
+            <span class="n">${h.label}</span></div>`);
         }
-        return `<div class="sg" data-i="${i}"><span class="k">基因</span>
+        return T(`<div class="sg" data-i="${i}"><span class="k">基因</span>
           <span class="n">${h.name}</span>
-          <span class="p">${h.chrom}:${fmt(h.start + 1)} · ${h.strand}</span></div>`;
+          <span class="p">${h.chrom}:${fmt(h.start + 1)} · ${h.strand}</span></div>`);
       }).join('');
       box.hidden = false;
       [...box.children].forEach((el) => {
@@ -4996,7 +4999,7 @@
           setActivePanel(0);
           syncPaneHeads();
           scheduleRender();
-          toast(`${terms.slice(0, targets.length).join(' / ')} → ${targets.length} 屏`);
+          toast(T(`${terms.slice(0, targets.length).join(' / ')} → ${targets.length} 屏`));
           return;
         }
       }
@@ -5005,7 +5008,7 @@
         const r = await api('search', { db: S.asm.id, q: text });
         if (r.hits && r.hits.length) return goHit(r.hits[0]);
       } catch { /* ignore */ }
-      toast(`未找到「${text}」`);
+      toast(T(`未找到「${text}」`));
     }
 
     input.addEventListener('blur', () => setTimeout(hideSuggest, 160));
@@ -5216,7 +5219,7 @@
             const binBp = (d.end - d.start) / d.values.length;
             const b0 = Math.round(d.start + Math.floor((bpAt(x) - d.start) / binBp) * binBp);
             extra = `  ${track.dataset.bw} = ${formatVal(v.m)}`
-              + `  (峰值 ${formatVal(v.x)})  [${fmt(b0 + 1)}–${fmt(Math.round(b0 + binBp))}]`;
+              + T(`  (峰值 ${formatVal(v.x)})  [${fmt(b0 + 1)}–${fmt(Math.round(b0 + binBp))}]`);
           }
         }
         return { bp, extra, chrom: S.view.chrom };
@@ -5362,7 +5365,7 @@
   }
 
   /* ------------------------------------------------------------- 导入文件 */
-  const KIND_LABEL = { signal: '信号', gene: '注释', seq: '序列' };
+  const KIND_LABEL = { signal: T('信号'), gene: T('注释'), seq: T('序列') };
 
   /* ---- 导入进度面板：上传 → 解析 → 完成 ---- */
   let impEls = null;
@@ -5390,7 +5393,7 @@
     d.name.textContent = name;
     d.bar.style.width = '0%';
     d.ico.textContent = '↑';
-    d.status.textContent = '准备上传…';
+    d.status.textContent = T('准备上传…');
   }
   function impUpload(frac, text) {
     const d = impDom();
@@ -5407,7 +5410,7 @@
     d.panel.classList.remove('done', 'err');
     d.ico.textContent = '⋯';
     d.bar.style.width = '38%';
-    d.status.textContent = text || '正在解析 / 建立索引…';
+    d.status.textContent = text || T('正在解析 / 建立索引…');
   }
   function impDone(text) {
     const d = impDom();
@@ -5416,7 +5419,7 @@
     d.panel.classList.add('done');
     d.ico.textContent = '✓';
     d.bar.style.width = '100%';
-    d.status.textContent = text || '导入完成';
+    d.status.textContent = text || T('导入完成');
     impTimer = setTimeout(() => { d.panel.hidden = true; }, 3200);
   }
   function impError(text) {
@@ -5426,7 +5429,7 @@
     d.panel.classList.add('err');
     d.ico.textContent = '!';
     d.bar.style.width = '100%';
-    d.status.textContent = text || '导入失败';
+    d.status.textContent = text || T('导入失败');
     impTimer = setTimeout(() => { d.panel.hidden = true; }, 6000);
   }
 
@@ -5447,7 +5450,7 @@
         if (xhr.status >= 200 && xhr.status < 300 && data.ok) resolve(data.track);
         else reject(new Error(data.error || `HTTP ${xhr.status}`));
       };
-      xhr.onerror = () => reject(new Error('网络错误'));
+      xhr.onerror = () => reject(new Error(T('网络错误')));
       xhr.send(file);
     });
   }
@@ -5463,13 +5466,13 @@
       impShow(label);
       try {
         const track = await uploadOne(f, {
-          upload: (frac) => impUpload(frac, `上传中 ${Math.round(frac * 100)}% · ${fmtBytes(f.size)}`),
-          processing: () => impProcessing('已上传，正在解析 / 建立索引…（大文件可能需要 10–30 秒）'),
+          upload: (frac) => impUpload(frac, T(`上传中 ${Math.round(frac * 100)}% · ${fmtBytes(f.size)}`)),
+          processing: () => impProcessing(T('已上传，正在解析 / 建立索引…（大文件可能需要 10–30 秒）')),
         });
         ok++;
-        const extra = track && track.genes ? ` · ${fmt(track.genes)} 个基因`
-          : track && track.features ? ` · ${fmt(track.features)} 个区间` : '';
-        impDone(`已导入 ${track ? track.name : f.name}${extra}`);
+        const extra = track && track.genes ? T(` · ${fmt(track.genes)} 个基因`)
+          : track && track.features ? T(` · ${fmt(track.features)} 个区间`) : '';
+        impDone(T(`已导入 ${track ? track.name : f.name}${extra}`));
       } catch (e) {
         fails.push(`${f.name}: ${e.message}`);
         impError(`${f.name}：${e.message}`);
@@ -5477,8 +5480,8 @@
     }
     await loadBwTracks();
     await loadLoadedTracks();
-    if (fails.length) toast(`导入 ${ok} 个，失败：${fails[0]}`);
-    else if (files.length > 1) toast(`已导入 ${ok} 个文件`);
+    if (fails.length) toast(T(`导入 ${ok} 个，失败：${fails[0]}`));
+    else if (files.length > 1) toast(T(`已导入 ${ok} 个文件`));
   }
 
   async function loadLoadedTracks(opts) {
@@ -5527,7 +5530,7 @@
       const nm = document.createElement('span');
       nm.className = 'nm';
       nm.textContent = t.name;
-      nm.title = `${t.name}\n${KIND_LABEL[t.kind] || t.kind} · ${t.format} · ${t.chroms} 条染色体`;
+      nm.title = T(`${t.name}\n${KIND_LABEL[t.kind] || t.kind} · ${t.format} · ${t.chroms} 条染色体`);
       nm.onclick = (e) => toggleLoadedSelect(t.id, e);
       const badge = document.createElement('span');
       badge.className = 'grp';
@@ -5535,15 +5538,15 @@
       const rm = document.createElement('button');
       rm.className = 'loaded-x';
       rm.textContent = '×';
-      rm.title = '移除该轨道';
+      rm.title = T('移除该轨道');
       rm.onclick = async (e) => {
         e.stopPropagation();
         try {
           await fetch(`api/loaded?id=${encodeURIComponent(t.id)}`, { method: 'DELETE' });
           S.loaded.sel.delete(t.id);
-          toast(`已移除 ${t.name}`);
+          toast(T(`已移除 ${t.name}`));
           await loadLoadedTracks();
-        } catch (err) { toast('移除失败：' + err.message); }
+        } catch (err) { toast(T('移除失败：') + err.message); }
       };
       el.append(cb, sw, nm, badge, rm);
       box.appendChild(el);
@@ -5577,13 +5580,13 @@
     const ids = [...S.loaded.sel];
     const head = document.createElement('div');
     head.className = 'ctx-head';
-    head.textContent = `已选 ${ids.length} 条导入轨道`;
+    head.textContent = T(`已选 ${ids.length} 条导入轨道`);
     menu.appendChild(head);
-    menu.appendChild(ctxItem('清除选择', () => { S.loaded.sel.clear(); renderLoadedList(); closeLoadedCtx(); }));
+    menu.appendChild(ctxItem(T('清除选择'), () => { S.loaded.sel.clear(); renderLoadedList(); closeLoadedCtx(); }));
     const sep = document.createElement('div');
     sep.className = 'ctx-sep';
     menu.appendChild(sep);
-    menu.appendChild(ctxItem(`删除选中的 ${ids.length} 条轨道`, () => loadedDelete(ids), { danger: true }));
+    menu.appendChild(ctxItem(T(`删除选中的 ${ids.length} 条轨道`), () => loadedDelete(ids), { danger: true }));
     menu.hidden = false;
     const w = menu.offsetWidth;
     const h = menu.offsetHeight;
@@ -5602,7 +5605,7 @@
       const t = S.loaded.list.find((x) => x.id === id);
       return t ? t.name : id;
     });
-    if (!confirm(`确定删除选中的 ${ids.length} 条导入轨道？\n· ${names.join('\n· ')}\n\n对应文件会从 data/loaded 中删除。`)) return;
+    if (!confirm(T(`确定删除选中的 ${ids.length} 条导入轨道？\n· ${names.join('\n· ')}\n\n对应文件会从 data/loaded 中删除。`))) return;
     closeLoadedCtx();
     // 先从界面/状态移除，渲染器才不会继续为这些轨道发 genes/seq 请求占满连接
     const gone = new Set(ids);
@@ -5625,10 +5628,10 @@
       try {
         const r = await fetch(`api/loaded?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
         if (r.ok) ok++;
-      } catch (err) { toast('删除失败：' + err.message); }
+      } catch (err) { toast(T('删除失败：') + err.message); }
     }));
     await loadLoadedTracks();
-    toast(`已删除 ${ok} 条导入轨道`);
+    toast(T(`已删除 ${ok} 条导入轨道`));
   }
 
   function ensureLoadedTrackEls() {
@@ -5654,7 +5657,7 @@
         gear.className = 'tgear';
         gear.dataset.gear = 'lgenes';
         gear.dataset.bwid = t.id;
-        gear.title = '轨道设置';
+        gear.title = T('轨道设置');
         gear.textContent = '⚙';
         label.appendChild(gear);
       } else if (t.kind === 'seq') {
@@ -5663,7 +5666,7 @@
         fl.className = 'sflip';
         fl.dataset.seqflip = t.id;
         fl.setAttribute('aria-pressed', S.loaded.flip.has(t.id) ? 'true' : 'false');
-        fl.title = '翻转链：显示互补链（同 IGV 序列轨道的 Flip strand）';
+        fl.title = T('翻转链：显示互补链（同 IGV 序列轨道的 Flip strand）');
         fl.innerHTML = SEQ_FLIP_SVG;
         fl.addEventListener('click', (e) => {
           e.stopPropagation();
@@ -5766,7 +5769,7 @@
       ctx.fillStyle = C.muted;
       ctx.font = '11.5px system-ui, sans-serif';
       ctx.textBaseline = 'middle';
-      ctx.fillText(d && d.error ? '读取失败：' + d.error : '读取中…', 12, h / 2);
+      ctx.fillText(d && d.error ? T('读取失败：') + d.error : T('读取中…'), 12, h / 2);
       if (sub) sub.textContent = '';
       return;
     }
@@ -5785,7 +5788,7 @@
       ctx.fillRect(i * bw, bot - hgt, Math.max(1, bw - 0.3), hgt);
     }
     ctx.globalAlpha = 1;
-    if (sub) sub.textContent = `${fmt(d.total)} 个 · 密度`;
+    if (sub) sub.textContent = T(`${fmt(d.total)} 个 · 密度`);
   }
 
   function loadedGeneKey(t, g) {
@@ -5983,7 +5986,7 @@
       ctx.fillStyle = C.muted;
       ctx.font = '11.5px system-ui, sans-serif';
       ctx.textBaseline = 'middle';
-      ctx.fillText(d && d.error ? '读取失败：' + d.error : '读取中…', 12, h / 2);
+      ctx.fillText(d && d.error ? T('读取失败：') + d.error : T('读取中…'), 12, h / 2);
       if (sub) sub.textContent = '';
       return;
     }
@@ -5994,8 +5997,8 @@
       ctx.fillStyle = C.muted;
       ctx.font = '11.5px system-ui, sans-serif';
       ctx.textBaseline = 'middle';
-      ctx.fillText('此区域无注释', 12, h / 2);
-      if (sub) sub.textContent = '0 个';
+      ctx.fillText(T('此区域无注释'), 12, h / 2);
+      if (sub) sub.textContent = T('0 个');
       return;
     }
 
@@ -6007,13 +6010,13 @@
       ctx.fillStyle = C.muted;
       ctx.font = '11.5px system-ui, sans-serif';
       ctx.textBaseline = 'middle';
-      ctx.fillText('此区域无注释', 12, h / 2);
-      if (sub) sub.textContent = '0 个';
+      ctx.fillText(T('此区域无注释'), 12, h / 2);
+      if (sub) sub.textContent = T('0 个');
       return;
     }
     const { ctx, w, h } = fitCanvas(canvas, Math.max(38, lay.rows * LROW + 12));
     setPlaced(lay.placed);
-    if (sub) sub.textContent = `${d.truncated ? '≥ ' : ''}${lay.visible} 个`;
+    if (sub) sub.textContent = T(`${d.truncated ? '≥ ' : ''}${lay.visible} 个`);
     ctx.textBaseline = 'middle';
 
     const pal = geneTint(t.id);
@@ -6190,14 +6193,14 @@
     const sub = el.querySelector('.sub');
     if (!show) {
       ctx.fillStyle = C.muted; ctx.font = '11.5px system-ui, sans-serif'; ctx.textBaseline = 'middle';
-      ctx.fillText('放大到 ≤1.2 bp/px 显示碱基', 12, h / 2);
-      if (sub) sub.textContent = '需放大';
+      ctx.fillText(T('放大到 ≤1.2 bp/px 显示碱基'), 12, h / 2);
+      if (sub) sub.textContent = T('需放大');
       return;
     }
     const d = loadedCache(t);
     if (!d || d.seq == null) {
       ctx.fillStyle = C.muted; ctx.font = '11.5px system-ui, sans-serif'; ctx.textBaseline = 'middle';
-      ctx.fillText(d && d.error ? '读取失败：' + d.error : '读取中…', 12, h / 2);
+      ctx.fillText(d && d.error ? T('读取失败：') + d.error : T('读取中…'), 12, h / 2);
       if (sub) sub.textContent = '';
       return;
     }
@@ -6230,7 +6233,7 @@
     }
     ctx.textAlign = 'left';
     if (transOn) drawAminoAcids(ctx, seq, d.start, w, cellW, BASE_H - 1, flip, transTableFor(t.id));
-    if (sub) sub.textContent = flip ? `互补链 · ${seq.length} bp` : `FASTA · ${seq.length} bp`;
+    if (sub) sub.textContent = flip ? T(`互补链 · ${seq.length} bp`) : `FASTA · ${seq.length} bp`;
   }
 
   /* ---------------------------------------------------- 导入入口（绑定） */
