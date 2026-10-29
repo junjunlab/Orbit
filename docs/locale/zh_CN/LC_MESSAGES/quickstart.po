@@ -1,0 +1,189 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2026, junjunlab
+# This file is distributed under the same license as the Orbit package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Orbit 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-10-29 14:47+0800\n"
+"PO-Revision-Date: 2026-10-29 18:30+0800\n"
+"Last-Translator: junjunlab\n"
+"Language-Team: zh_CN <LL@li.org>\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../quickstart.rst:2
+msgid "Quick start"
+msgstr "快速上手"
+
+#: ../../quickstart.rst:4
+msgid "Five minutes from launch to a figure."
+msgstr "五分钟，从打开到出图。"
+
+#: ../../quickstart.rst:7
+msgid "1. Open a locus"
+msgstr "1. 打开一个位点"
+
+#: ../../quickstart.rst:9
+msgid ""
+"Type a locus into the search box at the top and press :kbd:`Enter`. All of "
+"these work:"
+msgstr "在顶部搜索框输入位点，按 :kbd:`Enter`。下面这些写法都支持："
+
+#: ../../quickstart.rst:19
+msgid ""
+"A gene symbol jumps to its full extent; coordinates are 1-based and "
+"inclusive, matching the IGV convention."
+msgstr "基因名会跳到它的完整范围；坐标是 1-based 闭区间，与 IGV 约定一致。"
+
+#: ../../quickstart.rst:23
+msgid "2. Choose an assembly"
+msgstr "2. 选择装配"
+
+#: ../../quickstart.rst:25
+msgid ""
+"The assembly selector sits next to the search box. Orbit ships with 18 "
+"assemblies — see :doc:`assemblies`. Changing the assembly keeps the locus "
+"text if the chromosome name also exists in the new genome."
+msgstr ""
+"装配选择器在搜索框旁边。Orbit 内置 18 个装配，见 "
+":doc:`assemblies`。切换装配时，如果新基因组里也有同名染色体，位点文本会保留。"
+
+#: ../../quickstart.rst:30
+msgid "3. Look at the tracks"
+msgstr "3. 看轨道"
+
+#: ../../quickstart.rst:32
+msgid ""
+"The left column lists tracks. Click a name to open its settings, or use the "
+"checkbox to hide it. From top to bottom you normally see:"
+msgstr "左栏列出所有轨道。点名称打开设置，用复选框隐藏。从上到下通常是："
+
+#: ../../quickstart.rst:35
+msgid "**Ideogram** — cytobands with the current view marked"
+msgstr "**染色体示意图** —— 细胞遗传带，标出当前视野"
+
+#: ../../quickstart.rst:36
+msgid "**Ruler** — genomic coordinates and scale"
+msgstr "**标尺** —— 基因组坐标与比例"
+
+#: ../../quickstart.rst:37
+msgid "**RefSeq genes** — gene models, expandable to transcripts"
+msgstr "**RefSeq 基因** —— 基因模型，可展开到转录本"
+
+#: ../../quickstart.rst:38
+msgid "**Signal tracks** — any bigWig you have loaded"
+msgstr "**信号轨道** —— 你载入的任意 bigWig"
+
+#: ../../quickstart.rst:39
+msgid "**GC content** — computed from the sequence on demand"
+msgstr "**GC 含量** —— 按需从序列计算"
+
+#: ../../quickstart.rst:40
+msgid "**Sequence** — bases, once you are zoomed in far enough"
+msgstr "**序列** —— 放大到足够近时显示碱基"
+
+#: ../../quickstart.rst:43
+msgid "4. Load your own data"
+msgstr "4. 载入自己的数据"
+
+#: ../../quickstart.rst:45
+msgid ""
+"Drag a file onto the window, or press **Import** in the toolbar. bigWig, "
+"bedGraph, BAM, GTF/GFF and FASTA are recognised by extension. Details in "
+":doc:`data-import`."
+msgstr ""
+"把文件拖进窗口，或点工具栏的 **导入**。bigWig、bedGraph、BAM、GTF/GFF 和 FASTA 按扩展名识别。详见 "
+":doc:`data-import`。"
+
+#: ../../quickstart.rst:50
+msgid "5. Export the view"
+msgstr "5. 导出视图"
+
+#: ../../quickstart.rst:52
+msgid ""
+"Press the export button in the toolbar and choose PNG, SVG or PDF. Vector "
+"formats stay editable in Illustrator and Inkscape. Details in :doc:`data-"
+"export`."
+msgstr ""
+"点工具栏的导出按钮，选 PNG、SVG 或 PDF。矢量格式在 Illustrator 和 Inkscape 里仍可编辑。详见 :doc:`data-"
+"export`。"
+
+#: ../../quickstart.rst:57
+msgid "Keyboard essentials"
+msgstr "常用快捷键"
+
+#: ../../quickstart.rst:63
+msgid "Key"
+msgstr "按键"
+
+#: ../../quickstart.rst:64
+msgid "Action"
+msgstr "动作"
+
+#: ../../quickstart.rst:65
+msgid ":kbd:`←` / :kbd:`→`"
+msgstr ":kbd:`←` / :kbd:`→`"
+
+#: ../../quickstart.rst:66
+msgid "Pan by half a screen"
+msgstr "平移半屏"
+
+#: ../../quickstart.rst:67
+msgid ":kbd:`Shift` + :kbd:`←` / :kbd:`→`"
+msgstr ":kbd:`Shift` + :kbd:`←` / :kbd:`→`"
+
+#: ../../quickstart.rst:68
+msgid "Pan by a tenth of a screen"
+msgstr "平移十分之一屏"
+
+#: ../../quickstart.rst:69
+msgid ":kbd:`+` / :kbd:`-`"
+msgstr ":kbd:`+` / :kbd:`-`"
+
+#: ../../quickstart.rst:70
+msgid "Zoom in / out"
+msgstr "放大 / 缩小"
+
+#: ../../quickstart.rst:71
+msgid ":kbd:`Ctrl` + :kbd:`F`"
+msgstr ":kbd:`Ctrl` + :kbd:`F`"
+
+#: ../../quickstart.rst:72
+msgid "Focus the search box"
+msgstr "定位到搜索框"
+
+#: ../../quickstart.rst:73
+msgid ":kbd:`Ctrl` + :kbd:`S`"
+msgstr ":kbd:`Ctrl` + :kbd:`S`"
+
+#: ../../quickstart.rst:74
+msgid "Export the current view"
+msgstr "导出当前视图"
+
+#: ../../quickstart.rst:75
+msgid ":kbd:`Esc`"
+msgstr ":kbd:`Esc`"
+
+#: ../../quickstart.rst:76
+msgid "Close the current dialog or clear the selection"
+msgstr "关闭当前对话框或清除选区"
+
+#: ../../quickstart.rst:80
+msgid ""
+"Dragging horizontally on the ruler pans the view; dragging on a gene track "
+"selects a region and shows its size."
+msgstr "在标尺上横向拖动可平移视图；在基因轨道上拖动会选中一个区域并显示其长度。"
+
+#~ msgid ""
+#~ "Drag a file onto the window, or use *Tracks → Load from file*. bigWig, "
+#~ "bedGraph, BAM, GTF/GFF and FASTA are recognised by extension. Details in "
+#~ ":doc:`data-import`."
+#~ msgstr ""

@@ -1,0 +1,182 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2026, junjunlab
+# This file is distributed under the same license as the Orbit package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Orbit 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-10-29 14:47+0800\n"
+"PO-Revision-Date: 2026-10-29 15:00+0800\n"
+"Last-Translator: junjunlab\n"
+"Language-Team: zh_CN <LL@li.org>\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../data-import.rst:2
+msgid "Importing data"
+msgstr "导入数据"
+
+#: ../../data-import.rst:4
+msgid ""
+"Orbit reads the common genomics formats directly. Drag a file onto the "
+"window, or press the **Import** button in the toolbar. The format is chosen "
+"by extension."
+msgstr "Orbit 直接读取常见的基因组格式。把文件拖进窗口，或点工具栏的 **导入**。格式按扩展名判断。"
+
+#: ../../data-import.rst:9
+msgid "Supported formats"
+msgstr "支持的格式"
+
+#: ../../data-import.rst:15
+msgid "Format"
+msgstr "格式"
+
+#: ../../data-import.rst:16
+msgid "Extension"
+msgstr "扩展名"
+
+#: ../../data-import.rst:17
+msgid "Notes"
+msgstr "说明"
+
+#: ../../data-import.rst:18 ../../data-import.rst:35
+msgid "bigWig"
+msgstr "bigWig"
+
+#: ../../data-import.rst:19
+msgid "``.bw`` ``.bigWig``"
+msgstr "``.bw`` ``.bigWig``"
+
+#: ../../data-import.rst:20
+msgid "Random access, no indexing step. Best choice for signal."
+msgstr "随机访问，无需建索引。信号轨道的首选。"
+
+#: ../../data-import.rst:21 ../../data-import.rst:49
+msgid "bedGraph"
+msgstr "bedGraph"
+
+#: ../../data-import.rst:22
+msgid "``.bedGraph`` ``.bdg``"
+msgstr "``.bedGraph`` ``.bdg``"
+
+#: ../../data-import.rst:23
+msgid "Loaded into memory; fine up to a few hundred MB."
+msgstr "整份读进内存；几百 MB 以内没问题。"
+
+#: ../../data-import.rst:24 ../../data-import.rst:55
+msgid "BAM"
+msgstr "BAM"
+
+#: ../../data-import.rst:25
+msgid "``.bam``"
+msgstr "``.bam``"
+
+#: ../../data-import.rst:26
+msgid "Needs a ``.bai`` next to it. Coverage is computed on the fly."
+msgstr "旁边必须有 ``.bai``。覆盖度是实时计算的。"
+
+#: ../../data-import.rst:27 ../../data-import.rst:62
+msgid "GTF / GFF3"
+msgstr "GTF / GFF3"
+
+#: ../../data-import.rst:28
+msgid "``.gtf`` ``.gff`` ``.gff3``"
+msgstr "``.gtf`` ``.gff`` ``.gff3``"
+
+#: ../../data-import.rst:29
+msgid "Becomes a gene track; UTR and CDS features are kept."
+msgstr "变成一个基因轨道；UTR 和 CDS 特征都会保留。"
+
+#: ../../data-import.rst:30 ../../data-import.rst:75
+msgid "FASTA"
+msgstr "FASTA"
+
+#: ../../data-import.rst:31
+msgid "``.fa`` ``.fasta``"
+msgstr "``.fa`` ``.fasta``"
+
+#: ../../data-import.rst:32
+msgid ""
+"Registers the file as a local sequence source for the current assembly."
+msgstr "把该文件注册为当前装配的本地序列来源。"
+
+#: ../../data-import.rst:37
+msgid ""
+"The recommended format. Orbit parses the index itself, so there is no "
+"``bigWigToBedGraph`` step and no conversion. Multi-sample overlays work best"
+" when the files share a coordinate system."
+msgstr "推荐格式。Orbit 自己解析索引，不需要 ``bigWigToBedGraph`` 转换。多样本叠加时，文件之间共用坐标系效果最好。"
+
+#: ../../data-import.rst:45
+msgid ""
+"The track appears immediately with autoscale on. Open its label to pin the "
+"range if you want several samples to share one scale."
+msgstr "轨道会立刻出现，默认自动缩放。想让多个样本共用同一量程，就打开轨道标签把范围固定下来。"
+
+#: ../../data-import.rst:51
+msgid ""
+"Plain text, four columns. Convenient for small, hand-made tracks; a genome-"
+"wide file will cost memory, so prefer bigWig above a few hundred megabytes."
+msgstr "纯文本，四列。适合小型手工轨道；全基因组级别会吃内存，超过几百 MB 建议改用 bigWig。"
+
+#: ../../data-import.rst:57
+msgid ""
+"Orbit needs both ``sample.bam`` and ``sample.bam.bai`` in the same "
+"directory. Coverage is computed from the reads in the visible window only, "
+"which keeps memory flat but means the first draw of a new region takes a "
+"moment."
+msgstr ""
+"Orbit 需要 ``sample.bam`` 和 ``sample.bam.bai`` 放在同一目录。覆盖度只按可见窗口内的 reads "
+"计算，内存占用平稳，代价是第一次画新区域要等一下。"
+
+#: ../../data-import.rst:64
+msgid ""
+"Imported annotations become a normal gene track: expandable transcripts, "
+"strand colours, labels. Transcript and CDS features are preserved, so a GTF "
+"exported from StringTie or Ensembl looks the way you expect."
+msgstr ""
+"导入的注释会成为普通基因轨道：可展开转录本、按链着色、带标签。转录本与 CDS 特征都会保留，所以 StringTie 或 Ensembl 导出的 "
+"GTF 看起来就是你预期的样子。"
+
+#: ../../data-import.rst:70
+msgid ""
+"Imported annotations are not converted to the built-in binary format. They "
+"are read on load, which is fine for a few hundred thousand features but "
+"slower than the bundled RefSeq index."
+msgstr "导入的注释不会转成内置二进制格式，而是加载时现读。几十万条特征没问题，但比内置的 RefSeq 索引慢。"
+
+#: ../../data-import.rst:77
+msgid ""
+"Loading a FASTA registers it as the local sequence source for the assembly. "
+"This is how you use Orbit fully offline, or work with an assembly that UCSC "
+"does not host."
+msgstr "载入 FASTA 会把它注册为该装配的本地序列来源。这是完全离线使用 Orbit 的办法，也适用于 UCSC 上没有的装配。"
+
+#: ../../data-import.rst:85
+msgid ""
+"Large FASTA files are memory-mapped, so a 3 GB genome does not need 3 GB of "
+"RAM — but the first access to a chromosome still costs a disk read."
+msgstr "大 FASTA 采用内存映射，3 GB 的基因组不需要 3 GB 内存——但首次访问某条染色体仍要读一次磁盘。"
+
+#: ../../data-import.rst:89
+msgid "Where imported tracks live"
+msgstr "导入的轨道存在哪"
+
+#: ../../data-import.rst:91
+msgid ""
+"Imported files are referenced in place, not copied. If you move or delete "
+"the original, the track breaks on the next launch. Paths are stored in the "
+"session, so reopening Orbit restores the tracks you had."
+msgstr "导入的文件是原地引用，不会复制。移动或删除原文件后，下次启动轨道就会失效。路径记录在会话里，重新打开 Orbit 会恢复之前的轨道。"
+
+#~ msgid ""
+#~ "Orbit reads the common genomics formats directly. Drag a file onto the "
+#~ "window, or use *Tracks → Load from file*. The format is chosen by extension."
+#~ msgstr ""

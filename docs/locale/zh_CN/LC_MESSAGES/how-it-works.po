@@ -1,0 +1,217 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2026, junjunlab
+# This file is distributed under the same license as the Orbit package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Orbit 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-10-29 14:43+0800\n"
+"PO-Revision-Date: 2026-10-29 15:00+0800\n"
+"Last-Translator: junjunlab\n"
+"Language-Team: zh_CN <LL@li.org>\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../how-it-works.rst:2
+msgid "How it works"
+msgstr "实现原理"
+
+#: ../../how-it-works.rst:4
+msgid ""
+"Orbit is small because it does very little at runtime. Three formats are "
+"read directly, and everything else is prepared once, at build time."
+msgstr "Orbit 之所以小，是因为运行时几乎什么都不做。三种格式直接读取，其余都在构建期准备好。"
+
+#: ../../how-it-works.rst:8
+msgid "Sequence: 2bit"
+msgstr "序列：2bit"
+
+#: ../../how-it-works.rst:10
+msgid ""
+"The 2bit format packs four bases into a byte plus an index of block offsets,"
+" so a random 20 kb window can be decoded without touching the rest of the "
+"file. Orbit's reader (:mod:`igvlocal.twobit`) implements the format with the"
+" standard library only — no py2bit, no C extension."
+msgstr ""
+"2bit 格式把四个碱基压进一个字节，另带一份数据块偏移索引，所以解码任意 20 kb 窗口都不必碰文件其余部分。Orbit 的读取器 "
+":mod:`igvlocal.twobit` 只用标准库实现——不需要 py2bit，也不需要 C 扩展。"
+
+#: ../../how-it-works.rst:15
+msgid ""
+"When the file is remote, the same reader works through HTTP Range requests: "
+"it fetches the index once, then only the blocks the window overlaps. This is"
+" why the installer does not ship a genome."
+msgstr "文件在远端时，同一个读取器通过 HTTP Range 工作：索引取一次，之后只取窗口覆盖的块。安装包因此不需要附带基因组。"
+
+#: ../../how-it-works.rst:20
+msgid "Annotation: igvbin"
+msgstr "注释：igvbin"
+
+#: ../../how-it-works.rst:22
+msgid ""
+"RefSeq ``refGene`` is a flat table of exon starts and ends encoded as comma-"
+"separated strings. Parsing it at startup costs seconds and hundreds of "
+"megabytes. So it is compiled once into ``genes.igvbin``:"
+msgstr ""
+"RefSeq 的 ``refGene`` 是一张平表，外显子起止被编码成逗号分隔的字符串。启动时解析它要几秒和几百 MB 内存。所以它被一次性编译成 "
+"``genes.igvbin``："
+
+#: ../../how-it-works.rst:26
+msgid "a header with chromosome count and offsets"
+msgstr "一个头部，记录染色体数量和偏移"
+
+#: ../../how-it-works.rst:27
+msgid "a per-chromosome block of gene records, sorted by start"
+msgstr "按染色体分块的基因记录，按起点排序"
+
+#: ../../how-it-works.rst:28
+msgid "an interned string pool for symbols and accessions"
+msgstr "符号与编号共用的字符串池"
+
+#: ../../how-it-works.rst:29
+msgid "a transcript table, so expansion does not re-read the gene"
+msgstr "一张转录本表，展开时不必重读基因"
+
+#: ../../how-it-works.rst:31
+msgid ""
+"Loading a chromosome becomes a single ``mmap`` slice plus a binary search, "
+"which is why a whole chromosome of genes appears in milliseconds. The reader"
+" (:mod:`igvlocal.annbin`) is about 300 lines and has no dependencies."
+msgstr ""
+"加载一条染色体变成一次 ``mmap`` 切片加一次二分查找，所以整条染色体的基因能在毫秒级出现。读取器 :mod:`igvlocal.annbin` "
+"约 300 行，无任何依赖。"
+
+#: ../../how-it-works.rst:36
+msgid "Signal: bigWig"
+msgstr "信号：bigWig"
+
+#: ../../how-it-works.rst:38
+msgid ""
+"bigWig is a binary, indexed format: a B-tree of data blocks and an R-tree of"
+" genomic ranges. Orbit parses both (:mod:`igvlocal.bigwig`) and reads only "
+"the blocks covering the window."
+msgstr ""
+"bigWig 是带索引的二进制格式：数据块的 B 树加基因组区间的 R 树。Orbit 两者都解析 "
+":mod:`igvlocal.bigwig`，只读窗口覆盖的块。"
+
+#: ../../how-it-works.rst:42
+msgid ""
+"That means a 40 GB bigWig behaves like a small file — the cost of opening it"
+" is a few hundred bytes of index, not the whole track. bedGraph files are "
+"the exception: they have no index, so they are read into memory."
+msgstr ""
+"这意味着 40 GB 的 bigWig 表现得像个小文件——打开它的代价是几百字节索引，而不是整条轨道。bedGraph "
+"是例外：它没有索引，只能整份读进内存。"
+
+#: ../../how-it-works.rst:47
+msgid "The server"
+msgstr "服务端"
+
+#: ../../how-it-works.rst:49
+msgid ""
+"The backend is a single-threaded HTTP server from the standard library. It "
+"serves three things:"
+msgstr "后端是标准库里单线程的 HTTP 服务，只提供三样东西："
+
+#: ../../how-it-works.rst:56
+msgid "Endpoint"
+msgstr "端点"
+
+#: ../../how-it-works.rst:57
+msgid "Purpose"
+msgstr "用途"
+
+#: ../../how-it-works.rst:58
+msgid "``/`` and static files"
+msgstr "``/`` 与静态文件"
+
+#: ../../how-it-works.rst:59
+msgid "The frontend, served from ``web/``"
+msgstr "前端，从 ``web/`` 提供"
+
+#: ../../how-it-works.rst:60
+msgid "``/api/...``"
+msgstr "``/api/...``"
+
+#: ../../how-it-works.rst:61
+msgid "JSON: catalog, genes in a window, sequence, bigWig values, search"
+msgstr "JSON：装配清单、窗口内基因、序列、bigWig 数值、搜索"
+
+#: ../../how-it-works.rst:62
+msgid "``/export/...``"
+msgstr "``/export/...``"
+
+#: ../../how-it-works.rst:63
+msgid "Rendered exports"
+msgstr "渲染好的导出文件"
+
+#: ../../how-it-works.rst:65
+msgid ""
+"The window itself is QtWebEngine, so the frontend is ordinary browser code —"
+" Canvas for tracks, plain DOM for controls, no framework. The same page runs"
+" in Chrome if you pass ``--browser``, which is how most of the UI is tested."
+msgstr ""
+"窗口本身是 QtWebEngine，所以前端就是普通浏览器代码——轨道用 Canvas，控件用原生 DOM，没有框架。加 ``--browser`` "
+"时同一个页面也能在 Chrome 里跑，UI 的大部分测试就是这么做的。"
+
+#: ../../how-it-works.rst:70
+msgid "Why this shape"
+msgstr "为什么这样设计"
+
+#: ../../how-it-works.rst:76
+msgid "Decision"
+msgstr "决策"
+
+#: ../../how-it-works.rst:77
+msgid "Reason"
+msgstr "理由"
+
+#: ../../how-it-works.rst:78
+msgid "No framework"
+msgstr "不用框架"
+
+#: ../../how-it-works.rst:79
+msgid ""
+"The whole frontend is one file and loads instantly; there is no build step"
+msgstr "整个前端就是一个文件，加载即用，没有构建步骤"
+
+#: ../../how-it-works.rst:80
+msgid "Standard library only"
+msgstr "只用标准库"
+
+#: ../../how-it-works.rst:81
+msgid ""
+"No wheels to compile, no version conflicts, and the frozen build is small"
+msgstr "没有要编译的 wheel，没有版本冲突，冻结产物也小"
+
+#: ../../how-it-works.rst:82
+msgid "Compile annotations ahead of time"
+msgstr "注释提前编译"
+
+#: ../../how-it-works.rst:83
+msgid "Startup cost moves to the build machine, where it is paid once"
+msgstr "启动开销转移到构建机上，只需付一次"
+
+#: ../../how-it-works.rst:84
+msgid "Stream sequence"
+msgstr "序列走流式"
+
+#: ../../how-it-works.rst:85
+msgid "A 3 GB genome is not something you want in an installer"
+msgstr "3 GB 的基因组不该塞进安装包"
+
+#: ../../how-it-works.rst:86
+msgid "Qt over a web view"
+msgstr "用 Qt 而不是纯网页"
+
+#: ../../how-it-works.rst:87
+msgid ""
+"Same rendering engine as Chrome, but a real window and real file dialogs"
+msgstr "与 Chrome 同一个渲染引擎，但有真正的窗口和原生文件对话框"

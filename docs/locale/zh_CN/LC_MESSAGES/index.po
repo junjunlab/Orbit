@@ -1,0 +1,110 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2026, junjunlab
+# This file is distributed under the same license as the Orbit package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Orbit 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-10-29 14:43+0800\n"
+"PO-Revision-Date: 2026-10-29 18:30+0800\n"
+"Last-Translator: junjunlab\n"
+"Language-Team: zh_CN <LL@li.org>\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../index.rst:34
+msgid "Getting started"
+msgstr "快速开始"
+
+#: ../../index.rst:41
+msgid "Using Orbit"
+msgstr "使用 Orbit"
+
+#: ../../index.rst:51
+msgid "Under the hood"
+msgstr "实现原理"
+
+#: ../../index.rst:2
+msgid "Orbit"
+msgstr "Orbit"
+
+#: ../../index.rst:4
+msgid ""
+"Orbit is a desktop genome browser for people who need to look at a locus "
+"*now*. It opens as a native window, needs no Java, no server and no setup, "
+"and works offline once a chromosome has been visited."
+msgstr ""
+"Orbit 是一个桌面基因组浏览器，面向那些需要*立刻*看清某个位点的人。它以原生窗口打开，不需要 "
+"Java、不用起服务、不用配置，某条染色体访问过一次之后即可离线工作。"
+
+#: ../../index.rst:8
+msgid ""
+"RefSeq annotations are compiled into a binary index at build time, and "
+"sequence is read from UCSC 2bit files — from disk or over HTTP Range — so a "
+"whole chromosome of genes loads in milliseconds and the installer stays "
+"around 70 MB of annotation instead of carrying a 3 GB genome."
+msgstr ""
+"RefSeq 注释在构建期就被编译成二进制索引，序列则直接从 UCSC 的 2bit 文件读取——本地磁盘或 HTTP Range "
+"均可——所以一整条染色体的基因能在毫秒级加载，安装包只背约 70 MB 注释，而不是 3 GB 基因组。"
+
+#: ../../index.rst:13
+msgid "The Orbit window showing three loci side by side with signal tracks"
+msgstr "Orbit 窗口：并排显示三个位点及信号轨道"
+
+#: ../../index.rst:18
+msgid "What you get"
+msgstr "功能一览"
+
+#: ../../index.rst:20
+msgid "A native Qt window (no browser tab, no local server to babysit)"
+msgstr "原生 Qt 窗口（不占浏览器标签页，无需照看本地服务）"
+
+#: ../../index.rst:21
+msgid "18 assemblies across 9 species, annotation bundled"
+msgstr "9 个物种共 18 个装配，注释随包内置"
+
+#: ../../index.rst:22
+msgid ""
+"Gene models with transcript expansion, cytobands, GC and sequence tracks"
+msgstr "基因模型可展开转录本，另有细胞遗传带、GC 与序列轨道"
+
+#: ../../index.rst:23
+msgid "bigWig and bedGraph signal tracks, multi-sample overlays"
+msgstr "bigWig / bedGraph 信号轨道，支持多样本叠加"
+
+#: ../../index.rst:24
+msgid "Import your own bigWig, bedGraph, BAM, GTF or FASTA at runtime"
+msgstr "运行时可导入自己的 bigWig、bedGraph、BAM、GTF 或 FASTA"
+
+#: ../../index.rst:25
+msgid "Split view, deep links, PNG / SVG / PDF export"
+msgstr "分屏视图、深链接，导出 PNG / SVG / PDF"
+
+#: ../../index.rst:29
+msgid ""
+"This documentation is available in English and Chinese. Use the language "
+"selector in the bottom-left corner of the page to switch between ``English``"
+" and ``简体中文``. The Chinese translation lives at ``/zh-cn/latest/`` on the "
+"same site."
+msgstr ""
+"本文档提供英文和中文两个版本。用页面左下角的语言选择器在 ``English`` 与 ``简体中文`` 之间切换，中文版位于同一站点的 ``/zh-"
+"cn/latest/``。"
+
+#: ../../index.rst:60
+msgid "Indices"
+msgstr "索引"
+
+#: ../../index.rst:62
+msgid ":ref:`genindex`"
+msgstr ":ref:`genindex`"
+
+#: ../../index.rst:63
+msgid ":ref:`search`"
+msgstr ":ref:`search`"

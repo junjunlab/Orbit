@@ -1,0 +1,161 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2026, junjunlab
+# This file is distributed under the same license as the Orbit package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Orbit 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-10-29 14:43+0800\n"
+"PO-Revision-Date: 2026-10-29 15:00+0800\n"
+"Last-Translator: junjunlab\n"
+"Language-Team: zh_CN <LL@li.org>\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../faq.rst:2
+msgid "FAQ"
+msgstr "常见问题"
+
+#: ../../faq.rst:5
+msgid "The sequence and GC tracks are grey"
+msgstr "序列和 GC 轨道是灰色的"
+
+#: ../../faq.rst:7
+msgid ""
+"Those tracks need sequence, and sequence is fetched from UCSC. Check that:"
+msgstr "这两条轨道需要序列，而序列是从 UCSC 拉取的。请确认："
+
+#: ../../faq.rst:9
+msgid "the machine has network access,"
+msgstr "机器能访问网络；"
+
+#: ../../faq.rst:10
+msgid "``ORBIT_OFFLINE`` is not set to ``1``,"
+msgstr "``ORBIT_OFFLINE`` 没有被设成 ``1``；"
+
+#: ../../faq.rst:11
+msgid "the assembly has a ``twoBitURL`` in ``data/catalog.json``."
+msgstr "该装配在 ``data/catalog.json`` 里有 ``twoBitURL``。"
+
+#: ../../faq.rst:13
+msgid ""
+"Genes, cytobands, search and imported tracks do not need sequence and keep "
+"working either way."
+msgstr "基因、细胞遗传带、搜索和导入的轨道都不依赖序列，无论如何都能正常工作。"
+
+#: ../../faq.rst:17
+msgid "Loading a locus is slow the first time"
+msgstr "第一次加载位点比较慢"
+
+#: ../../faq.rst:19
+msgid ""
+"That is the range request fetching the 2bit index and the blocks for the "
+"window. The first visit to a chromosome takes about a second; moving within "
+"it afterwards is roughly 0.3 seconds. If every move is slow, the machine is "
+"probably re-resolving DNS — try a local FASTA."
+msgstr ""
+"这是 Range 请求在取 2bit 索引和窗口覆盖的数据块。首次访问某条染色体约 1 秒，之后在该染色体上移动约 0.3 "
+"秒。如果每次移动都很慢，多半是 DNS 反复解析——改用本地 FASTA 试试。"
+
+#: ../../faq.rst:25
+msgid "macOS says the app is damaged"
+msgstr "macOS 提示应用已损坏"
+
+#: ../../faq.rst:27
+msgid "The build is not notarized, so Gatekeeper quarantines it. Run once::"
+msgstr "构建产物没有做公证，被 Gatekeeper 隔离了。执行一次："
+
+#: ../../faq.rst:32
+msgid "Windows SmartScreen blocked the installer"
+msgstr "Windows SmartScreen 拦截了安装包"
+
+#: ../../faq.rst:34
+msgid "The installer is not code-signed. Choose **More info → Run anyway**."
+msgstr "安装包没有代码签名。选择 **更多信息 → 仍要运行**。"
+
+#: ../../faq.rst:37
+msgid "The window opens but stays blank"
+msgstr "窗口打开了但一片空白"
+
+#: ../../faq.rst:39
+msgid ""
+"Check ``orbit.log`` in the settings directory (see :doc:`installation`). A "
+"blank window almost always means the backend failed to start — usually a "
+"port already in use. Launch with ``--port 8766`` and see whether it comes "
+"up."
+msgstr ""
+"查看设置目录下的 ``orbit.log``，见 :doc:`installation`。白屏几乎总是后端没起来 —— 通常是端口被占用。用 "
+"``--port 8766`` 启动试试能否正常打开。"
+
+#: ../../faq.rst:44
+msgid "Where are my settings stored?"
+msgstr "设置存在哪里？"
+
+#: ../../faq.rst:46
+msgid ""
+"``%LOCALAPPDATA%\\Orbit`` on Windows, ``~/Library/Application "
+"Support/Orbit`` on macOS. Delete the folder to reset everything; the app "
+"recreates it on next launch. Set ``ORBIT_HOME`` to use a different location."
+msgstr ""
+"Windows 在 ``%LOCALAPPDATA%\\Orbit``，macOS 在 ``~/Library/Application "
+"Support/Orbit``。删掉这个目录即可重置一切，应用下次启动会重新创建。设置 ``ORBIT_HOME`` 可以换位置。"
+
+#: ../../faq.rst:51
+msgid "Why does a gene label overlap the feature?"
+msgstr "为什么基因名字会压在特征上？"
+
+#: ../../faq.rst:53
+msgid ""
+"When the name does not fit beside the feature, it is drawn on top of it with"
+" a translucent background rather than being truncated to ``NM_00…``. That is"
+" deliberate: a shortened accession is worse than a slightly busy label."
+msgstr "当名字在特征旁边放不下时，会带半透明底板压在特征上，而不是截断成 ``NM_00…``。这是有意为之：缩短的编号比稍微拥挤的标签更糟。"
+
+#: ../../faq.rst:58
+msgid "Can I use my own genome?"
+msgstr "可以用自己的基因组吗？"
+
+#: ../../faq.rst:60
+msgid ""
+"Yes — add an entry to ``data/catalog.json`` and a local FASTA, as described "
+"in :doc:`assemblies`. Any assembly UCSC hosts also works by pointing "
+"``twoBitURL`` at its 2bit file."
+msgstr ""
+"可以——按 :doc:`assemblies` 所述，在 ``data/catalog.json`` 里加一条并准备本地 FASTA。UCSC "
+"上有的装配，把 ``twoBitURL`` 指向它的 2bit 文件也能直接用。"
+
+#: ../../faq.rst:65
+msgid "Why is there no batch export?"
+msgstr "为什么没有批量导出？"
+
+#: ../../faq.rst:67
+msgid ""
+"Split view covers most of the need: up to four loci in one canvas, one "
+"export. A real batch mode would need a separate renderer that does not "
+"depend on the window, which is a larger change than it looks."
+msgstr "分屏视图已经覆盖了大部分需求：最多四个位点画在同一块画布上，一次导出。真正的批量模式需要一个不依赖窗口的独立渲染器，改动比看上去大。"
+
+#: ../../faq.rst:72
+msgid "Can I run two instances at once?"
+msgstr "能同时开两个实例吗？"
+
+#: ../../faq.rst:74
+msgid "Yes, with different ports and different state directories::"
+msgstr "可以，用不同的端口和不同的状态目录："
+
+#: ../../faq.rst:80
+msgid "Does it work offline?"
+msgstr "能离线用吗？"
+
+#: ../../faq.rst:82
+msgid ""
+"With a local FASTA or 2bit, yes. Set ``ORBIT_OFFLINE=1`` to make sure "
+"nothing tries to reach the network."
+msgstr "配合本地 FASTA 或 2bit 就可以。设 ``ORBIT_OFFLINE=1`` 可确保不会去连网络。"

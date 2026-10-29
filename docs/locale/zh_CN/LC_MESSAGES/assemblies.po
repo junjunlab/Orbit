@@ -1,0 +1,243 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2026, junjunlab
+# This file is distributed under the same license as the Orbit package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Orbit 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-10-29 14:43+0800\n"
+"PO-Revision-Date: 2026-10-29 15:00+0800\n"
+"Last-Translator: junjunlab\n"
+"Language-Team: zh_CN <LL@li.org>\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../assemblies.rst:2
+msgid "Assemblies"
+msgstr "装配"
+
+#: ../../assemblies.rst:4
+msgid ""
+"Orbit bundles annotation for 18 assemblies across 9 species. Sequence is not"
+" bundled — it is streamed from UCSC on demand, which is what keeps the "
+"download small."
+msgstr "Orbit 内置 9 个物种共 18 个装配的注释。序列不打包——按需从 UCSC 流式读取，这也是下载体积小的原因。"
+
+#: ../../assemblies.rst:9
+msgid "Bundled assemblies"
+msgstr "内置装配"
+
+#: ../../assemblies.rst:15
+msgid "Species"
+msgstr "物种"
+
+#: ../../assemblies.rst:16
+msgid "Current"
+msgstr "当前版"
+
+#: ../../assemblies.rst:17
+msgid "Previous"
+msgstr "上一版"
+
+#: ../../assemblies.rst:18
+msgid "Source"
+msgstr "来源"
+
+#: ../../assemblies.rst:19
+msgid "Human"
+msgstr "人"
+
+#: ../../assemblies.rst:20
+msgid "``hg38``"
+msgstr "``hg38``"
+
+#: ../../assemblies.rst:21
+msgid "``hg19``"
+msgstr "``hg19``"
+
+#: ../../assemblies.rst:22 ../../assemblies.rst:26 ../../assemblies.rst:30
+#: ../../assemblies.rst:34 ../../assemblies.rst:38 ../../assemblies.rst:42
+#: ../../assemblies.rst:46 ../../assemblies.rst:50 ../../assemblies.rst:54
+msgid "UCSC refGene"
+msgstr "UCSC refGene"
+
+#: ../../assemblies.rst:23
+msgid "Mouse"
+msgstr "小鼠"
+
+#: ../../assemblies.rst:24
+msgid "``mm39``"
+msgstr "``mm39``"
+
+#: ../../assemblies.rst:25
+msgid "``mm10``"
+msgstr "``mm10``"
+
+#: ../../assemblies.rst:27
+msgid "Rat"
+msgstr "大鼠"
+
+#: ../../assemblies.rst:28
+msgid "``rn7``"
+msgstr "``rn7``"
+
+#: ../../assemblies.rst:29
+msgid "``rn6``"
+msgstr "``rn6``"
+
+#: ../../assemblies.rst:31
+msgid "Zebrafish"
+msgstr "斑马鱼"
+
+#: ../../assemblies.rst:32
+msgid "``danRer11``"
+msgstr "``danRer11``"
+
+#: ../../assemblies.rst:33
+msgid "``danRer10``"
+msgstr "``danRer10``"
+
+#: ../../assemblies.rst:35
+msgid "Fly"
+msgstr "果蝇"
+
+#: ../../assemblies.rst:36
+msgid "``dm6``"
+msgstr "``dm6``"
+
+#: ../../assemblies.rst:37
+msgid "``dm3``"
+msgstr "``dm3``"
+
+#: ../../assemblies.rst:39
+msgid "Worm"
+msgstr "线虫"
+
+#: ../../assemblies.rst:40
+msgid "``ce11``"
+msgstr "``ce11``"
+
+#: ../../assemblies.rst:41
+msgid "``ce10``"
+msgstr "``ce10``"
+
+#: ../../assemblies.rst:43
+msgid "Yeast"
+msgstr "酵母"
+
+#: ../../assemblies.rst:44
+msgid "``sacCer3``"
+msgstr "``sacCer3``"
+
+#: ../../assemblies.rst:45
+msgid "``sacCer2``"
+msgstr "``sacCer2``"
+
+#: ../../assemblies.rst:47
+msgid "Frog"
+msgstr "爪蟾"
+
+#: ../../assemblies.rst:48
+msgid "``xenTro10``"
+msgstr "``xenTro10``"
+
+#: ../../assemblies.rst:49
+msgid "``xenTro9``"
+msgstr "``xenTro9``"
+
+#: ../../assemblies.rst:51
+msgid "Chicken"
+msgstr "鸡"
+
+#: ../../assemblies.rst:52
+msgid "``galGal6``"
+msgstr "``galGal6``"
+
+#: ../../assemblies.rst:53
+msgid "``galGal5``"
+msgstr "``galGal5``"
+
+#: ../../assemblies.rst:56
+msgid ""
+"Each assembly carries gene models, cytobands, chromosome sizes and the "
+"primary chromosome order used by the overview panel."
+msgstr "每个装配都带基因模型、细胞遗传带、染色体长度，以及总览面板使用的主染色体顺序。"
+
+#: ../../assemblies.rst:60
+msgid "How sequence is fetched"
+msgstr "序列怎么取"
+
+#: ../../assemblies.rst:62
+msgid ""
+"Every assembly in ``data/catalog.json`` records a ``twoBitURL`` pointing at "
+"the UCSC 2bit file. When you navigate, Orbit issues an HTTP Range request "
+"for just the bytes covering the window and decodes them locally."
+msgstr ""
+"``data/catalog.json`` 里每个装配都记录了一个指向 UCSC 2bit 文件的 ``twoBitURL``。导航时 Orbit "
+"只对窗口覆盖的字节发 HTTP Range 请求，在本地解码。"
+
+#: ../../assemblies.rst:66
+msgid "First visit to a chromosome: about one second"
+msgstr "首次访问某条染色体：约 1 秒"
+
+#: ../../assemblies.rst:67
+msgid "Subsequent moves within it: about 0.3 seconds"
+msgstr "之后在其上移动：约 0.3 秒"
+
+#: ../../assemblies.rst:68
+msgid ""
+"Nothing is written to disk; the range cache is in memory and per session"
+msgstr "不写磁盘；Range 缓存在内存里，随会话结束而消失"
+
+#: ../../assemblies.rst:70
+msgid ""
+"If the network is unavailable, the sequence and GC tracks go grey and "
+"everything else keeps working."
+msgstr "网络不可用时，序列和 GC 轨道变灰，其余功能照常。"
+
+#: ../../assemblies.rst:74
+msgid "Offline mode"
+msgstr "离线模式"
+
+#: ../../assemblies.rst:76
+msgid ""
+"Set ``ORBIT_OFFLINE=1`` before launching to forbid network access. Combined "
+"with a local FASTA or 2bit, this gives a fully air-gapped browser::"
+msgstr "启动前设置 ``ORBIT_OFFLINE=1`` 即可禁止联网。配合本地 FASTA 或 2bit，就是一个完全隔离的浏览器："
+
+#: ../../assemblies.rst:82
+msgid ""
+"With no local sequence the GC and sequence tracks stay disabled, but genes, "
+"cytobands, search and imported tracks are unaffected."
+msgstr "没有本地序列时，GC 和序列轨道保持禁用，但基因、细胞遗传带、搜索和导入的轨道不受影响。"
+
+#: ../../assemblies.rst:86
+msgid "Adding your own assembly"
+msgstr "添加自己的装配"
+
+#: ../../assemblies.rst:88
+msgid ""
+"Edit ``data/catalog.json`` and add an entry alongside the existing ones:"
+msgstr "编辑 ``data/catalog.json``，在现有条目旁边加一条："
+
+#: ../../assemblies.rst:102
+msgid ""
+"Then place ``genes.igvbin`` and ``cytoband.json`` under "
+"``data/ann/myAssembly/``. The binary index is produced by the build scripts "
+"in ``build/``; see :doc:`how-it-works` for the format."
+msgstr ""
+"然后把 ``genes.igvbin`` 和 ``cytoband.json`` 放到 ``data/ann/myAssembly/`` "
+"下。二进制索引由 ``build/`` 里的构建脚本生成；格式见 :doc:`how-it-works`。"
+
+#: ../../assemblies.rst:106
+msgid ""
+"Restart Orbit and the assembly appears in the selector. Nothing else needs "
+"to change — the frontend reads the catalog, not a hard-coded list."
+msgstr "重启 Orbit，装配就会出现在选择器里。其它都不用改——前端读的是 catalog，不是硬编码列表。"

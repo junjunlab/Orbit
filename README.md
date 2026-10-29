@@ -1,5 +1,9 @@
 # Orbit
 
+[![Docs](https://readthedocs.org/projects/orbit-genome-browser/badge/?version=latest)](https://orbit-genome-browser.readthedocs.io/en/latest/)
+[![Release](https://img.shields.io/github/v/release/junjunlab/Orbit)](https://github.com/junjunlab/Orbit/releases)
+[![License](https://img.shields.io/github/license/junjunlab/Orbit)](LICENSE)
+
 A fast, offline-first **desktop genome browser** — a lightweight alternative to IGV Desktop.
 Native window, double-click to run, no Java, no server setup.
 
@@ -8,6 +12,10 @@ fetched on demand from UCSC 2bit files over HTTP Range requests. That is why the
 ships ~70 MB of annotation instead of 3 GB of genome.
 
 ![Orbit](docs/screenshot.png)
+
+**Documentation** — [English](https://orbit-genome-browser.readthedocs.io/en/latest/) ·
+[简体中文](https://orbit-genome-browser.readthedocs.io/zh-cn/latest/). Both are built from
+`docs/` with Sphinx; use the language flyout at the bottom-left of any page to switch.
 
 ## Install
 
@@ -72,6 +80,17 @@ bash installer/make_dmg.sh                         # macOS → .dmg
 
 CI (`.github/workflows/build.yml`) builds all three packages on every tag push and
 attaches them to the release.
+
+## Documentation
+
+The manual lives in `docs/` (Sphinx + reStructuredText, hosted on Read the Docs).
+English is the source language; Chinese is a gettext translation.
+
+```bash
+pip install -r docs/requirements.txt
+sphinx-build -b html docs docs/_build/html               # English
+sphinx-build -b html -D language=zh_CN docs docs/_build/html-zh
+```
 
 ## How it works
 

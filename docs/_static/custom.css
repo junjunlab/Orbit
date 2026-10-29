@@ -1,0 +1,28 @@
+:root {
+  --orbit-accent: #185fa5;
+}
+
+/* The screenshot on the landing page */
+.orbit-hero {
+  width: 100%;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 8px;
+}
+
+/* Inline key caps, e.g. :kbd:`Ctrl` */
+kbd,
+.rst-content kbd {
+  background: #f1efe8;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-size: 90%;
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+}
+
+/* Keep wide tables usable on narrow screens */
+.wy-table-responsive table td,
+.wy-table-responsive table th {
+  white-space: normal;
+}

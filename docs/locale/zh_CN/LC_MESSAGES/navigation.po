@@ -1,0 +1,256 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2026, junjunlab
+# This file is distributed under the same license as the Orbit package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Orbit 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-10-29 14:47+0800\n"
+"PO-Revision-Date: 2026-10-29 15:00+0800\n"
+"Last-Translator: junjunlab\n"
+"Language-Team: zh_CN <LL@li.org>\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../navigation.rst:2
+msgid "Navigation"
+msgstr "导航"
+
+#: ../../navigation.rst:4
+msgid ""
+"Moving around a genome is the part you do most, so Orbit tries to make every"
+" route to a locus one action long."
+msgstr "在基因组上移动是你做得最多的操作，所以 Orbit 尽量让到达任意位点都只需一步。"
+
+#: ../../navigation.rst:8
+msgid "Search syntax"
+msgstr "搜索语法"
+
+#: ../../navigation.rst:10
+msgid ""
+"The search box accepts several forms and figures out which one you meant:"
+msgstr "搜索框接受多种写法，并自行判断你想表达哪一种："
+
+#: ../../navigation.rst:16
+msgid "Input"
+msgstr "输入"
+
+#: ../../navigation.rst:17
+msgid "Result"
+msgstr "结果"
+
+#: ../../navigation.rst:18
+msgid "``TP53``"
+msgstr "``TP53``"
+
+#: ../../navigation.rst:19
+msgid "Jumps to the gene, case-insensitive"
+msgstr "跳到该基因，不区分大小写"
+
+#: ../../navigation.rst:20
+msgid "``chr17:7,668,402-7,687,550``"
+msgstr "``chr17:7,668,402-7,687,550``"
+
+#: ../../navigation.rst:21
+msgid "That interval on chr17"
+msgstr "chr17 上的这个区间"
+
+#: ../../navigation.rst:22
+msgid "``chr17:7668402-7687550``"
+msgstr "``chr17:7668402-7687550``"
+
+#: ../../navigation.rst:23
+msgid "Same, without thousands separators"
+msgstr "同上，不带千分位分隔符"
+
+#: ../../navigation.rst:24
+msgid "``7,668,402-7,687,550``"
+msgstr "``7,668,402-7,687,550``"
+
+#: ../../navigation.rst:25
+msgid "Uses the current chromosome"
+msgstr "使用当前染色体"
+
+#: ../../navigation.rst:26
+msgid "``chr17:7,668,402``"
+msgstr "``chr17:7,668,402``"
+
+#: ../../navigation.rst:27
+msgid "A single base, shown with a 50 bp flank"
+msgstr "单个碱基，两侧各留 50 bp"
+
+#: ../../navigation.rst:28
+msgid "``chr17``"
+msgstr "``chr17``"
+
+#: ../../navigation.rst:29
+msgid "The whole chromosome"
+msgstr "整条染色体"
+
+#: ../../navigation.rst:31
+msgid ""
+"If a gene symbol matches several genes, the first hit is used and a list of "
+"alternatives is offered. Press :kbd:`Enter` again to cycle through them."
+msgstr "如果一个基因名匹配到多个基因，取第一个命中并给出候选列表。再按一次 :kbd:`Enter` 可在候选之间循环。"
+
+#: ../../navigation.rst:35
+msgid "Zooming and panning"
+msgstr "缩放与平移"
+
+#: ../../navigation.rst:37
+msgid "Mouse wheel zooms around the cursor"
+msgstr "滚轮以光标为中心缩放"
+
+#: ../../navigation.rst:38
+msgid "Dragging on the ruler pans; dragging on a gene selects a range"
+msgstr "在标尺上拖动平移；在基因上拖动则选中一个区间"
+
+#: ../../navigation.rst:39
+msgid ":kbd:`+` / :kbd:`-` zoom around the centre"
+msgstr ":kbd:`+` / :kbd:`-` 以中心缩放"
+
+#: ../../navigation.rst:40
+msgid ""
+"The zoom level is shown as base pairs per pixel, which is the honest measure"
+" of how much detail you are actually seeing"
+msgstr "缩放级别显示为每像素多少碱基，这是衡量你实际看清多少细节的诚实指标"
+
+#: ../../navigation.rst:43
+msgid ""
+"There is a hard limit at one base per pixel. Beyond that the sequence track "
+"takes over — it draws coloured bases instead of pretending to have more "
+"resolution."
+msgstr "硬上限是每像素 1 个碱基。再往下就交给序列轨道——它画出带颜色的碱基，而不是假装还有更高分辨率。"
+
+#: ../../navigation.rst:48
+msgid "Split view"
+msgstr "分屏视图"
+
+#: ../../navigation.rst:50
+msgid ""
+"Split view shows up to four independent loci at once, each with its own "
+"chromosome, coordinates and selection. It is the fastest way to compare the "
+"same gene across samples, or to check that an event really is where you "
+"think it is."
+msgstr "分屏可同时显示最多四个独立位点，各自有染色体、坐标和选区。比较不同样本间的同一基因，或确认某个事件是否真在你以为的位置，这是最快的办法。"
+
+#: ../../navigation.rst:55
+msgid "Choose *2*, *3* or *4* panes from the toolbar"
+msgstr "在工具栏选择 *2*、*3* 或 *4* 个面板"
+
+#: ../../navigation.rst:56
+msgid ""
+"Each pane keeps its own search state; :kbd:`Ctrl` + :kbd:`1` … :kbd:`4` "
+"focuses a pane"
+msgstr "每个面板保留各自的搜索状态；:kbd:`Ctrl` + :kbd:`1` … :kbd:`4` 可切换到对应面板"
+
+#: ../../navigation.rst:58
+msgid "Tracks are shared — load a bigWig once and it appears in every pane"
+msgstr "轨道是共享的——载入一次 bigWig，所有面板都会出现"
+
+#: ../../navigation.rst:59
+msgid "The whole-genome overview is not split; it follows the focused pane"
+msgstr "全基因组总览不分屏，跟随当前聚焦的面板"
+
+#: ../../navigation.rst:62
+msgid "Deep links"
+msgstr "深链接"
+
+#: ../../navigation.rst:64
+msgid "Every view has a URL you can paste into a notebook or a chat:"
+msgstr "每个视图都有 URL，可以直接贴进笔记或聊天："
+
+#: ../../navigation.rst:70
+msgid "Parameters:"
+msgstr "参数："
+
+#: ../../navigation.rst:76
+msgid "Key"
+msgstr "参数"
+
+#: ../../navigation.rst:77
+msgid "Meaning"
+msgstr "含义"
+
+#: ../../navigation.rst:78
+msgid "``db``"
+msgstr "``db``"
+
+#: ../../navigation.rst:79
+msgid "Assembly id, for example ``hg38`` or ``mm39``"
+msgstr "装配 id，例如 ``hg38`` 或 ``mm39``"
+
+#: ../../navigation.rst:80
+msgid "``locus``"
+msgstr "``locus``"
+
+#: ../../navigation.rst:81
+msgid "A locus in any of the search-box forms"
+msgstr "位点，支持搜索框的所有写法"
+
+#: ../../navigation.rst:82
+msgid "``tracks``"
+msgstr "``tracks``"
+
+#: ../../navigation.rst:83
+msgid "Comma-separated track names to enable"
+msgstr "要启用的轨道名，逗号分隔"
+
+#: ../../navigation.rst:85
+msgid ""
+"When Orbit runs as a desktop window the address bar is not visible, but the "
+"link is still accepted: launch with ``--browser`` and the page reads the "
+"query string, or paste the locus part into the search box."
+msgstr "以桌面窗口运行时看不到地址栏，但链接同样有效：加 ``--browser`` 启动，页面会读取查询串；或者把位点部分粘进搜索框。"
+
+#: ../../navigation.rst:90
+msgid "Transcript expansion"
+msgstr "转录本展开"
+
+#: ../../navigation.rst:92
+msgid ""
+"Click any gene to expand it into its transcripts. Expanded genes show exons,"
+" introns, CDS thickness, and the coding direction; the row grows from 32 to "
+"54 pixels and the label is drawn on top of the feature when there is no room"
+" beside it."
+msgstr ""
+"点任意基因即可展开它的转录本。展开后显示外显子、内含子、CDS 厚度和编码方向；行高从 32 px 变成 54 px，名字在特征旁边放不下时压在特征上。"
+
+#: ../../navigation.rst:97
+msgid "Click again to collapse"
+msgstr "再点一次收起"
+
+#: ../../navigation.rst:98
+msgid ":kbd:`Shift` + click expands every gene in the window"
+msgstr ":kbd:`Shift` + 点击可展开窗口内所有基因"
+
+#: ../../navigation.rst:99
+msgid "The expanded set is remembered across sessions"
+msgstr "展开状态会跨会话记住"
+
+#: ../../navigation.rst:102
+msgid "The whole-genome overview"
+msgstr "全基因组总览"
+
+#: ../../navigation.rst:104
+msgid ""
+"The overview at the bottom lists every primary chromosome as a horizontal "
+"bar whose length is proportional to the chromosome size, with the current "
+"window marked in colour. It starts collapsed as a single row for the current"
+" chromosome; press the chevron to expand all 25 rows. Clicking a bar "
+"navigates to that chromosome."
+msgstr ""
+"底部的总览把每条主染色体画成一条横条，长度与染色体大小成正比，当前窗口用颜色标出。它默认折叠成当前染色体的单行；按箭头展开全部 25 "
+"行。点某条即跳到该染色体。"
+
+#~ msgid ""
+#~ "When Orbit runs as a desktop window the address bar is not visible, but the "
+#~ "link is still accepted — *File → Open URL* takes the same string."
+#~ msgstr ""

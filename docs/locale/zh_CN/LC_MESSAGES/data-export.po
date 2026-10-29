@@ -1,0 +1,167 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2026, junjunlab
+# This file is distributed under the same license as the Orbit package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Orbit 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-10-29 14:43+0800\n"
+"PO-Revision-Date: 2026-10-29 15:00+0800\n"
+"Last-Translator: junjunlab\n"
+"Language-Team: zh_CN <LL@li.org>\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../data-export.rst:2
+msgid "Exporting"
+msgstr "导出"
+
+#: ../../data-export.rst:4
+msgid ""
+"The export button captures exactly what is on screen — same colours, same "
+"labels, same zoom — and writes it to a file."
+msgstr "导出按钮抓取的就是屏幕上看到的内容——同样的配色、同样的标签、同样的缩放——写进文件。"
+
+#: ../../data-export.rst:8
+msgid "Formats"
+msgstr "格式"
+
+#: ../../data-export.rst:14
+msgid "Format"
+msgstr "格式"
+
+#: ../../data-export.rst:15
+msgid "Extension"
+msgstr "扩展名"
+
+#: ../../data-export.rst:16
+msgid "When to use it"
+msgstr "适用场景"
+
+#: ../../data-export.rst:17
+msgid "PNG"
+msgstr "PNG"
+
+#: ../../data-export.rst:18
+msgid "``.png``"
+msgstr "``.png``"
+
+#: ../../data-export.rst:19
+msgid ""
+"Slides, quick sharing. Rendered at the current device pixel ratio, so it "
+"stays sharp on a HiDPI display."
+msgstr "做幻灯片、快速分享。按当前设备像素比渲染，在高分屏上依然清晰。"
+
+#: ../../data-export.rst:21
+msgid "SVG"
+msgstr "SVG"
+
+#: ../../data-export.rst:22
+msgid "``.svg``"
+msgstr "``.svg``"
+
+#: ../../data-export.rst:23
+msgid ""
+"Editing in Illustrator or Inkscape. Text stays text, strokes stay strokes."
+msgstr "需要在 Illustrator 或 Inkscape 里编辑。文字还是文字，描边还是描边。"
+
+#: ../../data-export.rst:25
+msgid "PDF"
+msgstr "PDF"
+
+#: ../../data-export.rst:26
+msgid "``.pdf``"
+msgstr "``.pdf``"
+
+#: ../../data-export.rst:27
+msgid "Journal figures. Vector, with an embedded font."
+msgstr "期刊插图。矢量，字体已嵌入。"
+
+#: ../../data-export.rst:29
+msgid ""
+"File names are generated from the locus so you can export several views "
+"without renaming anything::"
+msgstr "文件名按位点自动生成，导多个视图不用手动改名："
+
+#: ../../data-export.rst:35
+msgid "What is included"
+msgstr "导出内容"
+
+#: ../../data-export.rst:37
+msgid "Every visible track, in the same order and with the same heights"
+msgstr "所有可见轨道，顺序和高度都与屏幕一致"
+
+#: ../../data-export.rst:38
+msgid "Track labels and the axis on the left"
+msgstr "左侧的轨道标签和坐标轴"
+
+#: ../../data-export.rst:39
+msgid "Split view: all panes side by side, at their on-screen widths"
+msgstr "分屏时所有面板按屏幕宽度并排"
+
+#: ../../data-export.rst:40
+msgid "The selection highlight, if there is one"
+msgstr "选区高亮（如果有）"
+
+#: ../../data-export.rst:42
+msgid ""
+"Hidden tracks are not exported. If you want a figure without the ruler, "
+"uncheck it first — the export is a photograph of the window, not a separate "
+"renderer with its own options."
+msgstr "隐藏的轨道不会被导出。想去掉标尺就先把它取消勾选——导出是窗口的「照片」，不是另有一套选项的独立渲染器。"
+
+#: ../../data-export.rst:47
+msgid "Vector export notes"
+msgstr "矢量导出的几点说明"
+
+#: ../../data-export.rst:49
+msgid ""
+"SVG and PDF are drawn with real vector primitives, not by embedding a "
+"bitmap. A few consequences are worth knowing:"
+msgstr "SVG 和 PDF 用真正的矢量图元绘制，不是嵌一张位图。有几点后果值得知道："
+
+#: ../../data-export.rst:52
+msgid "Signal tracks become one path per sample, so they scale cleanly"
+msgstr "信号轨道每个样本一条路径，缩放后依然干净"
+
+#: ../../data-export.rst:53
+msgid "Gene models keep their exon rectangles and arrows as separate objects"
+msgstr "基因模型的外显子矩形和箭头都是独立对象"
+
+#: ../../data-export.rst:54
+msgid ""
+"Dense labels are laid out exactly as on screen, including the ones that sit "
+"on top of features — the export does not re-flow text"
+msgstr "标签排版与屏幕完全一致，包括压在特征上的那些——导出不会重排文字"
+
+#: ../../data-export.rst:56
+msgid ""
+"Very large exports (a whole chromosome at base resolution) produce large "
+"files; export a window instead"
+msgstr "超大范围导出（整条染色体到碱基分辨率）文件会很大；建议只导一个窗口"
+
+#: ../../data-export.rst:61
+msgid ""
+"For a publication figure, zoom until the scale reads something like ``10 "
+"bp/px``, then export SVG. Illustrator opens it with every label still "
+"editable, so you can nudge a gene name without redrawing anything."
+msgstr ""
+"做发表用的图，先放大到比例尺显示 ``10 bp/px`` 左右，再导 SVG。Illustrator 打开后每个标签都可编辑，挪一下基因名不用重画。"
+
+#: ../../data-export.rst:66
+msgid "Batch export"
+msgstr "批量导出"
+
+#: ../../data-export.rst:68
+msgid ""
+"There is no batch mode yet. For many views, use split view to place up to "
+"four loci in one canvas and export once — each pane keeps its own "
+"coordinates."
+msgstr "目前没有批量模式。要导很多视图时，用分屏把最多四个位点放进同一块画布一次导出——每个面板保留各自的坐标。"

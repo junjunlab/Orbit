@@ -31,10 +31,23 @@ TOPICS = ["genomics", "genome-browser", "igv", "bioinformatics", "pyside6", "qtw
 SKIP_DIRS = {
     "dist", ".git", "__pycache__", "shots", ".workbuddy", ".workbuddy-ai",
     "data/genomes", "data/loaded", "data/raw", "build/pyi", "build/.cache",
-    "docs/ui-review",
+    "docs/ui-review", "docs/_build",
 }
-SKIP_SUFFIX = {".pyc", ".pyo", ".log", ".spec", ".tmp", ".pkl"}
+SKIP_SUFFIX = {
+    ".pyc", ".pyo", ".log", ".spec", ".tmp", ".pkl",
+    ".mo",          # Sphinx 在构建时由 .po 现编，仓库里只留 .po
+}
 SKIP_NAME_PREFIX = ("_", "REBUILD_", "shot")
+
+# 以下划线开头但必须进仓库的目录（Sphinx 的静态资源 / 模板）
+KEEP_DIRS = {"docs/_static", "docs/_templates"}
+
+# 根目录放行的文件（其余根目录文件一律不推）
+ROOT_FILES = {
+    "README.md", ".gitignore", "requirements.txt",
+    "启动.bat", "start-window.bat", "LICENSE",
+    ".readthedocs.yaml",
+}
 
 # fine-grained PAT 没有 Workflows: write 时，任何含「根目录 .github/workflows/*」的
 # tree / contents 写入都返回 403 Resource not accessible by personal access token
@@ -94,15 +107,13 @@ def collect() -> list[Path]:
         if p.suffix in SKIP_SUFFIX:
             continue
         parts = rel.split("/")
-        if any(part.startswith(SKIP_NAME_PREFIX) for part in parts[:-1]):   # build/_diag_state/...
+        keep_dir = any(rel.startswith(d + "/") for d in KEEP_DIRS)
+        if not keep_dir and any(part.startswith(SKIP_NAME_PREFIX) for part in parts[:-1]):
             continue
         if parts[-1].startswith(("_", "REBUILD_", "shot")) and p.suffix != ".py":
             continue
         # 根目录只保留几个明确的文件
-        if len(parts) == 1 and rel not in {
-            "README.md", ".gitignore", "requirements.txt",
-            "启动.bat", "start-window.bat", "LICENSE",
-        }:
+        if len(parts) == 1 and rel not in ROOT_FILES:
             continue
         out.append(p)
     return out
