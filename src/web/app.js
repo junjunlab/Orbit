@@ -3862,7 +3862,7 @@
   // 这里用「虚拟轨道」实现第二条：id 加 ::align 后缀，共享同一个后端文件。
   const ALIGN_SUF = '::align';
   const alignId = (t) => t.id + ALIGN_SUF;
-  const isBam = (t) => !!t && t.format === 'bam';
+  const isBam = (t) => !!t && (t.format === 'bam' || t.format === 'sam');
   const alignOn = (t) => S.bw.on[alignId(t)] !== false;
   const alignActive = (t) => isBam(t) && bwActive(t) && alignOn(t);
   const ALIGN_ROW_H = 13;      // 每条 read 一行的高度（CSS 像素）；行多时按比例压缩

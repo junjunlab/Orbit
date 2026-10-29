@@ -549,8 +549,8 @@ class Handler(BaseHTTPRequestHandler):
             # 这里只取窗口内的 read，前端按 CIGAR 画成一行行灰块 + 错配色点。
             tid = (qs.get("track") or [""])[0]
             t = STORE.loaded.get(tid)
-            if t is None or t.format != "bam":
-                return self._error("unknown BAM track", HTTPStatus.NOT_FOUND)
+            if t is None or t.format not in ("bam", "sam"):
+                return self._error("unknown alignment track", HTTPStatus.NOT_FOUND)
             chrom = (qs.get("chrom") or [""])[0]
             start = int((qs.get("s") or ["0"])[0])
             end = int((qs.get("e") or ["0"])[0])

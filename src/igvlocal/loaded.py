@@ -38,7 +38,11 @@ from .bigwig import BigWig, BigWigError
 FORMAT_BY_EXT = {
     ".bw": "bigwig", ".bigwig": "bigwig",
     ".bedgraph": "bedgraph", ".bdg": "bedgraph",
+    # wiggle：variableStep / fixedStep，和 bedGraph 一样映射成区间+值
+    ".wig": "wig", ".wiggle": "wig",
     ".bam": "bam",
+    # SAM：未压缩的文本比对格式，解析后与 BAM 走同一套覆盖度/reads 视图
+    ".sam": "sam",
     ".gtf": "gtf", ".gff": "gtf", ".gff3": "gtf",
     # 区间注释：BED 家族。narrowPeak/broadPeak 就是 BED6+4，解析逻辑完全一样，
     # 只是多出来的 signalValue/pValue/qValue/peak 列先不参与绘制。
@@ -294,16 +298,89 @@ class BedGraphSignal(BaseTrack):
                 except (ValueError, IndexError):
                     continue
                 data.setdefault(p[0], []).append((s, e, v))
-        self._iv = {c: _Intervals(v) for c, v in data.items()}
-        self.chroms = {c: max(e for _, e, _ in v) for c, v in data.items()}
-        mx = max((v for arr in data.values() for _, _, v in arr), default=0.0)
-        self.total = {"max": mx}
+        _install_interval_signal(self, data)
 
     def summary(self, chrom, start, end, bins):
         it = self._iv.get(self.resolve_chrom(chrom))
         if it is None:
             return []
         return _bin_summary(it.overlapping(start, end), start, end, bins)
+
+
+def _install_interval_signal(track, data):
+    """整理 {chrom: [(s, e, v), ...]}，供 bedGraph / wig 共用。"""
+    track._iv = {c: _Intervals(v) for c, v in data.items()}
+    track.chroms = {c: max(e for _, e, _ in v) for c, v in data.items()}
+    mx = max((v for arr in data.values() for _, _, v in arr), default=0.0)
+    track.total = {"max": mx}
+
+
+class WigSignal(BedGraphSignal):
+    """WIG / wiggle signal.
+
+    Handles all three shapes in the wild: ``variableStep``, ``fixedStep``, and
+    the legacy bedGraph-like four-column body. Everything is normalised to
+    intervals so binning and drawing are identical to bedGraph.
+    """
+
+    def __init__(self, tid, name, path):
+        BaseTrack.__init__(self, tid, name, path, "wig")
+        data: dict[str, list] = {}
+        mode = None
+        chrom = None
+        start = step = span = 1
+        with _open_text(self.path) as f:
+            for raw in f:
+                line = raw.strip()
+                if not line or line.startswith(("#", "track", "browser")):
+                    continue
+                if line.startswith("variableStep"):
+                    mode, chrom, span = "var", None, 1
+                    for kv in line.split()[1:]:
+                        k, _, v = kv.partition("=")
+                        try:
+                            if k == "chrom":
+                                chrom = v
+                            elif k == "span":
+                                span = max(1, int(v))
+                        except ValueError:
+                            pass
+                    continue
+                if line.startswith("fixedStep"):
+                    mode, chrom, start, step, span = "fix", None, 1, 1, 1
+                    for kv in line.split()[1:]:
+                        k, _, v = kv.partition("=")
+                        try:
+                            if k == "chrom":
+                                chrom = v
+                            elif k == "start":
+                                start = int(v)
+                            elif k == "step":
+                                step = max(1, int(v))
+                            elif k == "span":
+                                span = max(1, int(v))
+                        except ValueError:
+                            pass
+                    continue
+                if chrom is None:
+                    continue
+                p = line.split()
+                try:
+                    if mode == "fix":
+                        v = float(p[0])
+                        s = start - 1
+                        data.setdefault(chrom, []).append((s, s + span, v))
+                        start += step
+                    elif mode == "var":
+                        s = int(p[0]) - 1
+                        data.setdefault(chrom, []).append((s, s + span, float(p[1])))
+                    elif mode is None and len(p) >= 4:
+                        # bare four-column body (some tools emit this)
+                        data.setdefault(p[0], []).append(
+                            (int(p[1]), int(p[2]), float(p[3])))
+                except (ValueError, IndexError):
+                    continue
+        _install_interval_signal(self, data)
 
 
 # CIGAR op codes that consume the reference
@@ -658,6 +735,152 @@ class BamSignal(BaseTrack):
                             "mm": rec["mm"]})
         finally:
             st.close()
+        return out, total, sampled
+
+    def meta(self):
+        m = super().meta()
+        m["reads"] = self.n_reads
+        m["truncated"] = self.truncated
+        m["hasSeq"] = self.has_seq
+        m["paired"] = self.paired
+        return m
+
+
+class SamSignal(BaseTrack):
+    """A SAM (plain-text) alignment file, exposed like :class:`BamSignal`.
+
+    SAM is parsed once into memory: per-chromosome intervals drive coverage,
+    and the decoded records drive the stacked-reads view, so no index, BGZF or
+    virtual offsets are involved. Very large files are capped the same way BAM
+    is, to keep memory bounded.
+    """
+
+    kind = "signal"
+
+    def __init__(self, tid, name, path, max_reads: int = 3_000_000):
+        super().__init__(tid, name, path, "sam")
+        self._iv: dict[str, _Intervals] = {}
+        self._recs: dict[str, list] = {}
+        self.truncated = False
+        self.n_reads = 0
+        self.has_seq = False
+        self.paired = False
+        self._load(max_reads)
+
+    def _load(self, max_reads: int) -> None:
+        ivs: dict[str, list] = {}
+        recs: dict[str, list] = {}
+        chroms: dict[str, int] = {}
+        with _open_text(self.path) as f:
+            for raw in f:
+                if not raw.strip():
+                    continue
+                if raw[0] == "@":
+                    if raw.startswith("@SQ"):
+                        sn = ln = None
+                        for kv in raw.rstrip("\r\n").split("\t")[1:]:
+                            k, _, v = kv.partition(":")
+                            if k == "SN":
+                                sn = v
+                            elif k == "LN":
+                                try:
+                                    ln = int(v)
+                                except ValueError:
+                                    pass
+                        if sn is not None and ln is not None:
+                            chroms[sn] = ln
+                    continue
+                if self.n_reads >= max_reads:
+                    self.truncated = True
+                    break
+                p = raw.rstrip("\r\n").split("\t")
+                if len(p) < 11:
+                    continue
+                rname, pos_s, cigar = p[2], p[3], p[5]
+                if rname == "*" or not pos_s.isdigit() or int(pos_s) < 1:
+                    continue
+                try:
+                    flag = int(p[1])
+                    mapq = int(p[4])
+                except ValueError:
+                    continue
+                # 只画主比对：secondary / supplementary（0x100 / 0x800）跳过，
+                # 否则同一条 read 会在同一位置重复堆叠。
+                if flag & 0x900:
+                    continue
+                start = int(pos_s) - 1
+                ops = []
+                ref_len = 0
+                num = 0
+                bad = False
+                for ch in cigar:
+                    if ch.isdigit():
+                        num = num * 10 + int(ch)
+                        continue
+                    idx = _CIGAR_OPS.find(ch)
+                    if idx < 0:
+                        bad = True
+                        break
+                    ops.append((num, idx))
+                    if idx in _CIGAR_REF:
+                        ref_len += num
+                    num = 0
+                if bad or ref_len <= 0:
+                    continue
+                seq = p[9]
+                if seq == "*":
+                    seq = ""
+                else:
+                    self.has_seq = True
+                if flag & 0x1:
+                    self.paired = True
+                end = start + ref_len
+                ivs.setdefault(rname, []).append((start, end))
+                recs.setdefault(rname, []).append({
+                    "p": start, "e": end, "q": mapq, "f": flag,
+                    "n": p[0], "c": cigar, "seq": seq.upper(), "ops": ops,
+                })
+                self.n_reads += 1
+
+        self._recs = recs
+        self._iv = {c: _Intervals(lst) for c, lst in ivs.items()}
+        # @SQ 里声明的长度优先；没有 @SQ 时用实际覆盖末端兜底
+        for c, lst in ivs.items():
+            chroms.setdefault(c, max(e for _, e in lst))
+        self.chroms = chroms
+
+    def summary(self, chrom, start, end, bins):
+        it = self._iv.get(self.resolve_chrom(chrom))
+        if it is None:
+            return []
+        return _coverage_summary(it.overlapping(start, end), start, end, bins)
+
+    def has_reads(self, chrom):
+        return self.resolve_chrom(chrom) in self._iv
+
+    def reads(self, chrom, start, end, max_n=200, ref=None):
+        c = self.resolve_chrom(chrom)
+        lst = self._recs.get(c)
+        if not lst:
+            return [], 0, False
+        hits = [r for r in lst if r["e"] > start and r["p"] < end]
+        total = len(hits)
+        sampled = total > max_n
+        if sampled and max_n > 0:
+            step = total / max_n
+            hits = [hits[int(i * step)] for i in range(max_n)]
+        out = []
+        for r in hits:
+            mm = []
+            if r["seq"] and ref is not None:
+                try:
+                    rs = ref(chrom, r["p"], r["e"])
+                except Exception:  # noqa: BLE001
+                    rs = None
+                if rs:
+                    mm = _mismatches(r, rs)
+            out.append({"p": r["p"], "e": r["e"], "q": r["q"], "f": r["f"],
+                        "n": r["n"], "c": r["c"], "mm": mm})
         return out, total, sampled
 
     def meta(self):
@@ -1759,7 +1982,9 @@ class LoadedManager:
         return {
             "bigwig": BigWigSignal,
             "bedgraph": BedGraphSignal,
+            "wig": WigSignal,
             "bam": BamSignal,
+            "sam": SamSignal,
             "gtf": GtfTrack,
             "fasta": FastaTrack,
         }[fmt](tid, name, path)

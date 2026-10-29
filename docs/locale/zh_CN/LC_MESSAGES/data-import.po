@@ -276,3 +276,54 @@ msgstr ""
 "）。显示时使用导入副本；请将原始研究文件作为备份保留。只有在确实要删除导入副本时才移除轨道。导入轨道默认按会话管理：设置 "
 "``IGV_RESTORE_LOADED=1`` 可在下次服务器启动时恢复。恢复的轨道可能仍需在侧栏中手动勾选。"
 
+msgid "WIG"
+msgstr "WIG"
+
+msgid "``.wig`` ``.wiggle``"
+msgstr "``.wig`` ``.wiggle``"
+
+msgid "``variableStep`` and ``fixedStep``; stored as intervals like bedGraph."
+msgstr "``variableStep`` 与 ``fixedStep``；按 bedGraph 一样存成区间。"
+
+msgid "Scanned into an in-memory index during import; a ``.bai`` is not used."
+msgstr "导入时扫描并建立内存索引；不使用 ``.bai``。"
+
+msgid "SAM"
+msgstr "SAM"
+
+msgid "``.sam``"
+msgstr "``.sam``"
+
+msgid "Text alignments: same coverage and stacked-reads view as BAM."
+msgstr "文本比对：与 BAM 相同的覆盖度与 reads 堆叠视图。"
+
+msgid ""
+"Wiggle files are accepted in both layouts: ``variableStep`` (``position "
+"value`` pairs) and ``fixedStep`` (``start`` / ``step`` / ``span``, with "
+"one value per line). Each probe becomes a small interval, so binning, "
+"autoscale and colours behave exactly like bedGraph. A plain four-column "
+"body is also tolerated."
+msgstr ""
+"Wiggle 两种写法都支持：``variableStep``（``位置 数值`` 成对出现）与 ``fixedStep``（给出 "
+"``start`` / ``step`` / ``span``，每行一个数值）。每个探针转成一个小区间，所以分箱、自动缩放和配色与 "
+"bedGraph 完全一致；纯四列内容也能读。"
+
+msgid ""
+"WIG carries no chromosome lengths, so the track reports its extent from "
+"the data itself. Coordinates in the file are 1-based, as the format "
+"requires."
+msgstr "WIG 不含染色体长度，因此轨道范围取自数据本身。文件内坐标按格式规定为 1-based。"
+
+msgid ""
+"``.sam`` files (the plain-text form of BAM) are parsed the same way and "
+"appear with an identical coverage row plus stacked reads. Secondary and "
+"supplementary alignments (flags ``0x100`` / ``0x800``) are skipped so a "
+"read is not drawn twice; ``D``/``N`` and ``I`` CIGAR operations are "
+"preserved. Chromosome lengths come from the ``@SQ`` header when present. "
+"SAM is read into memory at import, so use BAM for very large alignment "
+"sets."
+msgstr ""
+"``.sam`` 是 BAM 的纯文本形式，解析后同样生成覆盖度行与 reads 堆叠。次要与补充比对（flag ``0x100`` / "
+"``0x800``）会被跳过，避免同一条 read 被画两次；``D``/``N`` 与 ``I`` 等 CIGAR 操作都会保留。有 "
+"``@SQ`` 头时以其中的染色体长度为准。SAM 在导入时读入内存，比对数据很大时建议改用 BAM。"
+

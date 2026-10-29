@@ -21,9 +21,15 @@ Supported formats
    * - bedGraph
      - ``.bedGraph`` ``.bdg``
      - Loaded into memory; fine up to a few hundred MB.
+   * - WIG
+     - ``.wig`` ``.wiggle``
+     - ``variableStep`` and ``fixedStep``; stored as intervals like bedGraph.
    * - BAM
      - ``.bam``
-     - BAM is scanned into an in-memory index during import; .bai is not used.
+     - Scanned into an in-memory index during import; a ``.bai`` is not used.
+   * - SAM
+     - ``.sam``
+     - Text alignments: same coverage and stacked-reads view as BAM.
    * - GTF / GFF3
      - ``.gtf`` ``.gff`` ``.gff3``
      - Becomes a gene track; UTR and CDS features are kept.
@@ -73,6 +79,23 @@ panel, same autoscale, same colour controls.
    signal track. Both go through the same drawing path, so you can mix ``.bw``
    and ``.bedGraph`` in one view.
 
+WIG
+---
+
+Wiggle files are accepted in both layouts: ``variableStep`` (``position value``
+pairs) and ``fixedStep`` (``start`` / ``step`` / ``span``, with one value per
+line). Each probe becomes a small interval, so binning, autoscale and colours
+behave exactly like bedGraph. A plain four-column body is also tolerated.
+
+.. code-block:: text
+
+   Import → select sample.wig
+
+.. note::
+
+   WIG carries no chromosome lengths, so the track reports its extent from the
+   data itself. Coordinates in the file are 1-based, as the format requires.
+
 BAM
 ---
 
@@ -89,6 +112,16 @@ are then queried for the visible window, and dense alignments may be sampled.
 The sidebar has a parent signal switch and a subordinate alignment switch:
 turn the parent on to see coverage, then enable the alignment switch for reads.
 Turning the parent off hides both; reads are not independent of the parent.
+
+SAM
+~~~
+
+``.sam`` files (the plain-text form of BAM) are parsed the same way and appear
+with an identical coverage row plus stacked reads. Secondary and supplementary
+alignments (flags ``0x100`` / ``0x800``) are skipped so a read is not drawn
+twice; ``D``/``N`` and ``I`` CIGAR operations are preserved. Chromosome lengths
+come from the ``@SQ`` header when present. SAM is read into memory at import, so
+use BAM for very large alignment sets.
 
 .. figure:: examples/import-bam.png
    :align: center
