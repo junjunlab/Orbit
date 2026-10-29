@@ -1,0 +1,878 @@
+:root {
+  --bg: #f2f3f5;
+  --bg-elev: #ffffff;
+  --panel: #fafbfc;
+  --border: #dde1e6;
+  --border-soft: #eceff2;
+  /* 分屏时每列之间的竖线：要比普通边框明显，否则 4 屏挤在一起分不清边界。
+     深色主题下用亮色（见 body[data-theme="dark"]），纯黑在深底上等于没有。 */
+  --pane-line: #000000;
+  /* 「全基因组」总览里标当前视野的那根竖条（画在 canvas 上，这里只做取色） */
+  --view-line: #d81e2b;
+  /* Find motif 轨道的正/负链配色 */
+  --motif-pos: #1f6fb2;
+  --motif-neg: #c0392b;
+  --text: #1f2933;
+  --text-dim: #4b5563;
+  --muted: #6b7480;   /* P1-1：浅色下次级文字达 AA（4.58:1）；深色主题保持 #8b949e */
+  --muted-2: #9aa3ad; /* 纯装饰（图标 / 分隔线），不参与正文 */
+  --accent: #4b5563;
+  --accent-2: #6b7280;
+  --accent-soft: rgba(75, 85, 99, .09);
+  --plus: #3d4b5c;
+  --minus: #7b8a9b;
+  --gene-cds: #12171d;   /* coding exon (CDS) */
+  --gene-utr: #a6afb9;   /* untranslated exon (UTR) */
+  --grid: #e6e9ed;
+  --canvas-bg: #ffffff;
+  --read: #c9c9c9;       /* BAM 比对视图的 read 灰块 */
+  --read-edge: #b0b0b0;
+  --shadow: 0 14px 36px rgba(31, 41, 51, .13);
+  --radius: 10px;
+  --mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+  /* 字号阶梯：辅助 / 正文 / 区块标题 / 页面标题（P1-2） */
+  --fs-1: 11px;
+  --fs-2: 12.5px;
+  --fs-3: 14px;
+  --fs-4: 16px;
+}
+
+body[data-theme="dark"] {
+  --bg: #16181b;
+  --bg-elev: #1e2125;
+  --panel: #1a1d21;
+  --border: #2d3238;
+  --border-soft: #24282d;
+  --pane-line: #c9d1d9;
+  --view-line: #ff5d6c;
+  --motif-pos: #63a4e0;
+  --motif-neg: #e8776b;
+  --text: #e8ebef;
+  --text-dim: #b3bac2;
+  --muted: #8b949e;
+  --muted-2: #8b949e;
+  --accent: #aeb6c0;
+  --accent-2: #d4dae1;
+  --accent-soft: rgba(200, 210, 222, .10);
+  --plus: #c3cdd9;
+  --minus: #7d8794;
+  --gene-cds: #eef2f6;
+  --gene-utr: #6c757f;
+  --grid: #2a2f35;
+  --canvas-bg: #1a1d21;
+  --read: #565c63;
+  --read-edge: #6a7078;
+  --shadow: 0 18px 48px rgba(0, 0, 0, .55);
+}
+
+* { box-sizing: border-box; }
+
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  display: grid;
+  grid-template-rows: 56px minmax(0, 1fr) 28px;
+  background: var(--bg);
+  color: var(--text);
+  font: 13px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+        "Microsoft YaHei", "Hiragino Sans GB", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+
+button { font-family: inherit; color: inherit; }
+
+/* ------------------------------------------------------------------ topbar */
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 12px;
+  background: linear-gradient(180deg, var(--bg-elev), var(--panel));
+  border-bottom: 1px solid var(--border);
+  position: relative;
+  z-index: 40;
+}
+
+.brand { display: flex; align-items: center; gap: 9px; padding-right: 6px; }
+.logo { width: 26px; height: 26px; }
+.brand-txt { font-size: 15px; letter-spacing: .2px; font-weight: 600; }
+.brand-txt em {
+  font-style: normal;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+
+.asm { position: relative; }
+.asm-btn {
+  display: flex; align-items: center; gap: 8px;
+  height: 32px; padding: 0 10px 0 11px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px; font-weight: 550;
+  min-width: 132px;
+  transition: border-color .15s, background .15s;
+}
+.asm-btn:hover { border-color: var(--accent); }
+.asm-btn .chev { width: 12px; height: 12px; margin-left: auto; color: var(--muted); }
+.dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: #38d39f; box-shadow: 0 0 0 3px rgba(56, 211, 159, .16);
+  flex: none;
+}
+.dot.warn { background: #f0a13c; box-shadow: 0 0 0 3px rgba(240, 161, 60, .16); }
+
+.asm-menu {
+  position: absolute; top: 38px; left: 0;
+  width: 340px; max-height: 460px; overflow-y: auto;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 6px;
+  display: none;
+}
+.asm-menu.open { display: block; }
+.asm-item {
+  display: grid; grid-template-columns: 1fr auto; gap: 2px 10px;
+  padding: 9px 10px; border-radius: 7px; cursor: pointer;
+  border: 1px solid transparent;
+}
+.asm-item:hover { background: var(--accent-soft); }
+.asm-item.active { border-color: var(--accent); background: var(--accent-soft); }
+.asm-item .t { font-weight: 600; font-size: 13px; }
+.asm-item .t small { font-weight: 400; color: var(--muted); margin-left: 6px; }
+.asm-item .d { grid-column: 1; font-size: 11px; color: var(--muted); }
+.asm-item .tags { grid-column: 2; grid-row: 1 / span 2; display: flex; flex-direction: column;
+  align-items: flex-end; gap: 3px; font-size: 10px; }
+.tag {
+  padding: 1px 6px; border-radius: 20px; border: 1px solid var(--border);
+  color: var(--text-dim); white-space: nowrap;
+}
+.tag.ok { color: #38d39f; border-color: rgba(56, 211, 159, .4); }
+.tag.no { color: #f0a13c; border-color: rgba(240, 161, 60, .4); }
+
+/* ------------------------------------------------------------------- locus */
+.locus-wrap { position: relative; flex: 1 1 340px; max-width: 620px; min-width: 170px; }
+.locus-box {
+  display: flex; align-items: center; gap: 8px;
+  height: 32px; padding: 0 10px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  transition: border-color .15s, box-shadow .15s;
+}
+.locus-box:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.locus-box .ico { width: 15px; height: 15px; color: var(--muted); flex: none; }
+.locus-box input {
+  flex: 1; border: 0; outline: 0; background: transparent;
+  color: var(--text); font-size: 13px; min-width: 0;
+}
+.locus-box input::placeholder { color: var(--muted); }
+.locus-box kbd {
+  font: 10px/1 var(--mono); color: var(--muted);
+  border: 1px solid var(--border); border-radius: 4px; padding: 3px 5px;
+}
+
+.suggest {
+  position: absolute; top: 38px; left: 0; right: 0;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  z-index: 50;
+  max-height: 380px; overflow-y: auto;
+}
+.sg {
+  display: flex; align-items: baseline; gap: 8px;
+  padding: 8px 12px; cursor: pointer;
+  border-bottom: 1px solid var(--border-soft);
+}
+.sg:last-child { border-bottom: 0; }
+.sg:hover, .sg.sel { background: var(--accent-soft); }
+.sg .n { font-weight: 600; font-family: var(--mono); font-size: 12.5px; }
+.sg .n mark { background: transparent; color: var(--accent); }
+.sg .p { color: var(--muted); font-size: 11.5px; font-family: var(--mono); margin-left: auto; }
+.sg .k { font-size: 10px; color: var(--muted); border: 1px solid var(--border);
+  border-radius: 4px; padding: 0 4px; }
+
+/* --------------------------------------------------------- gtf gene search */
+/* Second search box: only shown when at least one GTF/GFF track is imported.
+   It searches gene names inside the user's own annotation instead of RefSeq. */
+.gtf-wrap { position: relative; flex: 1 1 240px; max-width: 400px; min-width: 150px; }
+.gtf-box {
+  display: flex; align-items: center; gap: 7px;
+  height: 32px; padding: 0 6px 0 8px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  transition: border-color .15s, box-shadow .15s;
+}
+.gtf-box:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.gtf-tag {
+  flex: none; font: 600 9.5px/1 var(--mono); letter-spacing: .3px;
+  color: var(--accent); padding: 3px 4px;
+  border: 1px solid var(--border); border-radius: 4px;
+}
+.gtf-box input {
+  flex: 1; border: 0; outline: 0; background: transparent;
+  color: var(--text); font-size: 13px; min-width: 0;
+}
+.gtf-box input::placeholder { color: var(--muted); }
+.gtf-track-sel {
+  flex: none; max-width: 104px; height: 22px; padding: 0 2px;
+  font-size: 11px; color: var(--text-dim);
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 5px; cursor: pointer; outline: 0;
+}
+.gtf-track-sel:hover, .gtf-track-sel:focus { border-color: var(--accent); }
+.gtf-suggest { top: 38px; right: auto; min-width: 360px; max-width: 560px; }
+.gtf-suggest .sg { white-space: nowrap; }
+
+/* --------------------------------------------------------------------- nav */
+.nav { display: flex; gap: 6px; }
+.nbtn {
+  height: 32px; padding: 0 11px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer; font-size: 12.5px;
+  transition: background .15s, border-color .15s, color .15s;
+  white-space: nowrap;
+}
+.nbtn:hover { border-color: var(--accent); color: var(--accent); }
+.nbtn.sq { width: 32px; padding: 0; font-size: 16px; line-height: 1; }
+.nbtn.ghost { margin-left: auto; }
+
+/* -------------------------------------------------------------------- main */
+main {
+  display: grid;
+  grid-template-columns: 208px minmax(0, 1fr);
+  min-height: 0;
+}
+
+.sidebar {
+  background: var(--panel);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  min-height: 0;
+  overflow-y: auto;
+}
+.side-sec { padding: 12px 12px 10px; border-bottom: 1px solid var(--border-soft); }
+/* 详情拿主位：至少 240 px，剩余高度全给它（P0-2） */
+.side-sec.grow { flex: 1 1 auto; border-bottom: 0; min-height: 240px; display: flex; flex-direction: column; }
+.side-sec.grow .info { flex: 1; min-height: 0; }
+
+/* 可折叠的分区标题（轨道开关默认收起） */
+.sec-toggle {
+  display: flex; align-items: center; gap: 6px; width: 100%;
+  background: transparent; border: 0; padding: 0; cursor: pointer; text-align: left;
+}
+.sec-toggle .side-title { margin-bottom: 0; flex: 1; }
+.sec-toggle .chev { color: var(--muted); font-size: 9px; }
+.sec-toggle[aria-expanded="true"] .chev { transform: rotate(90deg); }
+.sec-body { margin-top: 8px; }
+
+/* 染色体：默认一行 chip，点开才展开 25 条全表 */
+.chrom-chip {
+  display: flex; align-items: center; gap: 6px; width: 100%;
+  padding: 5px 8px; border: 1px solid var(--border); border-radius: 6px;
+  background: var(--bg-elev); color: var(--text-dim); cursor: pointer;
+  font-family: var(--mono); font-size: 11.5px; text-align: left;
+}
+.chrom-chip:hover { border-color: var(--accent); color: var(--text); }
+.chrom-chip .chev { margin-left: auto; color: var(--muted); font-size: 9px; }
+.chrom-chip[aria-expanded="true"] .chev { transform: rotate(180deg); }
+.side-title {
+  font-size: var(--fs-1); letter-spacing: .08em; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 8px; font-weight: 600;
+}
+.trk {
+  display: flex; align-items: center; gap: 8px;
+  padding: 5px 6px; border-radius: 6px; cursor: pointer; font-size: 12.5px;
+}
+.trk:hover { background: var(--accent-soft); }
+.trk input { accent-color: var(--accent); width: 13px; height: 13px; }
+/* 当前装配没有内置序列时，GC / 序列两个轨道取不到数据，复选框置灰 */
+.trk.na { opacity: .42; cursor: not-allowed; }
+.trk.na:hover { background: none; }
+.trk.na input { cursor: not-allowed; }
+.trk .nm { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sw {
+  width: 9px; height: 9px; border-radius: 2px; flex: none;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .12);
+}
+.bw-trk .nm { font-family: var(--mono); font-size: 11px; letter-spacing: -.2px; }
+.bw-trk.off-asm { opacity: .42; cursor: not-allowed; }
+.bw-trk.off-asm .nm { text-decoration: line-through; text-decoration-thickness: 1px; }
+#bwList { display: flex; flex-direction: column; gap: 1px; max-height: 176px; overflow-y: auto; }
+
+/* BAM 的第二行（比对视图）：缩进 + 弱化，表明它是上面那条 BAM 的子轨道 */
+.align-trk { padding-left: 20px; }
+.align-trk .nm { color: var(--text-dim); }
+.align-trk .sw { border-radius: 2px; }
+
+.chrom-list { display: flex; flex-direction: column; gap: 1px; max-height: 190px; overflow-y: auto; }
+/* .chrom-list 的 display:flex 会盖掉 [hidden] 的 display:none，必须显式补回来 */
+.chrom-list[hidden] { display: none; }
+.chrom-item {
+  display: flex; justify-content: space-between; gap: 8px;
+  padding: 4px 6px; border-radius: 5px; cursor: pointer;
+  font-family: var(--mono); font-size: 11.5px; color: var(--text-dim);
+}
+.chrom-item:hover { background: var(--accent-soft); color: var(--text); }
+.chrom-item.active { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.chrom-item span:last-child { color: var(--muted); font-size: 10.5px; }
+
+.info { overflow-y: auto; font-size: 12px; }
+.info p.muted { color: var(--muted); font-size: 11.5px; margin: 2px 0; }
+.info h4 {
+  margin: 0 0 4px; font-size: 14px; font-family: var(--mono); letter-spacing: .2px;
+  word-break: break-all;
+}
+.info .kv { display: flex; gap: 6px; color: var(--muted); font-size: 11.5px; margin: 2px 0; }
+.info .kv b { color: var(--text-dim); font-weight: 500; min-width: 34px; }
+.info table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 11px; }
+.info th {
+  text-align: left; color: var(--muted); font-weight: 500;
+  border-bottom: 1px solid var(--border); padding: 3px 4px;
+}
+.info td { padding: 3px 4px; border-bottom: 1px solid var(--border-soft);
+  font-family: var(--mono); color: var(--text-dim); }
+.info .strand-p { color: var(--plus); }
+.info .strand-m { color: var(--minus); }
+.info .kv.expand-row { margin: 6px 0 2px; }
+.info .link {
+  color: var(--accent); cursor: pointer; user-select: none;
+  font-weight: 600; padding: 3px 7px; border: 1px solid var(--border);
+  border-radius: 6px; background: var(--bg-elev); display: inline-block;
+  transition: background .12s, border-color .12s;
+}
+.info .link:hover { background: var(--accent-soft); border-color: var(--accent); }
+
+/* ------------------------------------------------------------------- tracks */
+.view {
+  overflow-y: auto; overflow-x: hidden;
+  background: var(--canvas-bg);
+  position: relative;
+  min-height: 0;
+}
+.track {
+  display: grid;
+  /* 标签列宽度可由用户拖动（--label-w 由 app.js 写在 #view 上） */
+  grid-template-columns: var(--label-w, 116px) minmax(0, 1fr);
+  border-bottom: 1px solid var(--border-soft);
+  min-height: 24px;
+}
+.track[hidden] { display: none; }
+.track-label {
+  padding: 6px 8px;
+  font-size: 11px; color: var(--muted);
+  border-right: 1px solid var(--border-soft);
+  background: var(--panel);
+  user-select: none;
+  overflow: hidden;
+  cursor: grab;   /* 整列都可以直接按住上下拖动换行 */
+}
+.track-label .sub { font-size: var(--fs-1); color: var(--muted); margin-top: 2px; }
+.bw-label .nm {
+  display: block; font-family: var(--mono); font-size: 10.5px; line-height: 1.25;
+  color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.track-body { position: relative; overflow: hidden; }
+.track-body canvas { display: block; width: 100%; }
+/* P1-5：基因 / 序列轨道右缘 12 px 渐隐，暗示「右边还有内容」，避免名字被硬切。
+   只作用于这两条（标尺的 locus pill 就在右缘，不能被淡出）。 */
+.track[data-track="genes"] .track-body::after,
+.track[data-track="seq"] .track-body::after {
+  content: ''; position: absolute; right: 0; top: 0; bottom: 0; width: 12px;
+  background: linear-gradient(90deg, transparent, var(--canvas-bg) 82%);
+  pointer-events: none; z-index: 1;
+}
+
+/* 拖动标签列分隔条时：全局显示左右箭头光标，且不要选中文字 */
+body.col-resizing, body.col-resizing * { cursor: col-resize !important; user-select: none !important; }
+
+/* 光标压在「标签列 / 画布」分界线上时，让列宽拖动赢过换行拖动的 grab 光标 */
+.view.near-edge .track-label { cursor: col-resize !important; }
+/* 位置行固定在最上面，不参与排序 */
+.track[data-fixed] .track-label { cursor: default; }
+
+/* 拖动换行：被拖的行高亮，其余行跟随让位（真实的行在实时移动） */
+body.trk-reordering, body.trk-reordering * { cursor: grabbing !important; user-select: none !important; }
+.track.trk-dragging { position: relative; z-index: 3; background: var(--accent-soft); }
+.track.trk-dragging .track-label {
+  background: var(--accent-soft);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+.track.trk-dragging .track-body { opacity: .45; }
+
+/* ------------------------------------------------- 多位置分屏（split view） */
+/* 一个 track-body 内并排 N 个 pane，每个 pane 有自己的 canvas 与视口 */
+.track-body.panes { display: flex; align-items: flex-start; }
+/* 竖线不画在 pane 上（见下方 .split-lines）：pane 只有 canvas 那么高，
+   行高由标签列决定时会提前断掉，行与行之间还有 border-bottom 的缝。 */
+.track-body.panes > .pane {
+  flex: 1 1 0; min-width: 0; position: relative; overflow: hidden;
+}
+/* 分屏竖线：整层绝对定位，从 #view 顶一直拉到内容底。
+   画在 pane 上会断在三处：pane 只有 canvas 那么高（标签列更高时）、
+   行与行之间的 border-bottom、以及不分屏的「位置」行和「全基因组」行。 */
+.split-lines {
+  position: absolute; left: 0; top: 0; right: 0;
+  pointer-events: none; z-index: 2;
+}
+.split-lines > i {
+  position: absolute; top: 0; bottom: 0; width: 1px;
+  background: var(--pane-line);
+}
+/* 活动面板：顶部一道细线提示键盘/搜索作用在哪一屏 */
+.track-body.panes > .pane.act::before {
+  content: ''; position: absolute; left: 0; right: 0; top: 0; height: 2px;
+  background: var(--accent); opacity: .55; pointer-events: none;
+}
+.track-body.phs { display: flex; border-bottom: 1px solid var(--border-soft); }
+.ph {
+  flex: 1 1 0; min-width: 0; display: flex; align-items: center; gap: 4px;
+  padding: 3px 6px; background: var(--panel);
+}
+.ph.act { background: var(--accent-soft); }
+.ph-in {
+  flex: 1 1 auto; min-width: 0; border: 0; background: transparent;
+  font: 600 11px var(--mono); color: var(--text); padding: 1px 2px; border-radius: 3px;
+  /* 像 IGV 一样：位置区间显示在各自面板居中；编辑时切回左对齐方便修改 */
+  text-align: center;
+}
+.ph-in:focus { text-align: left; outline: none; background: var(--bg-elev); box-shadow: inset 0 0 0 1px var(--accent); }
+.ph-x {
+  flex: none; border: 0; background: transparent; color: var(--muted);
+  cursor: pointer; font-size: 12px; line-height: 1; padding: 0 2px;
+}
+.ph-x:hover { color: var(--text); }
+.split { position: relative; flex: none; }
+#btnSplit { display: inline-flex; align-items: center; gap: 5px; }
+#btnSplit svg { width: 13px; height: 13px; }
+/* 导出按钮：没写 inline-flex + svg 宽高时，内联 SVG 会按 100% 撑开，把「导出」两字挤到隔壁按钮上 */
+#btnExport { display: inline-flex; align-items: center; gap: 5px; }
+#btnExport svg { width: 14px; height: 14px; flex: none; }
+#btnSplit.on { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+.split-menu {
+  position: absolute; right: 0; top: calc(100% + 6px); z-index: 70; min-width: 196px; max-width: 260px;
+  background: var(--panel); border: 1px solid var(--border); border-radius: 8px;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, .18); padding: 5px;
+}
+.split-menu .sm-item {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 6px 8px; border-radius: 6px; font-size: 12px; color: var(--text);
+  cursor: pointer; background: transparent; border: 0; width: 100%; text-align: left;
+}
+.split-menu .sm-item:hover { background: var(--accent-soft); }
+.split-menu .sm-item.on { color: var(--accent); font-weight: 600; }
+.split-menu .sm-chk { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+.split-menu .sm-chk input { margin: 0; }
+.split-menu .sm-hint {
+  font-size: 10.5px; color: var(--muted); padding: 4px 8px 2px; line-height: 1.5;
+}
+
+.empty {
+  position: absolute; inset: 0; display: grid; place-content: center;
+  text-align: center; color: var(--muted); gap: 6px; pointer-events: none;
+}
+
+/* ------------------------------------------------------------------ footer */
+.statusbar {
+  display: flex; align-items: center; gap: 10px;
+  padding: 0 12px;
+  background: var(--panel);
+  border-top: 1px solid var(--border);
+  font-family: var(--mono); font-size: 11px; color: var(--text-dim);
+  white-space: nowrap; overflow: hidden;
+}
+.statusbar .sep { width: 1px; height: 12px; background: var(--border); }
+.statusbar .spacer { flex: 1; }
+.statusbar .muted { color: var(--muted); }
+
+/* ------------------------------------------------------------------- misc */
+.tip {
+  position: fixed; z-index: 90; pointer-events: none;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  box-shadow: var(--shadow);
+  padding: 4px 8px; font-size: 11px; font-family: var(--mono);
+  color: var(--text); white-space: nowrap;
+}
+.toast {
+  position: fixed; left: 50%; bottom: 46px; transform: translateX(-50%);
+  background: var(--bg-elev); border: 1px solid var(--border);
+  border-radius: 8px; box-shadow: var(--shadow);
+  padding: 8px 14px; font-size: 12px; z-index: 95;
+  animation: rise .2s ease-out;
+}
+@keyframes rise { from { opacity: 0; transform: translate(-50%, 6px); } }
+
+/* ------------------------------------------------------- import progress */
+.imp-panel {
+  position: fixed; right: 16px; bottom: 46px; z-index: 96;
+  width: 330px; max-width: calc(100vw - 32px);
+  background: var(--bg-elev); border: 1px solid var(--border);
+  border-radius: 10px; box-shadow: var(--shadow);
+  padding: 10px 12px 11px;
+  animation: impRise .18s ease-out;
+}
+@keyframes impRise { from { opacity: 0; transform: translateY(6px); } }
+.imp-head { display: flex; align-items: center; gap: 7px; }
+.imp-ico {
+  flex: none; width: 18px; height: 18px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 11px; line-height: 1; color: var(--accent);
+  background: var(--accent-soft);
+}
+.imp-name {
+  flex: 1; min-width: 0; font-size: 12px; font-weight: 600;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.imp-x {
+  flex: none; border: 0; background: transparent; color: var(--muted);
+  font-size: 15px; line-height: 1; cursor: pointer; padding: 0 2px;
+}
+.imp-x:hover { color: var(--text); }
+.imp-bar {
+  height: 5px; margin: 8px 0 6px; border-radius: 3px;
+  background: var(--border-soft); overflow: hidden;
+}
+.imp-bar > span {
+  display: block; height: 100%; width: 0%; border-radius: 3px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  transition: width .18s ease;
+}
+/* 解析阶段没有确定的百分比 → 来回滑动的条纹 */
+.imp-panel.indet .imp-bar > span {
+  width: 38% !important;
+  animation: impSlide 1.1s ease-in-out infinite;
+}
+@keyframes impSlide {
+  0% { margin-left: -38%; }
+  100% { margin-left: 100%; }
+}
+.imp-status { font-size: 11px; color: var(--muted); font-family: var(--mono);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.imp-panel.done .imp-ico { color: #38d39f; background: rgba(56, 211, 159, .16); }
+.imp-panel.done .imp-bar > span { background: #38d39f; width: 100% !important; }
+.imp-panel.err .imp-ico { color: #f0a13c; background: rgba(240, 161, 60, .16); }
+.imp-panel.err .imp-bar > span { background: #f0a13c; width: 100% !important; }
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb {
+  background: var(--border); border-radius: 6px; border: 3px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--muted); background-clip: content-box; }
+::-webkit-scrollbar-track { background: transparent; }
+
+.loading-bar {
+  position: absolute; top: 0; left: 0; height: 2px; width: 100%;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  opacity: 0; transition: opacity .2s;
+  animation: slide 1.1s linear infinite;
+}
+.loading-bar.on { opacity: 1; }
+@keyframes slide { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
+
+/* ------------------------------------------------------- track settings */
+.track-label { position: relative; }
+.tgear {
+  position: absolute; right: 2px; top: 2px;
+  width: 17px; height: 17px; padding: 0; border: 0; border-radius: 4px;
+  background: transparent; color: var(--muted); cursor: pointer;
+  font-size: 11px; line-height: 17px; text-align: center;
+  opacity: 0; transition: opacity .12s;
+}
+.track:hover .tgear, .tgear:focus-visible { opacity: 1; }
+.tgear:hover { background: var(--accent-soft); color: var(--text); }
+/* 导入轨道名可能很长，给齿轮留出位置 */
+.track[data-loaded] .track-label { padding-right: 22px; }
+
+.bw-trk .grp {
+  flex: none; font-size: 9px; font-weight: 700; letter-spacing: .04em;
+  padding: 1px 4px; border-radius: 3px;
+  background: var(--accent-soft); color: var(--accent);
+}
+
+.tpop {
+  position: fixed; z-index: 80; width: 262px;
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 10px; box-shadow: 0 14px 34px rgba(15, 23, 42, .20);
+  padding: 12px 13px 11px; font-size: 12px; color: var(--text);
+}
+.tpop h5 {
+  margin: 0 0 10px; font-size: 13px; font-weight: 600;
+  letter-spacing: 0; color: var(--text);
+  padding-bottom: 7px; border-bottom: 1px solid var(--border-soft);
+}
+.tpop .row { display: flex; align-items: center; gap: 8px; margin-bottom: 9px; }
+.tpop .row > .lbl { flex: 1; color: var(--text-dim); font-size: 11.5px; }
+.tpop .row.tight { margin-bottom: 6px; }
+.tpop .chips { display: flex; gap: 5px; flex-wrap: wrap; }
+.tpop .chip {
+  position: relative;
+  width: 24px; height: 24px; border-radius: 5px; cursor: pointer; border: 0; padding: 0;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .14);
+}
+.tpop .chip.sel { outline: 2px solid var(--accent); outline-offset: 1px; }
+/* 选中态再加一个 ✓：小色块上光靠描边看不出选中了哪个（P2-1） */
+.tpop .chip.sel::after {
+  content: '✓'; position: absolute; right: -4px; top: -7px;
+  width: 12px; height: 12px; border-radius: 50%;
+  font-size: 9px; font-weight: 700; line-height: 12px; text-align: center;
+  color: var(--accent); background: var(--bg-elev);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+.tpop input[type="number"] {
+  width: 68px; font-family: var(--mono); font-size: 11.5px;
+  background: var(--bg-elev); color: var(--text);
+  border: 1px solid var(--border); border-radius: 5px; padding: 3px 5px;
+}
+.tpop input[type="color"] {
+  width: 24px; height: 20px; padding: 0; border: 1px solid var(--border);
+  border-radius: 4px; background: transparent; cursor: pointer;
+}
+.tpop select {
+  flex: 1; min-width: 0; font-size: 11.5px;
+  background: var(--bg-elev); color: var(--text);
+  border: 1px solid var(--border); border-radius: 5px; padding: 3px 4px;
+}
+.tpop .hint { color: var(--muted); font-size: 10.5px; line-height: 1.5; margin: -3px 0 8px; }
+.tpop .foot { display: flex; gap: 6px; justify-content: flex-end; margin-top: 10px; }
+.tpop .btn {
+  font-size: 11.5px; padding: 4px 10px; border-radius: 6px; cursor: pointer;
+  border: 1px solid var(--border); background: var(--bg-elev); color: var(--text-dim);
+}
+.tpop .btn:hover { color: var(--text); border-color: var(--muted); }
+.tpop .btn.pri { background: var(--accent); border-color: var(--accent); color: #fff; }
+.tpop .btn.pri:hover { filter: brightness(1.08); }
+.tpop .btn.danger { color: #c0392b; border-color: rgba(192, 57, 43, .45); }
+.tpop .btn.danger:hover { color: #a93226; border-color: #c0392b; background: rgba(192, 57, 43, .08); }
+body[data-theme="dark"] .tpop .btn.danger { color: #ff8a7a; border-color: rgba(255, 138, 122, .4); }
+body[data-theme="dark"] .tpop .btn.danger:hover { color: #ffb0a3; border-color: #ff8a7a; background: rgba(255, 138, 122, .12); }
+.tpop .sep { height: 1px; background: var(--border-soft); margin: 10px 0; }
+.tpop .swatch-lg {
+  width: 26px; height: 20px; border-radius: 5px; flex: none;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .14);
+}
+.tpop .rad {
+  display: flex; align-items: center; gap: 4px; cursor: pointer;
+  font-size: 11.5px; color: var(--text-dim);
+}
+.tpop .rad input, .tpop .row input[type="checkbox"] { accent-color: var(--accent); margin: 0; }
+.side-hint {
+  margin-top: 6px; font-size: 10px; line-height: 1.5;
+  color: var(--muted); opacity: .8;
+}
+
+/* refined track-settings panel */
+.tpop { width: 300px; }
+.tpop .row { flex-wrap: wrap; row-gap: 6px; }
+.tpop .row > .lbl { white-space: nowrap; flex: 0 0 auto; min-width: 54px; }
+.tpop .chips { flex: 1 1 auto; display: flex; gap: 5px; flex-wrap: wrap; align-items: center; }
+.tpop .hint { display: block; margin: 0 0 9px; }
+.tpop input[type="color"] {
+  width: 22px; height: 18px; padding: 0; overflow: hidden;
+  border: 1px solid var(--border); border-radius: 4px;
+}
+.tpop input[type="color"]::-webkit-color-swatch-wrapper { padding: 1px; }
+.tpop input[type="color"]::-webkit-color-swatch { border: 0; border-radius: 3px; }
+
+/* ---- bigWig multi-select + context menu ---- */
+.bw-trk { transition: background .12s, box-shadow .12s; }
+.bw-trk .nm { cursor: pointer; user-select: none; }
+.bw-trk .sw { cursor: pointer; }
+.bw-trk .on { accent-color: var(--accent); width: 13px; height: 13px; flex: none; cursor: pointer; }
+.bw-trk.sel {
+  background: var(--accent-soft);
+  box-shadow: inset 2px 0 0 var(--accent);
+}
+.bw-trk.sel .nm { color: var(--text); font-weight: 600; }
+
+.chip-custom {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 7px 2px 3px; border: 1px solid var(--border); border-radius: 5px;
+  cursor: pointer; font-size: 10px; line-height: 1; color: var(--text-dim);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .05);
+}
+.chip-custom:hover { border-color: var(--accent); color: var(--text); }
+.chip-custom input[type="color"] {
+  width: 16px; height: 14px; padding: 0; border: 0; background: transparent; cursor: pointer;
+}
+
+.tpop.ctx { width: 268px; padding: 6px; }
+.ctx-colors { padding: 2px 6px 4px; }
+.ctx-head {
+  font-size: 10px; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--muted); padding: 4px 8px 6px;
+}
+.ctx-item {
+  display: block; width: 100%; text-align: left;
+  background: transparent; border: 0; border-radius: 6px;
+  padding: 7px 9px; font-size: 12.5px; color: var(--text); cursor: pointer;
+}
+.ctx-item:hover { background: var(--accent-soft); color: var(--text); }
+.ctx-item .k {
+  font-family: var(--mono); font-size: 10px; color: var(--muted);
+  border: 1px solid var(--border); border-radius: 4px; padding: 0 4px; margin-right: 6px;
+}
+.ctx-sep { height: 1px; background: var(--border-soft); margin: 5px 2px; }
+.ctx-item.danger { color: #c0392b; }
+.ctx-item.danger:hover { background: rgba(192, 57, 43, .10); color: #a93226; }
+body[data-theme="dark"] .ctx-item.danger { color: #ff8a7a; }
+body[data-theme="dark"] .ctx-item.danger:hover { background: rgba(255, 138, 122, .14); color: #ffb0a3; }
+
+/* 被隐藏的内置信号轨道：列表底部恢复入口 */
+.bw-restore {
+  margin: 7px 2px 2px; padding: 5px 8px; border-radius: 6px;
+  font-size: 11.5px; color: var(--muted); cursor: pointer;
+  border: 1px dashed var(--border); text-align: center;
+}
+.bw-restore:hover { color: var(--text); background: var(--accent-soft); border-color: var(--accent); }
+
+/* ---------------------------------------------------------------- 导入文件 */
+.nbtn.import {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-weight: 600;
+}
+.nbtn.import svg { width: 13px; height: 13px; }
+/* P2-2：顶栏按钮语义统一——「全染色体」与主题按钮也走图标 + 文字/aria-label */
+#btnHome { display: inline-flex; align-items: center; gap: 5px; }
+#btnHome svg { width: 13px; height: 13px; flex: none; }
+#btnTheme svg { width: 15px; height: 15px; flex: none; }
+
+.loaded-trk { position: relative; }
+.loaded-trk .loaded-x {
+  margin-left: auto; border: 0; background: transparent;
+  color: var(--muted); font-size: 15px; line-height: 1;
+  width: 16px; height: 16px; flex: none;
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 0; cursor: pointer; border-radius: 4px;
+}
+.loaded-trk .loaded-x:hover { background: var(--accent-soft); color: var(--text); }
+.loaded-trk .nm, .loaded-trk .sw { cursor: pointer; user-select: none; }
+/* P2-4：名称最多两行（主名 + 格式标签），不再截成 demo_gen… */
+.loaded-trk .nm {
+  white-space: normal; line-height: 1.25;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.loaded-trk.sel { background: var(--accent-soft); box-shadow: inset 2px 0 0 var(--accent); }
+.loaded-trk.sel .nm { color: var(--text); font-weight: 600; }
+
+body.dropping::after {
+  content: "松开以导入文件";
+  position: fixed; inset: 12px; z-index: 9999; pointer-events: none;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px dashed var(--accent); border-radius: 12px;
+  background: var(--accent-soft); color: var(--accent);
+  font-size: 15px; font-weight: 600;
+}
+
+/* ------------------------------------------------- Find motif 对话框 */
+.modal {
+  position: fixed; inset: 0; z-index: 95;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(15, 23, 42, .38);
+}
+.modal[hidden] { display: none; }
+.modal-card {
+  width: min(470px, calc(100vw - 32px)); max-height: calc(100vh - 48px); overflow: auto;
+  background: var(--bg-elev); color: var(--text);
+  border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow);
+}
+.modal-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 14px; border-bottom: 1px solid var(--border-soft);
+  font-size: 12.5px; font-weight: 600;
+}
+.modal-x {
+  border: 0; background: transparent; color: var(--muted);
+  font-size: 17px; line-height: 1; padding: 0 4px; cursor: pointer;
+}
+.modal-x:hover { color: var(--text); }
+.modal-body { padding: 12px 14px 2px; }
+.modal-lbl { display: block; font-size: 11.5px; color: var(--text-dim); margin-bottom: 5px; }
+#motifPattern {
+  width: 100%; box-sizing: border-box; min-height: 54px; resize: vertical;
+  font: 12px/1.55 var(--mono); color: var(--text); background: var(--panel);
+  border: 1px solid var(--border); border-radius: 7px; padding: 7px 8px;
+}
+#motifPattern:focus {
+  outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft);
+}
+.modal-hint { margin: 8px 0 12px; font-size: 11px; line-height: 1.6; color: var(--muted); }
+.modal-hint b { color: var(--text-dim); }
+.modal-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.modal-row > label { flex: none; width: 84px; font-size: 11.5px; color: var(--text-dim); }
+.modal-row input {
+  flex: 1 1 auto; min-width: 0; font: 12px var(--mono); color: var(--text);
+  background: var(--panel); border: 1px solid var(--border); border-radius: 7px; padding: 5px 8px;
+}
+.modal-row input:focus { outline: none; border-color: var(--accent); }
+.modal-err {
+  margin: 4px 0 10px; padding: 7px 9px; border-radius: 7px;
+  font-size: 11.5px; line-height: 1.55; white-space: pre-wrap;
+  color: #b42318; background: rgba(180, 35, 24, .10);
+}
+.modal-err[hidden] { display: none; }
+.modal-foot { display: flex; justify-content: flex-end; gap: 8px; padding: 10px 14px 14px; }
+/* motif 轨道名可能很长，给右上角的 × 留位置 */
+.track[data-motif] .track-label { padding-right: 22px; }
+.track[data-motif] .track-label .nm {
+  display: block; font-family: var(--mono); font-size: 10.5px; line-height: 1.3;
+  color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+/* motif 轨道右上角的移除按钮（不能复用 .tgear：那是「轨道设置」的捕获阶段处理） */
+.track[data-motif] .mx {
+  position: absolute; right: 2px; top: 2px;
+  width: 17px; height: 17px; padding: 0; border: 0; border-radius: 4px;
+  background: transparent; color: var(--muted); cursor: pointer;
+  font-size: 14px; line-height: 15px; text-align: center;
+  opacity: 0; transition: opacity .12s;
+}
+.track:hover .mx, .mx:focus-visible { opacity: 1; }
+.track[data-motif] .mx:hover { background: var(--accent-soft); color: var(--text); }
+/* Motif 按钮：和导出一样，内联 SVG 必须给宽高，否则会按 100% 撑开把文字挤掉 */
+#btnMotif { display: inline-flex; align-items: center; gap: 5px; flex: none; }
+#btnMotif svg { width: 14px; height: 14px; flex: none; }
+
+/* 序列轨道右上角的「翻转链」按钮（同 IGV 序列轨道名字旁的箭头，点一下换互补链）。
+   不能复用 .tgear：那是「轨道设置」的捕获阶段处理；这里也避开 .mx，语义不同。 */
+.track[data-track="seq"] .track-label { padding-right: 22px; }
+.sflip {
+  position: absolute; right: 2px; top: 2px;
+  width: 17px; height: 17px; padding: 0; border: 0; border-radius: 4px;
+  background: transparent; color: var(--muted); cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+  opacity: 0; transition: opacity .12s;
+}
+.sflip svg { width: 12px; height: 12px; flex: none; }
+/* 翻译按钮（文字 Aa）排在翻转按钮左边 */
+.sflip.s2 { right: 21px; font: 700 10px/1 var(--mono); letter-spacing: -.3px; }
+.track:hover .sflip, .sflip:focus-visible { opacity: 1; }
+.sflip:hover { background: var(--accent-soft); color: var(--text); }
+/* 翻转生效时常驻显示并高亮，否则收起后看不出当前是哪条链 */
+.sflip[aria-pressed="true"] { opacity: 1; color: var(--accent); }
+
+/* 全基因组总览的展开 / 收起按钮（折叠态也常驻，否则不知道能展开） */
+.track[data-track="overview"] .track-label { padding-right: 22px; }
+.ov-toggle {
+  position: absolute; right: 2px; top: 2px;
+  width: 17px; height: 17px; padding: 0; border: 0; border-radius: 4px;
+  background: transparent; color: var(--muted); cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 12px; line-height: 1;
+}
+.ov-toggle:hover { background: var(--accent-soft); color: var(--text); }
+.ov-toggle[aria-pressed="true"] { color: var(--accent); }
+

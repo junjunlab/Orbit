@@ -1,0 +1,126 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write        # 打 tag 时创建 Release 需要
+
+# 同一个 ref 上重复触发时，新的一轮直接顶掉旧的（避免排队占坑）
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHONIOENCODING: utf-8
+  PYTHONUTF8: "1"
+
+jobs:
+  build:
+    name: ${{ matrix.label }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            label: Windows-x64
+            artifact: Orbit-Windows-x64
+          # 标签容易搞错：runner-images 表里「YAML label」列才是有效标签。
+          #   macos-15         = Apple Silicon（标准 runner）
+          #   macos-15-intel   = Intel
+          #   macos-15-arm64   ✗ 只是镜像名，不是标签（写它会一直 queued 等到天荒地老）
+          # macOS 14 系列已 deprecated，不再使用。
+          - os: macos-15          # Apple Silicon
+            label: macOS-arm64
+            artifact: Orbit-macOS-arm64
+          - os: macos-15-intel    # Intel（macos-13 已下架，这是官方替代标签）
+            label: macOS-x64
+            artifact: Orbit-macOS-x64
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt pyinstaller
+
+      # data/genomes 不进仓库（序列走 UCSC 远程 2bit），所以这里必须 --no-genomes
+      - name: Freeze with PyInstaller
+        run: python build/make_exe.py --no-genomes --windowed
+
+      - name: Package installer (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $candidates = @(
+            "C:\Program Files (x86)\Inno Setup 6\ISCC.exe",
+            "C:\Program Files\Inno Setup 6\ISCC.exe"
+          )
+          $iscc = $candidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+          if (-not $iscc) {
+            choco install innosetup --no-progress -y
+            $iscc = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+          }
+          Write-Host "using $iscc"
+          & $iscc "installer\orbit.iss"
+          Get-ChildItem dist\installer
+
+      - name: Package DMG (macOS)
+        if: runner.os == 'macOS'
+        run: bash installer/make_dmg.sh
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          if-no-files-found: error
+          retention-days: 14
+          path: |
+            dist/installer/*.exe
+            dist/*.dmg
+
+  # Release 只能发一次：放在独立的 job 里，等三个平台都构建完再统一发。
+  # 之前把这一步写在矩阵里，三个 job 各发一次 → Release 正文被追加三遍
+  # （截图里三条一模一样的 Full Changelog），而且三个 job 并发写同一批资产。
+  release:
+    name: Publish release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true          # 三个 artifact 摊平到 dist/
+
+      # upload-artifact 会按「匹配路径的公共前缀」决定 artifact 内部结构，
+      # Windows 的 exe 可能被存成 installer/Orbit-....exe（而不是根目录），
+      # 下载后就成了 dist/installer/xxx.exe → dist/*.exe 匹配不到，资产会漏。
+      # 所以先一律摊平到 dist/ 再发布，并断言三类资产都在。
+      - name: Flatten and verify assets
+        run: |
+          find dist -mindepth 2 -type f \( -name '*.exe' -o -name '*.dmg' \) -exec mv -n {} dist/ \;
+          ls -lh dist
+          test -n "$(ls dist/*.exe 2>/dev/null)" || { echo '::error::Windows installer missing'; exit 1; }
+          test -n "$(ls dist/*.dmg 2>/dev/null)" || { echo '::error::macOS dmg missing'; exit 1; }
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: false
+          generate_release_notes: true
+          files: |
+            dist/*.exe
+            dist/*.dmg

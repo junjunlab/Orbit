@@ -1,0 +1,13 @@
+# demo annotation
+chr1	demo	gene	100001	130000	.	+	.	gene_id "GENE1"; gene_name "GENE1"
+chr1	demo	transcript	100001	130000	.	+	.	gene_id "GENE1"; transcript_id "GENE1.t1"
+chr1	demo	exon	100001	103000	.	+	.	gene_id "GENE1"; transcript_id "GENE1.t1"
+chr1	demo	exon	109001	114000	.	+	.	gene_id "GENE1"; transcript_id "GENE1.t1"
+chr1	demo	exon	128001	130000	.	+	.	gene_id "GENE1"; transcript_id "GENE1.t1"
+chr1	demo	CDS	105000	127000	.	+	.	gene_id "GENE1"; transcript_id "GENE1.t1"
+chr1	demo	gene	300001	320000	.	-	.	gene_id "GENE2"; gene_name "GENE2"
+chr1	demo	transcript	300001	320000	.	-	.	gene_id "GENE2"; transcript_id "GENE2.t1"
+chr1	demo	exon	300001	303000	.	-	.	gene_id "GENE2"; transcript_id "GENE2.t1"
+chr1	demo	exon	309001	314000	.	-	.	gene_id "GENE2"; transcript_id "GENE2.t1"
+chr1	demo	exon	318001	320000	.	-	.	gene_id "GENE2"; transcript_id "GENE2.t1"
+chr1	demo	CDS	305000	317000	.	-	.	gene_id "GENE2"; transcript_id "GENE2.t1"

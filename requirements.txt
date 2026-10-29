@@ -1,0 +1,2 @@
+# Orbit 运行期唯一的第三方依赖：Qt 原生窗口（QtWebEngine 自带 Chromium）
+PySide6==6.9.1

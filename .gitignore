@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# 构建产物
+dist/
+build/pyi/
+build/*.spec
+build/REBUILD_*.txt
+build/shot*.png
+build/_*
+
+# 数据：只提交 data/ann 与 data/catalog.json
+#   genomes/ 是 2.9 GB 的本地 2bit（安装包不带，序列走 UCSC 远程）
+#   loaded/  是用户导入的轨道（ribo-seq bigWig / GTF，绝对不能进仓库）
+#   raw/     是 UCSC 原始下载文件（用 tools/fetch_*.py 重新生成）
+data/genomes/
+data/loaded/
+data/raw/
+data/client.log
+
+# 开发/测试产物
+shots/
+tools/_*
+tools/*.log
+tools/*.png
+!tools/cdp.js
+!tools/cdp_shot.js
+!tools/cdp_attach.js
+
+# 系统
+.DS_Store
+Thumbs.db
