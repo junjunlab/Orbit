@@ -804,9 +804,10 @@ class SamSignal(BaseTrack):
                     mapq = int(p[4])
                 except ValueError:
                     continue
-                # 只画主比对：secondary / supplementary（0x100 / 0x800）跳过，
-                # 否则同一条 read 会在同一位置重复堆叠。
-                if flag & 0x900:
+                # IGV 不检查 secondary(0x100)/supplementary(0x800)：Java 版全仓没有
+                # isSecondaryAlignment 调用，igv.js 的 BamFilter 也默认不过滤，
+                # 所以这里同样保留，只跳过未比对的记录。
+                if flag & 0x4:
                     continue
                 start = int(pos_s) - 1
                 ops = []

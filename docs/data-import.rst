@@ -117,11 +117,19 @@ SAM
 ~~~
 
 ``.sam`` files (the plain-text form of BAM) are parsed the same way and appear
-with an identical coverage row plus stacked reads. Secondary and supplementary
-alignments (flags ``0x100`` / ``0x800``) are skipped so a read is not drawn
-twice; ``D``/``N`` and ``I`` CIGAR operations are preserved. Chromosome lengths
-come from the ``@SQ`` header when present. SAM is read into memory at import, so
-use BAM for very large alignment sets.
+with an identical coverage row plus stacked reads. All mapped alignments are
+kept, including secondary and supplementary records (flags ``0x100`` / ``0x800``)
+— IGV does not filter those either: the Java implementation never tests the
+flags, and igv.js keeps them unless ``secondary`` / ``supplementary`` filtering
+is explicitly enabled. ``D``/``N`` and ``I`` CIGAR operations are preserved.
+Chromosome lengths come from the ``@SQ`` header when present. SAM is read into
+memory at import, so use BAM for very large alignment sets.
+
+.. note::
+
+   One deliberate difference from IGV remains: IGV hides duplicate-flagged
+   reads (``0x400``) and vendor-QC failures (``0x200``) by default, whereas
+   Orbit currently draws every mapped read.
 
 .. figure:: examples/import-bam.png
    :align: center
