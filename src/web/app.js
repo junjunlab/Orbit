@@ -1395,7 +1395,7 @@
     const gc = $('#geneCount');
     if (gc && S.tracks.genes) {
       const cnt = (d.genes || []).length;
-      gc.textContent = cnt ? T(`${cnt}${d.truncated ? '+' : ''} 个`) : T('无');
+      gc.textContent = cnt ? T(`${cnt}${d.truncated ? '+' : ''} 个基因`) : T('无');
     }
   }
 
@@ -1958,7 +1958,7 @@
     const { ctx } = fitCanvas(canvas, h);
 
     $('#geneCount').textContent = count
-      ? T(`${count}${S.data.truncated ? '+' : ''} 个`) : T('无');
+      ? T(`${count}${S.data.truncated ? '+' : ''} 个基因`) : T('无');
 
     if (!count) {
       ctx.fillStyle = C.muted;
@@ -5998,7 +5998,7 @@
       ctx.font = '11.5px system-ui, sans-serif';
       ctx.textBaseline = 'middle';
       ctx.fillText(T('此区域无注释'), 12, h / 2);
-      if (sub) sub.textContent = T('0 个');
+      if (sub) sub.textContent = T('0 个基因');
       return;
     }
 
@@ -6011,12 +6011,12 @@
       ctx.font = '11.5px system-ui, sans-serif';
       ctx.textBaseline = 'middle';
       ctx.fillText(T('此区域无注释'), 12, h / 2);
-      if (sub) sub.textContent = T('0 个');
+      if (sub) sub.textContent = T('0 个基因');
       return;
     }
     const { ctx, w, h } = fitCanvas(canvas, Math.max(38, lay.rows * LROW + 12));
     setPlaced(lay.placed);
-    if (sub) sub.textContent = T(`${d.truncated ? '≥ ' : ''}${lay.visible} 个`);
+    if (sub) sub.textContent = T(`${d.truncated ? '≥ ' : ''}${lay.visible} 个基因`);
     ctx.textBaseline = 'middle';
 
     const pal = geneTint(t.id);
