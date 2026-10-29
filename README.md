@@ -1,5 +1,6 @@
 # Orbit
 
+[![Docs](https://readthedocs.org/projects/orbit-genome-browser/badge/?version=latest)](https://orbit-genome-browser.readthedocs.io/en/latest/)
 [![Release](https://img.shields.io/github/v/release/junjunlab/Orbit)](https://github.com/junjunlab/Orbit/releases)
 [![License](https://img.shields.io/github/license/junjunlab/Orbit)](LICENSE)
 
@@ -28,9 +29,9 @@ Download the package for your platform from [Releases](https://github.com/junjun
 
 | Platform | File | Size |
 |---|---|---|
-| Windows 10/11 x64 | `Orbit-1.0.0-Windows-x64-Setup.exe` | ~150 MB |
-| macOS Apple Silicon | `Orbit-1.0.0-macOS-arm64.dmg` | ~235 MB |
-| macOS Intel | `Orbit-1.0.0-macOS-x86_64.dmg` | ~253 MB |
+| Windows 10/11 x64 | `Orbit-1.0.1-Windows-x64-Setup.exe` | ~150 MB |
+| macOS Apple Silicon | `Orbit-1.0.1-macOS-arm64.dmg` | ~244 MB |
+| macOS Intel | `Orbit-1.0.1-macOS-x86_64.dmg` | ~253 MB |
 
 - **Windows** — per-user install, no admin rights needed (`%LOCALAPPDATA%\Programs\Orbit`).
 - **macOS** — drag `Orbit.app` into Applications. Builds are ad-hoc signed, not notarized,

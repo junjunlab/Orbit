@@ -10,7 +10,7 @@ author = "junjunlab"
 copyright = "2026, junjunlab"
 
 version = "1.0"
-release = "1.0.0"
+release = "1.0.1"
 
 language = "en"
 
