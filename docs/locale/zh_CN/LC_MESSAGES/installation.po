@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Orbit 1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-29 14:43+0800\n"
-"PO-Revision-Date: 2026-10-29 18:00+0800\n"
+"POT-Creation-Date: 2026-10-29 15:37+0800\n"
+"PO-Revision-Date: 2026-10-29 20:00+0800\n"
 "Last-Translator: junjunlab\n"
 "Language-Team: zh_CN <LL@li.org>\n"
 "Language: zh_CN\n"
@@ -46,8 +46,8 @@ msgid "Windows 10/11 x64"
 msgstr "Windows 10/11 x64"
 
 #: ../../installation.rst:15
-msgid "``Orbit-1.0.0-Windows-x64-Setup.exe``"
-msgstr "``Orbit-1.0.0-Windows-x64-Setup.exe``"
+msgid "``Orbit-1.0.1-Windows-x64-Setup.exe``"
+msgstr "``Orbit-1.0.1-Windows-x64-Setup.exe``"
 
 #: ../../installation.rst:16
 msgid "~150 MB"
@@ -58,8 +58,8 @@ msgid "macOS, Apple Silicon"
 msgstr "macOS，Apple Silicon"
 
 #: ../../installation.rst:18
-msgid "``Orbit-1.0.0-macOS-arm64.dmg``"
-msgstr "``Orbit-1.0.0-macOS-arm64.dmg``"
+msgid "``Orbit-1.0.1-macOS-arm64.dmg``"
+msgstr "``Orbit-1.0.1-macOS-arm64.dmg``"
 
 #: ../../installation.rst:19
 msgid "~244 MB"
@@ -70,8 +70,8 @@ msgid "macOS, Intel"
 msgstr "macOS，Intel"
 
 #: ../../installation.rst:21
-msgid "``Orbit-1.0.0-macOS-x86_64.dmg``"
-msgstr "``Orbit-1.0.0-macOS-x86_64.dmg``"
+msgid "``Orbit-1.0.1-macOS-x86_64.dmg``"
+msgstr "``Orbit-1.0.1-macOS-x86_64.dmg``"
 
 #: ../../installation.rst:22
 msgid "~253 MB"

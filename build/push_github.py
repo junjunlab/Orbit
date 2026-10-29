@@ -12,6 +12,7 @@ data/loaded（用户导入的轨道）、dist/ 一律不进仓库。
 from __future__ import annotations
 
 import base64
+import hashlib
 import json
 import os
 import sys
@@ -180,19 +181,24 @@ def main() -> int:
     blobs = []
     for i, f in enumerate(files, 1):
         rel = f.relative_to(ROOT).as_posix()
-        st_size = f.stat().st_size
+        raw = f.read_bytes()
+        st_size = len(raw)
+        # 缓存键必须是内容哈希，不能用文件大小：
+        # "1.0.0" → "1.0.1" 这种等长改动会让大小比对失效，改动被静默跳过
+        # （曾经因此让 __init__.py 的 __version__ 停在旧值，dmg 名字对不上 tag）。
+        digest = hashlib.sha1(raw).hexdigest()
         hit = cache.get(rel)
-        if hit and hit[0] == st_size:
+        if hit and isinstance(hit[0], str) and hit[0] == digest:
             blobs.append({"path": rel, "mode": hit[1], "type": "blob", "sha": hit[2]})
             print(f"  [{i:3d}/{len(files)}] {rel}  (cached)")
             continue
-        content = base64.b64encode(f.read_bytes()).decode()
+        content = base64.b64encode(raw).decode()
         st, res = api("POST", f"/repos/{owner}/{REPO}/git/blobs",
                       {"content": content, "encoding": "base64"}, tok=tok)
         if st not in (200, 201):
             raise SystemExit(f"上传 {rel} 失败：{st} {res}")
         mode = "100755" if os.name != "nt" and os.access(f, os.X_OK) else "100644"
-        cache[rel] = [st_size, mode, res["sha"]]
+        cache[rel] = [digest, mode, res["sha"]]
         blobs.append({"path": rel, "mode": mode, "type": "blob", "sha": res["sha"]})
         print(f"  [{i:3d}/{len(files)}] {rel}  {st_size/1e3:.0f} KB")
     cache_path.write_text(json.dumps(cache))
