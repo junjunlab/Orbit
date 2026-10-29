@@ -58,7 +58,7 @@ Requires `Inno Setup 6 <https://jrsoftware.org/isinfo.php>`_.
 
    ISCC.exe installer\orbit.iss
 
-Produces ``dist\installer\Orbit-1.0.1-Windows-x64-Setup.exe``. The script is a
+Produces ``dist\installer\Orbit-1.0.2-Windows-x64-Setup.exe``. The script is a
 per-user install (``PrivilegesRequired=lowest``), which avoids the UAC prompt
 and lets the app write to its own data directory.
 
@@ -123,7 +123,7 @@ Releasing
 
 .. code-block:: bash
 
-   git tag v1.0.1
+   git tag v1.0.2
    git push --tags
 
 The tag push triggers the build and attaches the three packages to a new

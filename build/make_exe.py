@@ -39,6 +39,7 @@ def build() -> None:
         "--clean",
         "--windowed" if windowed else "--console",
         "--add-data", f"{ROOT / 'src' / 'web'}{sep}web",
+        "--add-data", f"{ROOT / 'assets'}{sep}assets",
         "--paths", str(ROOT / "src"),
         "--distpath", str(DIST),
         "--workpath", str(ROOT / "build" / "pyi"),
@@ -56,6 +57,12 @@ def build() -> None:
     if IS_MAC:
         # 交给 .app 包一层，安装后能拖进 /Applications
         args += ["--osx-bundle-identifier", "io.github.junjunlab.orbit"]
+    # 应用图标（Windows .ico / macOS .icns），由 build/make_icons.py 生成。
+    icon = ROOT / "assets" / ("orbit.icns" if IS_MAC else "orbit.ico")
+    if icon.exists():
+        args += ["--icon", str(icon)]
+    else:
+        print(f"WARNING: icon not found at {icon}; building without a custom icon")
     print("running PyInstaller ...", flush=True)
     PyInstaller.__main__.run(args)
 

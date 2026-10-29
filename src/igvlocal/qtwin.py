@@ -62,6 +62,30 @@ def available() -> bool:
     return True
 
 
+def _icon_path() -> Path | None:
+    """Locate assets/orbit.png in dev and in a frozen (PyInstaller) build."""
+    for base in (Path(getattr(sys, "_MEIPASS", "")), Path(__file__).resolve().parents[2]):
+        if not base:
+            continue
+        p = base / "assets" / "orbit.png"
+        if p.is_file():
+            return p
+    return None
+
+
+def _apply_icon(win) -> None:
+    """Set the window/taskbar icon; quietly skip if the asset is missing."""
+    try:
+        from PySide6.QtGui import QIcon
+    except Exception:
+        return
+    p = _icon_path()
+    if p is not None:
+        icon = QIcon(str(p))
+        if not icon.isNull():
+            win.setWindowIcon(icon)
+
+
 def open_window(url: str, title: str = "Orbit", width: int = 1440, height: int = 900,
                 debug: bool = False) -> None:
     """打开原生窗口，阻塞到用户关窗。失败时抛异常。"""
@@ -88,6 +112,7 @@ def open_window(url: str, title: str = "Orbit", width: int = 1440, height: int =
     win.setWindowTitle(title)
     win.resize(width, height)
     win.setMinimumSize(960, 600)
+    _apply_icon(win)
 
     view = QWebEngineView(win)
     view.setPage(_make_page(profile, view, debug))

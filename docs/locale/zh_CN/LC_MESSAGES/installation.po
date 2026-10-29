@@ -46,8 +46,8 @@ msgid "Windows 10/11 x64"
 msgstr "Windows 10/11 x64"
 
 #: ../../installation.rst:15
-msgid "``Orbit-1.0.1-Windows-x64-Setup.exe``"
-msgstr "``Orbit-1.0.1-Windows-x64-Setup.exe``"
+msgid "``Orbit-1.0.2-Windows-x64-Setup.exe``"
+msgstr "``Orbit-1.0.2-Windows-x64-Setup.exe``"
 
 #: ../../installation.rst:16
 msgid "~150 MB"
@@ -58,8 +58,8 @@ msgid "macOS, Apple Silicon"
 msgstr "macOS，Apple Silicon"
 
 #: ../../installation.rst:18
-msgid "``Orbit-1.0.1-macOS-arm64.dmg``"
-msgstr "``Orbit-1.0.1-macOS-arm64.dmg``"
+msgid "``Orbit-1.0.2-macOS-arm64.dmg``"
+msgstr "``Orbit-1.0.2-macOS-arm64.dmg``"
 
 #: ../../installation.rst:19
 msgid "~244 MB"
@@ -70,8 +70,8 @@ msgid "macOS, Intel"
 msgstr "macOS，Intel"
 
 #: ../../installation.rst:21
-msgid "``Orbit-1.0.1-macOS-x86_64.dmg``"
-msgstr "``Orbit-1.0.1-macOS-x86_64.dmg``"
+msgid "``Orbit-1.0.2-macOS-x86_64.dmg``"
+msgstr "``Orbit-1.0.2-macOS-x86_64.dmg``"
 
 #: ../../installation.rst:22
 msgid "~253 MB"

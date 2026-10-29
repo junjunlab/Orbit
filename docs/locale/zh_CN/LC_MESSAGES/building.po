@@ -116,12 +116,12 @@ msgstr "需要 `Inno Setup 6 <https://jrsoftware.org/isinfo.php>`_。"
 
 #: ../../building.rst:61
 msgid ""
-"Produces ``dist\\installer\\Orbit-1.0.1-Windows-x64-Setup.exe``. The script "
+"Produces ``dist\\installer\\Orbit-1.0.2-Windows-x64-Setup.exe``. The script "
 "is a per-user install (``PrivilegesRequired=lowest``), which avoids the UAC "
 "prompt and lets the app write to its own data directory."
 msgstr ""
 "产物为 "
-"``dist\\installer\\Orbit-1.0.1-Windows-x64-Setup.exe``。安装脚本按用户安装（``PrivilegesRequired=lowest``），既能避开"
+"``dist\\installer\\Orbit-1.0.2-Windows-x64-Setup.exe``。安装脚本按用户安装（``PrivilegesRequired=lowest``），既能避开"
 " UAC 提示，也让应用可以写入自己的数据目录。"
 
 #: ../../building.rst:67
