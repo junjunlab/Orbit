@@ -5353,14 +5353,65 @@
     return best;
   }
 
+  /* ---- 平滑缩放（zoom 过渡动画）----------------------------------------
+     动画期间按插值后的视野逐帧重绘，而不是对整块画布做 CSS scaleX——这样文字与
+     几何都保持清晰、不被拉伸；顶部染色体栏整体不动，只有表示视野的红框随之变化。
+     start/end 线性插值即可保证锚点（anchorBp）在过渡中保持不动。 */
+  const ZOOM_ANIM_MS = 160;
+  let zoomAnim = null;   // { raf, t0, from, to, done }
+  let zoomGen = 0;
+
+  function cancelZoomAnim() {
+    if (!zoomAnim) return;
+    if (zoomAnim.done) zoomAnim.done();   // 让被取消的动画走完，交给 gen 检查决定是否 navigate
+    cancelAnimationFrame(zoomAnim.raf);
+    zoomAnim = null;
+  }
+
+  // 从当前视图平滑过渡到 to（每帧 render，重绘而非拉伸位图）
+  function animateZoomTo(to) {
+    return new Promise((resolve) => {
+      cancelZoomAnim();
+      const from = { chrom: S.view.chrom, start: S.view.start, end: S.view.end };
+      const t0 = performance.now();
+      const ease = (t) => 1 - Math.pow(1 - t, 3);   // easeOutCubic
+      const st = { raf: 0, t0, from, to, done: resolve };
+      zoomAnim = st;
+      function frame(now) {
+        const t = Math.min(1, (now - t0) / ZOOM_ANIM_MS);
+        const e = ease(t);
+        S.view = {
+          chrom: to.chrom,
+          start: Math.round(from.start + (to.start - from.start) * e),
+          end: Math.round(from.end + (to.end - from.end) * e),
+        };
+        render();
+        if (t < 1) { st.raf = requestAnimationFrame(frame); return; }
+        st.done = null;
+        S.view = { chrom: to.chrom, start: to.start, end: to.end };
+        resolve();
+      }
+      st.raf = requestAnimationFrame(frame);
+    });
+  }
+
   async function zoomAt(factor, anchor) {
-    const size = S.view.end - S.view.start;
-    const len = S.asm.chroms[S.view.chrom];
+    const g = ++zoomGen;
+    const cur = S.view;
+    const size = cur.end - cur.start;
+    const len = S.asm.chroms[cur.chrom];
     let newSize = clamp(Math.round(size * factor), 40, len);
-    const anchorBp = S.view.start + size * anchor;
+    const anchorBp = cur.start + size * anchor;
     let start = Math.round(anchorBp - newSize * anchor);
     start = clamp(start, 0, Math.max(0, len - newSize));
-    await navigate(S.view.chrom, start, start + newSize);
+    const end = start + newSize;
+
+    // 动画期间 S.view 已被逐帧插值更新，连续滚轮时下一次 zoomAt 自然基于最新视野继续
+    await animateZoomTo({ chrom: cur.chrom, start, end });
+
+    // 动画期间又触发了新缩放 → 本次作废，交给最新那次去 navigate
+    if (g !== zoomGen) return;
+    await navigate(cur.chrom, start, end);
   }
 
   function applyTheme(name) {
