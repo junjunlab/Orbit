@@ -1,234 +1,98 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) 2026, junjunlab
-# This file is distributed under the same license as the Orbit package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
-#
 msgid ""
 msgstr ""
-"Project-Id-Version: Orbit 1.0\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-29 20:39+0800\n"
-"PO-Revision-Date: 2026-10-29 20:50+0800\n"
-"Last-Translator: junjunlab\n"
+"Project-Id-Version: Orbit\n"
 "Language: zh_CN\n"
-"Language-Team: zh_CN <LL@li.org>\n"
-"Plural-Forms: nplurals=1; plural=0;\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.18.0\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
 
-#: ../../faq.rst:2
+msgid ""
+msgstr "Project-Id-Version: Orbit\nLanguage: zh_CN\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=1; plural=0;\n"
+
+msgid ""
+msgstr "Project-Id-Version: Orbit 1.0\nReport-Msgid-Bugs-To: \nPOT-Creation-Date: 2026-10-29 20:39+0800\nPO-Revision-Date: 2026-10-29 20:50+0800\nLast-Translator: junjunlab\nLanguage: zh_CN\nLanguage-Team: zh_CN <LL@li.org>\nPlural-Forms: nplurals=1; plural=0;\nMIME-Version: 1.0\nContent-Type: text/plain; charset=utf-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: Babel 2.18.0\n"
+
 msgid "FAQ and troubleshooting"
 msgstr "常见问题与故障排查"
 
-#: ../../faq.rst:5
 msgid "The gene does not expand when I click it"
 msgstr "点击基因后没有展开"
 
-#: ../../faq.rst:7
-msgid ""
-"Click the small **+** beside the gene, not the gene body. The body "
-"selects the gene and updates its details. Use **−** to collapse, or the "
-"gear beside the gene track for **Expand all / Collapse all**. Imported "
-"gene tracks have their own gear. See the before/after images in "
-":doc:`navigation`."
-msgstr ""
-"点击基因旁边的小  +  ，不要点击基因主体。点击主体会选中基因并更新其详情。使用  −  折叠，或点击基因轨道旁的齿轮选择  全部展开 / "
-"全部折叠  。导入的基因轨道有自己的齿轮。前后对比图见  :doc:`navigation`  。"
+msgid "Click the small **+** beside the gene, not the gene body. The body selects the gene and updates its details. Use **−** to collapse, or the gear beside the gene track for **Expand all / Collapse all**. Imported gene tracks have their own gear. See the before/after images in :doc:`navigation`."
+msgstr "点击基因旁边的小  +  ，不要点击基因主体。点击主体会选中基因并更新其详情。使用  −  折叠，或点击基因轨道旁的齿轮选择  全部展开 / 全部折叠  。导入的基因轨道有自己的齿轮。前后对比图见  :doc:`navigation`  。"
 
-#: ../../faq.rst:13
 msgid "I imported FASTA but see no letters"
 msgstr "导入 FASTA 后看不到字母"
 
-#: ../../faq.rst:15
-msgid ""
-"Enable that exact imported track and zoom to a narrow interval, for "
-"example ``chr7:5,529,627-5,529,685`` on hg38. At a wide scale the track "
-"only shows a zoom-in hint. Letters need about 8 pixels per base. Check "
-"the assembly and chromosome header if it is still empty. The verified "
-"examples and screenshots are in :doc:`sequence`."
-msgstr ""
-"启用对应的导入轨道，并缩放到较窄的区间，例如 hg38 上的 ``chr7:5,529,627-5,529,685`` "
-"。缩放范围较大时，轨道只显示放大提示。每个碱基需要约 8 个像素才能显示字母。如果仍为空，请检查装配和染色体标题。经验证的示例和截图见  "
-":doc:`sequence`  。"
+msgid "Enable that exact imported track and zoom to a narrow interval, for example ``chr7:5,529,627-5,529,685`` on hg38. At a wide scale the track only shows a zoom-in hint. Letters need about 8 pixels per base. Check the assembly and chromosome header if it is still empty. The verified examples and screenshots are in :doc:`sequence`."
+msgstr "启用对应的导入轨道，并缩放到较窄的区间，例如 hg38 上的 ``chr7:5,529,627-5,529,685`` 。缩放范围较大时，轨道只显示放大提示。每个碱基需要约 8 个像素才能显示字母。如果仍为空，请检查装配和染色体标题。经验证的示例和截图见  :doc:`sequence`  。"
 
-#: ../../faq.rst:22
 msgid "ACTB shows CAT instead of ATG"
 msgstr "ACTB 显示 CAT 而不是 ATG"
 
-#: ../../faq.rst:24
-msgid ""
-"ACTB is on the negative strand. The default reference row reads CAT at "
-"its start boundary. Flip the imported sequence row, then read its "
-"complementary letters right to left (coding 5′→3′) to get ATG. Flip does "
-"not reverse genomic coordinates or change the gene's strand. See "
-":doc:`sequence`."
-msgstr ""
-"ACTB 位于负链。默认参考行在起始边界显示 CAT。翻转导入的序列行，然后从右向左读取其互补字母（按编码方向 5′→3′），即可得到 "
-"ATG。翻转不会反转基因组坐标，也不会改变基因链方向。见  :doc:`sequence`  。"
+msgid "ACTB is on the negative strand. The default reference row reads CAT at its start boundary. Flip the imported sequence row, then read its complementary letters right to left (coding 5′→3′) to get ATG. Flip does not reverse genomic coordinates or change the gene's strand. See :doc:`sequence`."
+msgstr "ACTB 位于负链。默认参考行在起始边界显示 CAT。翻转导入的序列行，然后从右向左读取其互补字母（按编码方向 5′→3′），即可得到 ATG。翻转不会反转基因组坐标，也不会改变基因链方向。见  :doc:`sequence`  。"
 
-#: ../../faq.rst:30
 msgid "Why do I see several M and stop symbols?"
 msgstr "为什么会看到多个 M 和终止符号？"
 
-#: ../../faq.rst:32
-msgid ""
-"Aa shows three genomic reading frames, not a splice-aware annotated "
-"protein. Incidental ATG and stops are normal. Choose a transcript, "
-"inspect its CDS boundary and strand, and use the correct genetic code. "
-"Green M is an ATG highlight, not proof of initiation. The genetic-code "
-"table is in :doc:`sequence`."
-msgstr ""
-"Aa 显示的是三个基因组阅读框，而不是考虑剪接的注释蛋白。偶然出现的 ATG 和终止符号是正常的。请选择一个转录本，检查其 CDS "
-"边界和链方向，并使用正确的遗传密码表。绿色 M 是 ATG 高亮，不代表已确认起始。遗传密码表见  :doc:`sequence`  。"
+msgid "Aa shows three genomic reading frames, not a splice-aware annotated protein. Incidental ATG and stops are normal. Choose a transcript, inspect its CDS boundary and strand, and use the correct genetic code. Green M is an ATG highlight, not proof of initiation. The genetic-code table is in :doc:`sequence`."
+msgstr "Aa 显示的是三个基因组阅读框，而不是考虑剪接的注释蛋白。偶然出现的 ATG 和终止符号是正常的。请选择一个转录本，检查其 CDS 边界和链方向，并使用正确的遗传密码表。绿色 M 是 ATG 高亮，不代表已确认起始。遗传密码表见  :doc:`sequence`  。"
 
-#: ../../faq.rst:38
 msgid "Built-in sequence or GC is unavailable after FASTA import"
 msgstr "导入 FASTA 后内置序列或 GC 不可用"
 
-#: ../../faq.rst:40
-msgid ""
-"Imported FASTA is an independent track. Built-in sequence/GC and backend "
-"motif or BAM mismatch operations use a local matching 2bit, or the "
-"configured remote 2bit when permitted. Check "
-"``data/genomes/<assembly>.2bit``, network access, ``ORBIT_OFFLINE`` and "
-"the assembly's ``twoBitURL``. Local FASTA alone does not replace this "
-"backend reference."
-msgstr ""
-"导入的 FASTA 是独立轨道。内置序列/GC 以及后端基序或 BAM 错配操作使用匹配的本地 2bit，或在允许时使用配置的远程 "
-"2bit。请检查 ``data/genomes/<assembly>.2bit`` 、网络连接、 ``ORBIT_OFFLINE`` 和装配的 "
-"``twoBitURL`` 。仅有本地 FASTA 不会替代后端参考。"
+msgid "Imported FASTA is an independent track. Built-in sequence/GC and backend motif or BAM mismatch operations use a local matching 2bit, or the configured remote 2bit when permitted. Check ``data/genomes/<assembly>.2bit``, network access, ``ORBIT_OFFLINE`` and the assembly's ``twoBitURL``. Local FASTA alone does not replace this backend reference."
+msgstr "导入的 FASTA 是独立轨道。内置序列/GC 以及后端基序或 BAM 错配操作使用匹配的本地 2bit，或在允许时使用配置的远程 2bit。请检查 ``data/genomes/<assembly>.2bit`` 、网络连接、 ``ORBIT_OFFLINE`` 和装配的 ``twoBitURL`` 。仅有本地 FASTA 不会替代后端参考。"
 
-#: ../../faq.rst:47
 msgid "The first visit or import takes time"
 msgstr "第一次访问或导入需要时间"
 
-#: ../../faq.rst:49
-msgid ""
-"A remote reference needs an index/range request; response time depends on"
-" your network and reference file. BAM is scanned into an interval index "
-"during import, and gzip FASTA is decompressed into memory. Large files "
-"therefore need both time and RAM; this is not guaranteed to be a fixed "
-"one-second operation. For large signal data use indexed bigWig rather "
-"than genome-wide bedGraph."
-msgstr ""
-"远程参考需要索引/范围请求；响应时间取决于网络和参考文件。导入时会扫描 BAM 并建立区间索引，gzip FASTA "
-"会解压到内存。因此大文件同时需要时间和内存，不能保证固定在一秒内完成。对于大型信号数据，请使用带索引的 bigWig，而不是全基因组 "
-"bedGraph。"
+msgid "A remote reference needs an index/range request; response time depends on your network and reference file. BAM is scanned into an interval index during import, and gzip FASTA is decompressed into memory. Large files therefore need both time and RAM; this is not guaranteed to be a fixed one-second operation. For large signal data use indexed bigWig rather than genome-wide bedGraph."
+msgstr "远程参考需要索引/范围请求；响应时间取决于网络和参考文件。导入时会扫描 BAM 并建立区间索引，gzip FASTA 会解压到内存。因此大文件同时需要时间和内存，不能保证固定在一秒内完成。对于大型信号数据，请使用带索引的 bigWig，而不是全基因组 bedGraph。"
 
-#: ../../faq.rst:56
 msgid "My BAM looks empty or incomplete"
 msgstr "我的 BAM 看起来为空或不完整"
 
-#: ../../faq.rst:58
-msgid ""
-"Choose the correct assembly and a chromosome containing actual reads. "
-"Turn on the parent BAM signal checkbox and its subordinate alignment "
-"checkbox. At high density the view may be sampled; the current import cap"
-" is 6,000,000 accepted reads. Check the file's truncation/sampling "
-"messages rather than treating the plot as all reads. A .bai file is not "
-"consumed by the current BAM loader."
-msgstr ""
-"选择正确的装配和包含实际 reads 的染色体。打开 BAM 父级信号复选框及其从属的比对复选框。高密度区域可能会抽样显示；当前导入上限为 "
-"6,000,000 条已接受 reads。请查看文件的截断/抽样消息，不要把图当作全部 reads。当前 BAM 加载器不会使用 .bai 文件。"
+msgid "Choose the correct assembly and a chromosome that actually has reads — a ``chr1`` BAM shows nothing on ``chr2``. Check the parent BAM switch and the Alignments switch under it. Coverage, junctions and alignments are hidden beyond the visibility window (30 kb standard, 300 kb RNA-seq, 1000 kb third generation), so a whole-chromosome view is expected to be empty; the row says so. Nothing is sampled or truncated: every read in the window is returned, and rows that do not fit are scrolled. If the file has no usable ``.bai``, the first load builds one — watch the progress message instead of assuming the import failed."
+msgstr "先确认装配正确、染色体上确实有 reads——``chr1`` 的 BAM 在 ``chr2`` 上当然是空的。检查 BAM 主开关和它下面的 Alignments 开关。超过可见窗口（普通 30 kb、RNA-seq 300 kb、三代 1000 kb）后覆盖度、剪接位点和比对都会隐藏，所以整条染色体的视图本来就该是空的，轨道上也会这么写。没有任何抽样或截断：窗口内每条 read 都会返回，放不下的行靠滚动查看。文件没有可用 ``.bai`` 时，首次加载会自建索引——看进度提示，不要以为导入失败了。"
 
-#: ../../faq.rst:65
 msgid "Why do two panels have different coordinate scales?"
 msgstr "为什么两个面板的坐标比例不同？"
 
-#: ../../faq.rst:67
-msgid ""
-"Each panel has its own interval and zoom. Shared horizontal screen "
-"position is not a common genomic coordinate, and one panel is not one "
-"sample. Use its header input to search a gene, click its header to select"
-" it, and use × to close it. The program supports up to five panels. See "
-":doc:`navigation`."
-msgstr ""
-"每个面板都有自己的区间和缩放级别。屏幕上的水平位置相同不代表基因组坐标相同，一个面板也不等于一个样本。使用面板标题输入框搜索基因，点击标题选中面板，使用"
-" × 关闭面板。程序最多支持五个面板。见  :doc:`navigation`  。"
+msgid "Each panel has its own interval and zoom. Shared horizontal screen position is not a common genomic coordinate, and one panel is not one sample. Use its header input to search a gene, click its header to select it, and use × to close it. The program supports up to five panels. See :doc:`navigation`."
+msgstr "每个面板都有自己的区间和缩放级别。屏幕上的水平位置相同不代表基因组坐标相同，一个面板也不等于一个样本。使用面板标题输入框搜索基因，点击标题选中面板，使用 × 关闭面板。程序最多支持五个面板。见  :doc:`navigation`  。"
 
-#: ../../faq.rst:73
 msgid "Will tracks and preferences return next launch?"
 msgstr "下次启动时轨道和偏好设置会恢复吗？"
 
-#: ../../faq.rst:75
-msgid ""
-"Imports are session-scoped by default. ``IGV_RESTORE_LOADED=1`` enables "
-"backend restoration of stored imports, but a restored row can still be "
-"unchecked. The frontend deliberately starts fresh for many preferences; "
-"language is stored separately. Do not rely on an old expanded-gene set "
-"returning next time. Keep the original research files. Removing a track "
-"can remove the imported copy."
-msgstr ""
-"导入默认按会话管理。 ``IGV_RESTORE_LOADED=1`` "
-"会启用后端恢复已存储的导入，但恢复的行仍可能未勾选。前端会有意让许多偏好设置在启动时恢复默认；语言单独存储。不要依赖旧的基因展开状态在下次启动时保留。请保留原始研究文件；移除轨道可能会删除导入副本。"
+msgid "Imports are session-scoped: a launch opens nothing, and the imported files reappear in the sidebar only after you import them again in that session. ``IGV_RESTORE_LOADED=1`` enables backend restoration of stored imports, but a restored row can still be unchecked. The frontend deliberately starts fresh for many preferences; language is stored separately. Do not rely on an old expanded-gene set returning next time. Keep the original research files. Removing a track can remove the imported copy."
+msgstr "导入只在本次会话内生效：启动时什么都不打开，重新导入之后文件才会回到侧栏。``IGV_RESTORE_LOADED=1`` 会让后端恢复已存的导入，但恢复出来的行仍可能是未勾选状态。前端很多偏好是故意每次从零开始的；语言单独保存。不要指望上次展开的基因集合下次还在。原始科研文件请自行留底，删除轨道可能会删掉导入副本。"
 
-#: ../../faq.rst:81
-msgid ""
-"Avoid deleting the entire Orbit user-data directory to reset a colour: "
-"that directory can contain imported research files. Prefer the specific "
-"reset control in the relevant settings panel."
+msgid "Avoid deleting the entire Orbit user-data directory to reset a colour: that directory can contain imported research files. Prefer the specific reset control in the relevant settings panel."
 msgstr "不要为了重置颜色而删除整个 Orbit 用户数据目录：其中可能包含导入的研究文件。请优先使用相应设置面板中的专用重置控件。"
 
-#: ../../faq.rst:86
 msgid "Does Orbit work offline?"
 msgstr "Orbit 支持离线工作吗？"
 
-#: ../../faq.rst:88
-msgid ""
-"Bundled annotations and imported tracks can work offline. Imported FASTA "
-"can show its own sequence offline. A local matching 2bit is needed for "
-"offline built-in reference operations. Remote sequence caches are in "
-"memory, not a persistent download of every chromosome you have visited. "
-"``ORBIT_OFFLINE=1`` disables the remote-reference fallback."
-msgstr ""
-"内置注释和导入轨道可以离线工作。导入的 FASTA 可在离线时显示自身序列。离线执行内置参考操作需要匹配的本地 "
-"2bit。远程序列缓存位于内存中，并不是对访问过的每条染色体进行持久化下载。 ``ORBIT_OFFLINE=1`` 会禁用远程参考回退。"
+msgid "Bundled annotations and imported tracks can work offline. Imported FASTA can show its own sequence offline. A local matching 2bit is needed for offline built-in reference operations. Remote sequence caches are in memory, not a persistent download of every chromosome you have visited. ``ORBIT_OFFLINE=1`` disables the remote-reference fallback."
+msgstr "内置注释和导入轨道可以离线工作。导入的 FASTA 可在离线时显示自身序列。离线执行内置参考操作需要匹配的本地 2bit。远程序列缓存位于内存中，并不是对访问过的每条染色体进行持久化下载。 ``ORBIT_OFFLINE=1`` 会禁用远程参考回退。"
 
-#: ../../faq.rst:95
 msgid "The PDF is not editable"
 msgstr "PDF 不可编辑"
 
-#: ../../faq.rst:97
-msgid ""
-"Normally PDF uses vector primitives and an embedded system font. If the "
-"font cannot be loaded, the program reports that it exported a raster "
-"fallback. Try SVG, or configure a supported system font with ``IGV_FONT``"
-" and export again. Do not infer vector content solely from the .pdf "
-"extension."
-msgstr ""
-"通常 PDF 使用矢量图元和嵌入的系统字体。如果字体无法加载，程序会报告已导出栅格回退版本。请尝试 SVG，或使用 ``IGV_FONT`` "
-"配置受支持的系统字体后重新导出。不能仅凭 .pdf 扩展名判断内容是矢量。"
+msgid "Normally PDF uses vector primitives and an embedded system font. If the font cannot be loaded, the program reports that it exported a raster fallback. Try SVG, or configure a supported system font with ``IGV_FONT`` and export again. Do not infer vector content solely from the .pdf extension."
+msgstr "通常 PDF 使用矢量图元和嵌入的系统字体。如果字体无法加载，程序会报告已导出栅格回退版本。请尝试 SVG，或使用 ``IGV_FONT`` 配置受支持的系统字体后重新导出。不能仅凭 .pdf 扩展名判断内容是矢量。"
 
-#: ../../faq.rst:103
 msgid "Windows or macOS blocks startup"
 msgstr "Windows 或 macOS 阻止启动"
 
-#: ../../faq.rst:105
-msgid ""
-"Only bypass a warning for an installer whose origin you trust. The "
-"Windows build may be unsigned; inspect the publisher/source before using "
-"**More info → Run anyway**. The macOS build may be unnotarized. Confirm "
-"the downloaded application before changing quarantine settings; do not "
-"disable platform security globally."
-msgstr ""
-"仅对来源可信的安装程序绕过警告。Windows 构建可能未签名；使用  更多信息 → 仍要运行  前请检查发布者和来源。macOS "
-"构建可能未经公证。更改隔离设置前请确认下载的应用无误；不要全局禁用平台安全功能。"
+msgid "Only bypass a warning for an installer whose origin you trust. The Windows build may be unsigned; inspect the publisher/source before using **More info → Run anyway**. The macOS build may be unnotarized. Confirm the downloaded application before changing quarantine settings; do not disable platform security globally."
+msgstr "仅对来源可信的安装程序绕过警告。Windows 构建可能未签名；使用  更多信息 → 仍要运行  前请检查发布者和来源。macOS 构建可能未经公证。更改隔离设置前请确认下载的应用无误；不要全局禁用平台安全功能。"
 
-#: ../../faq.rst:112
 msgid "The application window stays blank"
 msgstr "应用窗口保持空白"
 
-#: ../../faq.rst:114
-msgid ""
-"Inspect ``%LOCALAPPDATA%/Orbit/orbit.log`` on Windows. If a local port "
-"conflict is reported, launch with a different port such as ``--port "
-"8766``. Running two servers does not isolate imported files when they "
-"share the same data folder; use a separate ``--data`` directory if you "
-"need isolated test data."
-msgstr ""
-"在 Windows 上检查 ``%LOCALAPPDATA%/Orbit/orbit.log`` 。如果报告本地端口冲突，请使用其他端口（例如 "
-"``--port 8766`` ）启动。两个服务器共用同一数据目录时，无法隔离导入文件；如需隔离测试数据，请使用单独的 ``--data`` "
-"目录。"
-
+msgid "Inspect ``%LOCALAPPDATA%/Orbit/orbit.log`` on Windows. If a local port conflict is reported, launch with a different port such as ``--port 8766``. Running two servers does not isolate imported files when they share the same data folder; use a separate ``--data`` directory if you need isolated test data."
+msgstr "在 Windows 上检查 ``%LOCALAPPDATA%/Orbit/orbit.log`` 。如果报告本地端口冲突，请使用其他端口（例如 ``--port 8766`` ）启动。两个服务器共用同一数据目录时，无法隔离导入文件；如需隔离测试数据，请使用单独的 ``--data`` 目录。"

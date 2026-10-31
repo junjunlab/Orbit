@@ -67,6 +67,27 @@ class BigWig:
             self.total = {"bases": bases, "min": mn, "max": mx, "sum": total}
 
     # ------------------------------------------------------------------ index
+    def close(self) -> None:
+        """释放 mmap 与文件句柄。
+
+        Windows 上文件还被映射着时删不掉 / 覆盖不了（WinError 1224），
+        删除轨道、或用同名文件重新导入之前必须先关掉。
+        """
+        mm = getattr(self, "_mm", None)
+        if mm is not None:
+            try:
+                mm.close()
+            except (BufferError, ValueError):
+                pass
+            self._mm = None
+        fh = getattr(self, "_fh", None)
+        if fh is not None:
+            try:
+                fh.close()
+            except OSError:
+                pass
+            self._fh = None
+
     def _read_chrom_tree(self) -> None:
         mm = self._mm
         magic, block_size, key_size, val_size, item_count, _res = struct.unpack_from(

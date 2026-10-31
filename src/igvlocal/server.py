@@ -29,6 +29,8 @@ import threading
 import time
 import webbrowser
 from http import HTTPStatus
+
+from . import __version__
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
@@ -246,7 +248,7 @@ def parse_locus(q: str, chroms: dict[str, int]) -> tuple[str, int, int] | None:
 
 
 class Handler(BaseHTTPRequestHandler):
-    server_version = "Orbit/1.0"
+    server_version = f"Orbit/{__version__}"
     protocol_version = "HTTP/1.1"
 
     # ------------------------------------------------------------------ plumbing
@@ -296,6 +298,15 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self):  # noqa: N802
         try:
             parsed = urlparse(self.path)
+            if parsed.path == "/api/load_local":
+                qs = parse_qs(parsed.query)
+                path = (qs.get("path") or [""])[0]
+                if not path:
+                    return self._error("缺少路径（?path=）")
+                tracks = STORE.loaded.add_local(Path(path))
+                return self._json({"ok": True, "track": tracks[0].meta(),
+                                   "reused": False,
+                                   "tracks": [t.meta() for t in tracks]})
             if parsed.path == "/api/load":
                 return self._handle_load(parse_qs(parsed.query))
             if parsed.path == "/api/clientlog":
@@ -360,13 +371,18 @@ class Handler(BaseHTTPRequestHandler):
                         break
                     f.write(chunk)
                     remaining -= len(chunk)
+            before = len(STORE.loaded.tracks)
             track = STORE.loaded.add(tmp, name)
+            reused = len(STORE.loaded.tracks) == before
         finally:
             try:
                 tmp.unlink()
             except OSError:
                 pass
-        return self._json({"ok": True, "track": track.meta()})
+        # 一个 SEG 里可能有多个样本 → 返回多条轨道；其它格式仍然只有一条
+        return self._json({"ok": True, "track": track[0].meta(),
+                           "reused": reused,
+                           "tracks": [t.meta() for t in track]})
 
     def _route(self):
         parsed = urlparse(self.path)
@@ -415,7 +431,7 @@ class Handler(BaseHTTPRequestHandler):
             return self._json(STORE.catalog)
 
         if name == "health":
-            return self._json({"ok": True, "version": "1.0"})
+            return self._json({"ok": True, "version": __version__})
 
         if name == "font":
             # 矢量 PDF 要用系统里的中文字体（前端裁剪后嵌入），字体文件本身不必再 gzip
@@ -463,20 +479,34 @@ class Handler(BaseHTTPRequestHandler):
                 # 真正有比对记录的染色体。二者之差就是「头里有定义、实际零比对」，
                 # 必须显式告知前端；否则 values 为空数组会让前端画出一条空坐标轴
                 # （peak=0 → 0 – 2.0e-9 的诡异刻度），看起来就像 track 坏了。
-                iv = getattr(lt, "_iv", None)
-                if iv is not None and lchrom not in iv:
+                # 有 .bai 的 BAM 是「按需扫描」，_iv 是空的，不能拿它判断有没有记录
+                if hasattr(lt, "has_reads") and not lt.has_reads(chrom):
                     return self._json({"values": [], "start": start, "end": end,
                                        "bins": bins,
                                        "reason": f"该 BAM 在 {chrom} 没有比对记录"})
+                # 注意：不要再拿 lt._iv 判断。有 .bai 的 BAM 走「按需扫描」，
+                # _iv 永远是空字典，用它判断会把所有区域都误报成「没有比对记录」。
+                # has_reads() 同时覆盖了「全量加载」和「索引扫描」两种模式。
                 values = lt.summary(lchrom, start, end, bins)
                 peak = 0.0
+                trough = 0.0
                 for v in values:
-                    if v and v.get("m", 0) > peak:
-                        peak = v["m"]
+                    if not v:
+                        continue
+                    m = v.get("m", 0)
+                    if m > peak:
+                        peak = m
+                    elif m < trough:
+                        trough = m
                 fmax = (lt.total or {}).get("max") if isinstance(lt.total, dict) else None
+                fmin = (lt.total or {}).get("min") if isinstance(lt.total, dict) else None
                 return self._json({"values": values, "start": start, "end": end,
                                    "bins": bins, "peak": round(peak, 4),
-                                   "fileMax": round(fmax, 3) if fmax is not None else None})
+                                   "trough": round(trough, 4),
+                                   # SEG（拷贝数）要以 0 为中心对称画，前端据此改纵轴和分色
+                                   "diverging": bool(getattr(lt, "diverging", False)),
+                                   "fileMax": round(fmax, 3) if fmax is not None else None,
+                                   "fileMin": round(fmin, 3) if fmin is not None else None})
             bw = STORE.bigwig(tid)
             if bw is None:
                 return self._error("unknown track", HTTPStatus.NOT_FOUND)
@@ -491,9 +521,76 @@ class Handler(BaseHTTPRequestHandler):
                                "bins": bins, "peak": round(peak, 4),
                                "fileMax": round(bw.total["max"], 3) if bw.total else None})
 
+        # 多样本 SEG 的热图：一次返回整块矩阵（样本 × bin），比每个样本单独请求省事
+        if name == "loaded/seg":
+            tid = (qs.get("track") or [""])[0]
+            t = STORE.loaded.get(tid)
+            if t is None or t.format != "seg":
+                return self._error("unknown SEG track", HTTPStatus.NOT_FOUND)
+            chrom = (qs.get("chrom") or [""])[0]
+            start = int((qs.get("s") or ["0"])[0])
+            end = int((qs.get("e") or ["0"])[0])
+            bins = max(10, min(int((qs.get("bins") or ["700"])[0]), 4000))
+            if t.resolve_chrom(chrom) not in t.chroms:
+                return self._json({"samples": t.samples, "rows": [], "bins": bins,
+                                   "reason": f"该文件不含 {chrom}"})
+            return self._json({"samples": t.samples,
+                               "rows": t.matrix(chrom, start, end, bins),
+                               "start": start, "end": end, "bins": bins})
+
+        # 全基因组视野：把每条染色体拼成一行（像 IGV 的 dot 视图那样按长度分配 bin）
+        if name == "loaded/seg_genome":
+            tid = (qs.get("track") or [""])[0]
+            t = STORE.loaded.get(tid)
+            if t is None or t.format != "seg":
+                return self._error("unknown SEG track", HTTPStatus.NOT_FOUND)
+            names = [c for c in (qs.get("chroms") or [""])[0].split(",") if c]
+            total_bins = max(60, min(int((qs.get("bins") or ["1200"])[0]), 8000))
+            order = []
+            for c in names:
+                key = t.resolve_chrom(c)
+                ln = t.chroms.get(key)
+                if not ln:
+                    continue
+                order.append({"name": c, "len": ln})
+            if not order:
+                return self._json({"samples": t.samples, "rows": [], "order": [],
+                                   "reason": "该文件不含这些染色体"})
+            span = sum(o["len"] for o in order) or 1
+            rows = [[] for _ in t.samples]
+            for o in order:
+                nb = max(1, round(total_bins * o["len"] / span))
+                o["bins"] = nb
+                m = t.matrix(o["name"], 0, o["len"], nb)
+                for i, r in enumerate(m):
+                    rows[i].extend(r)
+            return self._json({"samples": t.samples, "order": order,
+                               "bins": sum(o["bins"] for o in order), "rows": rows})
+
+        # 「自定义（空）」装配用：把某条导入轨道自带的染色体字典给前端，
+        # 用户只导入自己的 FASTA / GTF / BAM 时也能建立坐标轴
+        if name == "track_chroms":
+            tid = (qs.get("track") or [""])[0]
+            t = STORE.loaded.get(tid)
+            if t is None:
+                return self._error("unknown track", HTTPStatus.NOT_FOUND)
+            ch = getattr(t, "chroms", None) or {}
+            return self._json({"chroms": dict(ch)})
+
+        # 剪接位点（Sashimi 用的 arc）：从窗口内的 reads 聚合 CIGAR N 段
+        if name == "loaded/junctions":
+            tid = (qs.get("track") or [""])[0]
+            t = STORE.loaded.get(tid)
+            if t is None or not hasattr(t, "junctions"):
+                return self._error("unknown alignment track", HTTPStatus.NOT_FOUND)
+            chrom = (qs.get("chrom") or [""])[0]
+            start = int((qs.get("s") or ["0"])[0])
+            end = int((qs.get("e") or ["0"])[0])
+            min_n = max(1, min(int((qs.get("min") or ["1"])[0]), 100))
+            return self._json({"junctions": t.junctions(chrom, start, end, min_n)})
+
         if name == "loaded":
             return self._json({"tracks": STORE.loaded.metas(), "dir": str(STORE.loaded.dir)})
-
         if name == "loaded/genes":
             tid = (qs.get("track") or [""])[0]
             t = STORE.loaded.get(tid)
@@ -502,7 +599,7 @@ class Handler(BaseHTTPRequestHandler):
             chrom = (qs.get("chrom") or [""])[0]
             start = int((qs.get("s") or ["0"])[0])
             end = int((qs.get("e") or ["0"])[0])
-            limit = 3000
+            limit = 4000
             if isinstance(t, RepeatTrack):
                 # 重复注释一条染色体上就有几十万个拷贝：先按窗口算总数，
                 # 再让 query 均匀抽样（取前 N 个会全堆在视野左边缘）
@@ -511,7 +608,15 @@ class Handler(BaseHTTPRequestHandler):
                 truncated = total > limit
             else:
                 genes = t.query(chrom, start, end)
-                truncated = len(genes) > limit
+                total = len(genes)
+                truncated = total > limit
+                if truncated:
+                    # 整条染色体视野动辄几万个基因：取前 N 个会全挤在左边、右边一片空白
+                    # （用户会以为「GTF 轨道只画了一半」）。按等间隔抽样，铺满整个视野。
+                    step = total / limit
+                    genes = [genes[min(total - 1, int(i * step))] for i in range(limit)]
+                else:
+                    genes = genes[:limit]
             payload = [g.to_dict() for g in genes[:limit]]
             return self._json({"genes": payload, "truncated": truncated,
                                "ms": round((time.perf_counter() - t0) * 1000, 2)})
@@ -554,11 +659,9 @@ class Handler(BaseHTTPRequestHandler):
             chrom = (qs.get("chrom") or [""])[0]
             start = int((qs.get("s") or ["0"])[0])
             end = int((qs.get("e") or ["0"])[0])
-            max_n = int((qs.get("max") or ["1500"])[0])
-            max_n = max(10, min(max_n, 4000))
             genome = STORE.genome(db)
             ref = genome.fetch if (genome is not None and chrom in genome) else None
-            reads, total, sampled = t.reads(chrom, start, end, max_n, ref)
+            reads, total, sampled = t.reads(chrom, start, end, ref=ref)
             reason = None
             if not reads and not t.has_reads(chrom):
                 reason = f"该 BAM 在 {chrom} 没有比对记录"

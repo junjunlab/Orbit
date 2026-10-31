@@ -24,12 +24,15 @@ Supported formats
    * - WIG
      - ``.wig`` ``.wiggle``
      - ``variableStep`` and ``fixedStep``; stored as intervals like bedGraph.
+   * - SEG
+     - ``.seg`` ``.seg.txt`` ``.seg.tsv``
+     - Copy-number segments (GISTIC / TCGA / GDC); one file may hold many samples.
    * - BAM
      - ``.bam``
-     - Scanned into an in-memory index during import; a ``.bai`` is not used.
+     - Uses the neighbouring ``.bai``; builds its own index once if there is none.
    * - SAM
      - ``.sam``
-     - Text alignments: same coverage and stacked-reads view as BAM.
+     - Text alignments: same coverage, junction and read views as BAM.
    * - GTF / GFF3
      - ``.gtf`` ``.gff`` ``.gff3``
      - Becomes a gene track; UTR and CDS features are kept.
@@ -96,53 +99,189 @@ behave exactly like bedGraph. A plain four-column body is also tolerated.
    WIG carries no chromosome lengths, so the track reports its extent from the
    data itself. Coordinates in the file are 1-based, as the format requires.
 
+SEG
+---
+
+SEG is the tab-delimited copy-number segment format written by GISTIC, TCGA
+and the GDC: ``Sample  Chromosome  Start  End  Num_Probes  Segment_Mean``.
+Orbit identifies the columns by header name, so the GDC spelling
+(``GDC_Aliquot``) and either ``Segment_Mean`` or ``seg.mean`` are accepted, and
+``.seg`` / ``.seg.txt`` / ``.seg.tsv`` (also gzip-compressed) all work. A plain
+``.txt`` or ``.tsv`` is accepted too, as long as the first line carries the SEG
+column names — that is how names like ``xxx.seg.v2.txt`` are recognised.
+``Segment_Mean`` is a log2 ratio: ``0`` is diploid, positive is gain and
+negative is loss.
+
+A file holding one sample becomes a two-colour bar track whose axis is
+symmetric around zero, so a gain and a loss of the same magnitude are equally
+tall. A file holding many samples becomes a heatmap instead — one row per
+sample, one column per genomic bin — so a cohort can be compared in a single
+track.
+
+.. code-block:: text
+
+   Import → select TCGA-LUAD-10samples.seg.txt
+
+.. figure:: examples/import-seg.png
+   :align: center
+   :width: 100%
+
+   Ten TCGA-LUAD copy-number segments in one file, drawn as a heatmap on hg38
+   at ``chr1:55–62 Mb``. Each row is one aliquot; red is gain, blue is loss.
+   The track label reports the sample count and the current amplitude.
+
+Right-click the track (or use its gear) for **Heatmap colours (gain / loss)**
+and **Amplitude ±**. Left on automatic, the amplitude is the 95th percentile of
+``|Segment_Mean|`` inside the current window, clamped to 0.1–3 — a single
+homozygous deletion (``-9``) therefore cannot flatten the rest of the cohort.
+
+.. note::
+
+   The SEG file stays in the sidebar after a restart but is not re-parsed
+   until you tick it again — see :ref:`imports-are-session-scoped`. Removing the
+   track deletes the imported copy under ``data/loaded``; your original file is
+   untouched.
+
 BAM
 ---
 
-Orbit scans the BAM during import and builds an in-memory interval index;
-``.bai`` is not required or consumed by this implementation. Initial import
-costs time and memory. The current loader caps accepted reads at 6,000,000;
-check the truncation notice for larger files. Coverage and displayed reads
-are then queried for the visible window, and dense alignments may be sampled.
+Orbit reads BAM through a BAI index. If ``sample.bam.bai`` sits next to the file
+it is used as-is; if there is none, or the one present does not match the BAM,
+Orbit builds its own index once and caches it next to the imported copy. Only
+BAI is understood — CSI indexes are not read, so convert them or let Orbit build
+a BAI.
 
-Reads that are unmapped (``0x4``), fail vendor QC (``0x200``) or carry the
-duplicate flag (``0x400``) are not drawn — the same default as IGV. Secondary
-(``0x100``) and supplementary (``0x800``) alignments are kept, because IGV never
-filters those.
+Every read in the window is returned: no sampling, no "first N" cap. That is why
+a wide window on a deep library takes a moment; zoom in and the request shrinks
+with the window.
 
 .. code-block:: text
 
    Import → select sample.bam
 
-The sidebar has a parent signal switch and a subordinate alignment switch:
-turn the parent on to see coverage, then enable the alignment switch for reads.
-Turning the parent off hides both; reads are not independent of the parent.
+Three rows per file
+~~~~~~~~~~~~~~~~~~~
+
+One BAM adds three adjacent rows, and all three carry the file name so several
+imported BAMs stay distinguishable:
+
+``sample.bam · Coverage``
+   Read depth as bars, scaled to the window.
+
+``sample.bam · Junctions``
+   Spliced reads as arcs, red for the forward strand and blue for the reverse.
+   The arc height grows with the number of supporting reads.
+
+``sample.bam · Alignments``
+   The reads themselves, with mismatch marks and ``N`` gaps.
+
+.. figure:: examples/bam-three-tracks.png
+   :align: center
+   :width: 100%
+
+   One BAM on hg38 at ``chr1:11,792,000-11,800,000``: Coverage, Junctions and
+   Alignments, each labelled with the file name. The bundled RefSeq track sits
+   above for context.
+
+When to draw them
+~~~~~~~~~~~~~~~~~
+
+Coverage, junctions and alignments share one visibility rule, taken from IGV:
+30 kb for a standard library, 300 kb for RNA-seq and 1000 kb for third-generation
+reads. Orbit estimates the experiment type from the first reads it sees (read
+length, spliced-read fraction, CIGAR complexity); the result is shown in the
+track settings, where it can be overridden, together with an explicit maximum
+window.
+
+.. figure:: examples/bam-settings-en.png
+   :align: center
+   :width: 62%
+
+   The BAM settings popover in English. **Experiment type** drives the window
+   (``Active: 300 kb`` here); **Maximum window (kb)** overrides it for this track
+   only. Colour, range and grouping work as for any signal track.
+
+Zooming past the limit replaces the rows with a "zoom in to see alignments"
+hint instead of drawing thousands of unreadable reads.
+
+Display modes for reads
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Right-click the **Alignments** row (or its label) for the four IGV modes:
+
+``Collapsed``
+   One row, reads drawn on top of each other.
+
+``Expanded``
+   One row per non-overlapping read, 13 px.
+
+``Squished``
+   The same packing at 5 px per row. This is the default.
+
+``Full``
+   One row per read, including reads that overlap.
+
+.. figure:: examples/bam-align-menu.png
+   :align: center
+   :width: 62%
+
+   The Alignments menu. ``Squished`` is selected by default;
+   **Remove current track** hides this row only and keeps the BAM.
+
+No mode samples: every read that passes the filters is in the layout, and the
+mode only changes how many of them fit on screen.
+
+Browsing every read
+~~~~~~~~~~~~~~~~~~~
+
+Rows that do not fit are scrolled, not discarded. Put the pointer inside the
+Alignments row and use the wheel; the label reports the visible range, for
+example ``157 reads · rows 16-39 / 157 · scroll up/down``. A thin bar on the
+right edge shows where you are. :kbd:`Ctrl` + wheel still zooms.
+
+Only the visible rows are drawn, so a window with tens of thousands of reads
+scrolls without re-reading the file.
+
+Hiding one row at a time
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+Each of the three rows has its own checkbox in the sidebar, nested under the
+BAM. Hiding **Junctions** or **Alignments** leaves coverage in place, and the
+parent BAM switch still hides the whole group. **Remove current track** in the
+row's menu does the same as unchecking it: the row disappears, the BAM stays
+imported, and the checkbox brings it back.
+
+.. figure:: examples/bam-tracks-sidebar.png
+   :align: center
+   :width: 30%
+
+   Two BAMs in the sidebar, each with its own Alignments and Junctions
+   switches. The file names wrap, so ``chr1`` and ``chr2`` stay visible.
+
+Which reads are drawn
+~~~~~~~~~~~~~~~~~~~~~
+
+Unmapped (``0x4``), vendor-QC-failed (``0x200``) and duplicate (``0x400``) reads
+are skipped — the IGV default. Secondary (``0x100``) and supplementary
+(``0x800``) alignments are kept, because IGV does not filter those either.
+Coverage counts ``M``, ``=`` and ``X``; ``N`` and ``D`` advance the reference
+without adding depth, and ``I`` / ``S`` do not advance it.
 
 SAM
 ~~~
 
-``.sam`` files (the plain-text form of BAM) are parsed the same way and appear
-with an identical coverage row plus stacked reads. Reads surviving the default
-filters are kept, including secondary and supplementary records (flags ``0x100``
-/ ``0x800``) — IGV does not filter those either: the Java implementation never tests the
-flags, and igv.js keeps them unless ``secondary`` / ``supplementary`` filtering
-is explicitly enabled. ``D``/``N`` and ``I`` CIGAR operations are preserved.
-Chromosome lengths come from the ``@SQ`` header when present. SAM is read into
-memory at import, so use BAM for very large alignment sets.
+``.sam`` files (the plain-text form of BAM) produce the same three rows. Reads
+surviving the default filters are kept, including secondary and supplementary
+records. ``D``/``N`` and ``I`` CIGAR operations are preserved, and coverage is
+computed from the aligned blocks rather than the whole ``start``–``end`` span.
+Chromosome lengths come from the ``@SQ`` header when present. SAM is parsed into
+memory at import, so prefer BAM for very large alignment sets.
 
 .. note::
 
    The same flag defaults apply to SAM: unflagged primary, secondary and
    supplementary records are drawn, while unmapped, QC-failed and duplicate
    records are skipped.
-
-.. figure:: examples/import-bam.png
-   :align: center
-   :width: 100%
-
-   A BAM imported onto hg38, shown at ``chr1:11.79–11.81 Mb``. The blue track is
-   read coverage; the striped block below it is the stacked alignments. The
-   bundled RefSeq track (``MTHFR``, ``CLCN6``) sits above for context.
 
 GTF / GFF3
 ----------
@@ -204,6 +343,19 @@ Importing copies the file into Orbit's per-user data directory
 directory is read-only).
 The imported copy is used for display; keep your original research files as
 backups. Remove a track only when you intend to remove its imported copy.
-Imported tracks are session-scoped by default: set ``IGV_RESTORE_LOADED=1`` to
-restore them on the next server launch. Restored tracks may still need to be
-checked on in the sidebar.
+
+.. _imports-are-session-scoped:
+
+Imports are session-scoped
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A launch opens nothing. The imported copies stay under ``data/loaded`` and the
+registration list is kept, but no file is parsed, indexed or drawn until you
+import it again in that session, so a 900 MB BAM cannot delay the window from
+appearing. Importing the same file again replaces its stored copy in place
+instead of creating a second ``_2`` entry.
+
+Set ``IGV_RESTORE_LOADED=1`` before launching to reopen everything that was
+imported last time — that is the behaviour of a normal genome browser, and it
+costs the startup time this default avoids. ``start-orbit.bat`` explicitly sets
+it to ``0``.

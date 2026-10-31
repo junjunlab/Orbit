@@ -38,7 +38,22 @@
 
   <div class="locus-wrap">
     <div class="locus-box">
+      <!-- 染色体下拉（同 IGV 的染色体选择器）：选某条 → 整条染色体；选「全部」→ 全基因组视野 -->
+      <div class="scope-wrap chrom-wrap">
+        <button type="button" class="scope-sel chrom-sel" id="chromSel" aria-haspopup="listbox" aria-expanded="false"
+                title="选择染色体：看整条染色体，或全部染色体（全基因组视野）">
+          <span id="chromSelLabel">chr1</span>
+        </button>
+        <div class="scope-menu chrom-menu" id="chromMenu" role="listbox" hidden></div>
+      </div>
       <svg class="ico" viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.6" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="m10.6 10.6 3 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      <div class="scope-wrap" id="scopeWrap">
+        <button type="button" class="scope-sel" id="scopeBtn" aria-haspopup="listbox" aria-expanded="false"
+                title="搜索范围：内置注释，或某个导入的 GTF / GFF 注释">
+          <span id="scopeLabel">内置</span>
+        </button>
+        <div class="scope-menu" id="scopeMenu" role="listbox" hidden></div>
+      </div>
       <input id="locus" autocomplete="off" spellcheck="false"
              placeholder="搜索基因 / 位置"
              title="支持：基因名（TP53）、位置（chr7:55,000,000-55,200,000）、多个用逗号分隔（TP53, BRCA1）">
@@ -47,21 +62,8 @@
     <div class="suggest" id="suggest" hidden></div>
   </div>
 
-  <div class="gtf-wrap" id="gtfWrap" hidden>
-    <div class="gtf-box">
-      <span class="gtf-tag" title="从导入的 GTF / GFF 注释里搜索基因">GTF</span>
-      <input id="gtfInput" autocomplete="off" spellcheck="false"
-             placeholder="在导入的注释中搜索基因"
-             title="从导入的 GTF / GFF 注释里搜索基因并跳转">
-      <select id="gtfTrackSel" class="gtf-track-sel" title="选择搜索范围（全部轨道或指定轨道）">
-        <option value="all">全部轨道</option>
-      </select>
-    </div>
-    <div class="suggest gtf-suggest" id="gtfSuggest" hidden></div>
-  </div>
-
   <div class="nav">
-    <button class="nbtn import" id="btnImport" title="导入文件：bigWig / bedGraph / BAM / GTF / FASTA（也可直接把文件拖进窗口）">
+    <button class="nbtn import" id="btnImport" title="导入文件：bigWig / bedGraph / WIG / SEG / BAM / SAM / GTF / FASTA（也可直接把文件拖进窗口）">
       <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 11V3M4.5 6.5 8 3l3.5 3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 12.5h10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
       导入
     </button>
@@ -114,9 +116,9 @@
 
     <!-- 2. 信号轨道 -->
     <div class="side-sec" id="bwSec" hidden>
-      <div class="side-title">信号轨道 · bigWig</div>
+      <div class="side-title">信号轨道</div>
       <div id="bwList"></div>
-      <div class="side-hint">点名称选轨（Ctrl 多选）· 右键可统一纵轴 / 统一颜色</div>
+      <div class="side-hint">悬停可高亮画布上的轨道 · Ctrl 多选 · × 删除 · 右键统一纵轴</div>
     </div>
 
     <!-- 3. 选择 / 详情（主位：flex:1，至少 240px） -->
@@ -141,18 +143,14 @@
         <label class="trk"><input type="checkbox" data-track="overview" checked><span>全基因组总览</span></label>
       </div>
     </div>
-
-    <!-- 5. 染色体（默认一行 chip，点开才展开 25 条全表） -->
-    <div class="side-sec" id="chromSec">
-      <div class="side-title">染色体</div>
-      <button class="chrom-chip" id="chromChip" aria-expanded="false" aria-controls="chromList">
-        <span>—</span><span class="chev">▾</span>
-      </button>
-      <div class="chrom-list" id="chromList" hidden></div>
-    </div>
   </aside>
 
   <section class="view" id="view">
+    <!-- 全基因组视野（染色体下拉选「全部」时出现，同 IGV 的 whole genome view） -->
+    <div class="track gv-track" data-track="genome" hidden>
+      <div class="track-label">全基因组<div class="sub" id="gvSub"></div></div>
+      <div class="track-body"><canvas></canvas></div>
+    </div>
     <div class="track" data-track="ideogram">
       <div class="track-label">染色体<div class="sub" id="ideoChrom"></div></div>
       <div class="track-body" data-split><canvas></canvas></div>
@@ -264,7 +262,7 @@
 </div>
 
 <input type="file" id="fileInput" multiple hidden
-       accept=".bw,.bigwig,.bedgraph,.bdg,.wig,.wiggle,.bam,.sam,.gtf,.gff,.gff3,.bed,.narrowPeak,.broadPeak,.fa,.fasta,.fna,.fas,.gz,.bgz">
+       accept=".bw,.bigwig,.bedgraph,.bdg,.wig,.wiggle,.seg,.txt,.tsv,.bam,.sam,.gtf,.gff,.gff3,.bed,.narrowPeak,.broadPeak,.fa,.fasta,.fna,.fas,.gz,.bgz">
 
 <script>
 // 崩溃上报：桌面版没有控制台，页面里的异常落到 <data>/client.log。

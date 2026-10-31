@@ -1,262 +1,182 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) 2026, junjunlab
-# This file is distributed under the same license as the Orbit package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
-#
 msgid ""
 msgstr ""
-"Project-Id-Version: Orbit 1.0\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-29 20:47+0800\n"
-"PO-Revision-Date: 2026-10-29 21:00+0800\n"
-"Last-Translator: junjunlab\n"
+"Project-Id-Version: Orbit\n"
 "Language: zh_CN\n"
-"Language-Team: zh_CN <LL@li.org>\n"
-"Plural-Forms: nplurals=1; plural=0;\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.18.0\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
 
-#: ../../navigation.rst:2
+msgid ""
+msgstr "Project-Id-Version: Orbit\nLanguage: zh_CN\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=1; plural=0;\n"
+
+msgid ""
+msgstr "Project-Id-Version: Orbit 1.0\nReport-Msgid-Bugs-To: \nPOT-Creation-Date: 2026-10-29 20:47+0800\nPO-Revision-Date: 2026-10-29 21:00+0800\nLast-Translator: junjunlab\nLanguage: zh_CN\nLanguage-Team: zh_CN <LL@li.org>\nPlural-Forms: nplurals=1; plural=0;\nMIME-Version: 1.0\nContent-Type: text/plain; charset=utf-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: Babel 2.18.0\n"
+
 msgid "Navigation"
 msgstr "导航"
 
-#: ../../navigation.rst:4
-msgid ""
-"Search a gene or an exact interval, then choose how much detail to "
-"display. Coordinates typed into Orbit are **1-based, inclusive**. The "
-"examples below use **human hg38 / GRCh38**; do not reuse them on hg19."
-msgstr ""
-"搜索基因或精确区间，然后选择要显示的详细程度。在 Orbit 中输入的坐标采用 从 1 开始且包含首尾 的格式。下面示例使用 人类 hg38 / "
-"GRCh38 ；请勿在 hg19 上复用这些坐标。"
+msgid "Search a gene or an exact interval, then choose how much detail to display. Coordinates typed into Orbit are **1-based, inclusive**. The examples below use **human hg38 / GRCh38**; do not reuse them on hg19."
+msgstr "搜索基因或精确区间，然后选择要显示的详细程度。在 Orbit 中输入的坐标采用 从 1 开始且包含首尾 的格式。下面示例使用 人类 hg38 / GRCh38 ；请勿在 hg19 上复用这些坐标。"
 
-#: ../../navigation.rst:9
 msgid "Search and zoom"
 msgstr "搜索与缩放"
 
-#: ../../navigation.rst:11
 msgid "Select **hg38** in the assembly menu."
 msgstr "在装配菜单中选择  hg38 。"
 
-#: ../../navigation.rst:12
-msgid ""
-"Type ``EGFR`` and press :kbd:`Enter` to open the gene. Select a "
-"suggestion when several names match; entering the same text again is not "
-"a next-hit command."
+msgid "Type ``EGFR`` and press :kbd:`Enter` to open the gene. Select a suggestion when several names match; entering the same text again is not a next-hit command."
 msgstr "输入 ``EGFR`` 并按  :kbd:`Enter`  打开该基因。如果有多个名称匹配，请选择建议项；再次输入相同文本不会跳转到下一个匹配项。"
 
-#: ../../navigation.rst:14
 msgid "Paste ``chr7:55,019,250-55,019,308`` to inspect its start-codon region."
 msgstr "粘贴 ``chr7:55,019,250-55,019,308`` 查看其起始密码子区域。"
 
-#: ../../navigation.rst:15
-msgid ""
-"Use the wheel or toolbar zoom controls to change scale. Drag a track to "
-"pan; dragging is not an interval-selection gesture. Double-click to zoom "
-"in around the pointer. :kbd:`/` focuses the search box."
+msgid "Use the wheel or toolbar zoom controls to change scale. Drag a track to pan; dragging is not an interval-selection gesture. Double-click to zoom in around the pointer. :kbd:`/` focuses the search box."
 msgstr "使用滚轮或工具栏缩放控件调整比例。拖动轨道可平移；拖动不是选择区间的操作。双击可围绕指针放大。 :kbd:`/`  聚焦搜索框。"
 
-#: ../../navigation.rst:19
-msgid ""
-"The search also accepts ``chr7``, ``chr7:55,019,278``, and coordinate "
-"ranges without thousands separators. Zooming below one base per pixel is "
-"supported; this is necessary to make individual base letters readable. "
-"See :doc:`sequence` for nucleotide and amino-acid views."
-msgstr ""
-"搜索还接受 ``chr7``、``chr7:55,019,278`` "
-"以及不带千位分隔符的坐标范围。支持缩放到每像素少于一个碱基，这是读清单个碱基字母所必需的。有关核苷酸和氨基酸视图，请参阅  "
-":doc:`sequence` 。"
+msgid "The search also accepts ``chr7``, ``chr7:55,019,278``, and coordinate ranges without thousands separators. Zooming below one base per pixel is supported; this is necessary to make individual base letters readable. See :doc:`sequence` for nucleotide and amino-acid views."
+msgstr "搜索还接受 ``chr7``、``chr7:55,019,278`` 以及不带千位分隔符的坐标范围。支持缩放到每像素少于一个碱基，这是读清单个碱基字母所必需的。有关核苷酸和氨基酸视图，请参阅  :doc:`sequence` 。"
 
-#: ../../navigation.rst:24
 msgid "ACTB locus showing the toolbar, track labels and gene model"
 msgstr "显示工具栏、轨道标签和基因模型的 ACTB 位点"
 
-#: ../../navigation.rst:28
-msgid ""
-"A complete locus view. The assembly and search controls are at the top; "
-"track settings are beside the drawing, and the sidebar holds visibility "
-"switches and the selected-gene details."
+msgid "A complete locus view. The assembly and search controls are at the top; track settings are beside the drawing, and the sidebar holds visibility switches and the selected-gene details."
 msgstr "完整的位点视图。顶部是装配和搜索控件；绘图旁是轨道设置，侧边栏包含可见性开关和所选基因的详细信息。"
 
-#: ../../navigation.rst:33
 msgid "Expand and collapse a gene"
 msgstr "展开和折叠基因"
 
-#: ../../navigation.rst:35
-msgid ""
-"Search ``EGFR``. In the RefSeq drawing, find the small **+** beside its "
-"label. Clicking the gene body or name selects it; it does not by itself "
-"expand it."
+msgid "Search ``EGFR``. In the RefSeq drawing, find the small **+** beside its label. Clicking the gene body or name selects it; it does not by itself expand it."
 msgstr "搜索 ``EGFR``。在 RefSeq 绘图中找到标签旁的小  + 。点击基因主体或名称会选中它，但不会因此展开。"
 
-#: ../../navigation.rst:37
-msgid ""
-"Click **+** to show the individual transcript rows. The symbol becomes "
-"**−**."
+msgid "Click **+** to show the individual transcript rows. The symbol becomes **−**."
 msgstr "点击  +  显示各条转录本行。该符号会变为  − 。"
 
-#: ../../navigation.rst:38
-msgid ""
-"Compare transcript accessions (for example ``NM_005228``), exon blocks, "
-"intron connectors and coding regions. Different isoforms can have "
-"different exon structures and CDS boundaries."
+msgid "Compare transcript accessions (for example ``NM_005228``), exon blocks, intron connectors and coding regions. Different isoforms can have different exon structures and CDS boundaries."
 msgstr "比较转录本登录号（例如 ``NM_005228``）、外显子块、内含子连接线和编码区域。不同异构体可能具有不同的外显子结构和 CDS 边界。"
 
-#: ../../navigation.rst:41
-msgid ""
-"Click **−** in the same place to collapse the transcript rows back to the"
-" merged gene model. A gene with only one transcript has no +/− expansion "
-"control."
+msgid "Click **−** in the same place to collapse the transcript rows back to the merged gene model. A gene with only one transcript has no +/− expansion control."
 msgstr "在同一位置点击  − ，将转录本行折叠回合并的基因模型。只有一条转录本的基因没有 +/− 展开控件。"
 
-#: ../../navigation.rst:44
 msgid "EGFR collapsed to a merged gene model with its plus control"
 msgstr "折叠为合并基因模型并显示加号控件的 EGFR"
 
-#: ../../navigation.rst:48
-msgid ""
-"Before expansion: one merged EGFR model. Use the small + control, not an "
-"arbitrary point on an exon, to open the transcript list."
+msgid "Before expansion: one merged EGFR model. Use the small + control, not an arbitrary point on an exon, to open the transcript list."
 msgstr "展开前：一个合并的 EGFR 模型。请使用小 + 控件打开转录本列表，不要点击外显子上的任意位置。"
 
-#: ../../navigation.rst:51
 msgid "EGFR expanded into separate named transcript rows"
 msgstr "展开为独立命名转录本行的 EGFR"
 
-#: ../../navigation.rst:55
-msgid ""
-"After expansion: EGFR isoforms occupy separate rows with their transcript"
-" accessions. The − control collapses them again; the locus and zoom are "
-"unchanged."
+msgid "After expansion: EGFR isoforms occupy separate rows with their transcript accessions. The − control collapses them again; the locus and zoom are unchanged."
 msgstr "展开后：EGFR 异构体占据独立行，并显示其转录本登录号。− 控件会再次折叠它们；位点和缩放保持不变。"
 
-#: ../../navigation.rst:59
 msgid "Expand or collapse the entire track"
 msgstr "展开或折叠整个轨道"
 
-#: ../../navigation.rst:61
-msgid ""
-"Click the **gear beside RefSeq**, then choose **Expand all** or "
-"**Collapse all**. Expand all also applies to genes that become visible "
-"after panning. You can still collapse an individual gene using its − "
-"control. Imported GTF/GFF3 gene tracks have their own gear and "
-"independent expansion state. Shift-click is not an expand-all shortcut. "
-"Do not rely on expansion surviving a new app launch."
-msgstr ""
-"点击  RefSeq 旁的齿轮 ，然后选择  Expand all  或  Collapse all 。Expand all "
-"也会应用于平移后出现的基因。仍可使用某个基因的 − 控件单独折叠它。导入的 GTF/GFF3 "
-"基因轨道有自己的齿轮和独立展开状态。Shift-点击不是“全部展开”快捷方式。不要假定重新启动应用后仍会保留展开状态。"
+msgid "Click the **gear beside RefSeq**, then choose **Expand all** or **Collapse all**. Expand all also applies to genes that become visible after panning. You can still collapse an individual gene using its − control. Imported GTF/GFF3 gene tracks have their own gear and independent expansion state. Shift-click is not an expand-all shortcut. Do not rely on expansion surviving a new app launch."
+msgstr "点击  RefSeq 旁的齿轮 ，然后选择  Expand all  或  Collapse all 。Expand all 也会应用于平移后出现的基因。仍可使用某个基因的 − 控件单独折叠它。导入的 GTF/GFF3 基因轨道有自己的齿轮和独立展开状态。Shift-点击不是“全部展开”快捷方式。不要假定重新启动应用后仍会保留展开状态。"
 
-#: ../../navigation.rst:67
 msgid "Gene-track settings with Expand all and Collapse all buttons"
 msgstr "包含 Expand all 和 Collapse all 按钮的基因轨道设置"
 
-#: ../../navigation.rst:71
-msgid ""
-"The actual gene-track settings: expansion controls and colours for "
-"strands, CDS and UTR. The setting affects the chosen track, not every "
-"annotation file."
+msgid "The actual gene-track settings: expansion controls and colours for strands, CDS and UTR. The setting affects the chosen track, not every annotation file."
 msgstr "实际的基因轨道设置：包含链、CDS 和 UTR 的展开控件及颜色。该设置只影响所选轨道，不会影响每个注释文件。"
 
-#: ../../navigation.rst:75
+msgid "Feature details at the pointer"
+msgstr "指针位置的结构详情"
+
+msgid "Right-click a gene model in **RefSeq** or in an imported GTF/GFF3 track. The popover names what is exactly under the pointer:"
+msgstr "在 **RefSeq** 或导入的 GTF/GFF3 轨道上右键基因结构，浮层会说明指针正下方到底是什么："
+
+msgid "Right-clicking the first exon of ``MTHFR`` (minus strand). The pointer is on exon 12 of 12 — numbering follows the transcript, so the leftmost exon is the last one on a minus-strand gene. The 3′ UTR fragment and the intron count are listed below it."
+msgstr "在 ``MTHFR`` （负链）第一个外显子上右键。指针处是第 12 个外显子 / 共 12 个——编号按转录方向，所以负链基因最左边的外显子是最后一个。下面是 3′ UTR 片段和内含子总数。"
+
+msgid "The fields are:"
+msgstr "字段含义："
+
+msgid "**Gene name** and **Gene ID**. The ID is shown only when the annotation stores one; the bundled RefSeq index keeps names, so it reads *not provided* there."
+msgstr "**基因名称** 与 **基因 ID**。只有注释里带 ID 时才显示；内置 RefSeq 索引只保留名称，所以那里显示「未提供」。"
+
+msgid "**Transcript ID** and **strand**. A position covered by several transcripts lists one block per transcript instead of picking one."
+msgstr "**转录本 ID** 与 **链方向**。一个位置被多个转录本覆盖时，每个转录本各列一块，不会随便挑一个。"
+
+msgid "**Exon**, **CDS fragment**, **5′/3′ UTR fragment** or **intron**, each as *n of m*, with its 1-based inclusive interval and its length."
+msgstr "**外显子**、**CDS 片段**、**5′/3′ UTR 片段** 或 **内含子**，都标成 *第 n 个 / 共 m 个*，并给出 1 基、含两端的区间和长度。"
+
+msgid "**Total introns** for that transcript."
+msgstr "该转录本的 **内含子总数**。"
+
+msgid "Intervals are 1-based and inclusive, matching the search box; the underlying model is 0-based half-open. CDS and UTR fragments are derived from the exon list plus the CDS start/end of the transcript, so their numbering is the fragment number in this model, not the feature number in the original file."
+msgstr "区间是 1 基、含两端，和搜索框一致；底层模型是 0 基半开。CDS 与 UTR 片段由外显子列表加转录本的 CDS 起止推导而来，所以序号是当前模型里的片段序号，不是原始文件里的 feature 编号。"
+
+msgid "Every intron, not only the one under the pointer"
+msgstr "全部内含子，而不只是指针下的那一个"
+
+msgid "The list of introns is collapsed by default. Opening it shows all of them in transcript order with coordinates and lengths, so you can read a splice structure without hunting for each gap:"
+msgstr "内含子清单默认折叠。展开后按转录方向列出全部内含子的区间与长度，不用再逐个空隙去找："
+
+msgid "All 11 introns of ``NM_001330358``, numbered from the 5′ end of the transcript. The entry under the pointer is bold."
+msgstr "``NM_001330358`` 的全部 11 个内含子，从转录本 5′ 端开始编号；指针所在的那条加粗。"
+
+msgid "Hovering an intron without clicking shows the same information in a tooltip:"
+msgstr "不点开也能看：把鼠标停在内含子上，提示里是同样的信息："
+
+msgid "``Intron 11 of 11 · chr1:11,790,899–11,791,206 · 308 bp``. One line per transcript when several share the position."
+msgstr "``内含子 第 11 个 / 共 11 个 · chr1:11,790,899–11,791,206 · 308 bp``。同一位置有多个转录本时，每个转录本一行。"
+
+msgid "The popover can be dragged by its title bar and stays inside the window; its content scrolls when the intron list is long."
+msgstr "浮层可以用标题栏拖动，并始终留在窗口内；内含子很多时内容区自己滚动。"
+
 msgid "Compare several genes in panels"
 msgstr "在多个面板中比较基因"
 
-#: ../../navigation.rst:77
-msgid ""
-"Orbit supports **1–5 panels**. Loci and zoom levels are independent; "
-"track files and track-level settings are shared. A panel is not a "
-"separate sample import."
+msgid "Orbit supports **1–5 panels**. Loci and zoom levels are independent; track files and track-level settings are shared. A panel is not a separate sample import."
 msgstr "Orbit 支持  1–5 个面板 。各面板的位点和缩放级别相互独立；轨道文件及轨道级设置共享。面板不是独立的样本导入。"
 
-#: ../../navigation.rst:81
 msgid "Two-panel example: ACTB and EGFR"
 msgstr "双面板示例：ACTB 和 EGFR"
 
-#: ../../navigation.rst:83
 msgid "Open **Split view** in the toolbar and choose **2 panels**."
 msgstr "在工具栏打开  Split view ，选择  2 panels 。"
 
-#: ../../navigation.rst:84
-msgid ""
-"In the position input above the first panel, type ``ACTB`` and press "
-"Enter."
+msgid "In the position input above the first panel, type ``ACTB`` and press Enter."
 msgstr "在第一个面板上方的位置输入框中输入 ``ACTB`` 并按 Enter。"
 
-#: ../../navigation.rst:85
 msgid "In the second panel input, type ``EGFR`` and press Enter."
 msgstr "在第二个面板的输入框中输入 ``EGFR`` 并按 Enter。"
 
-#: ../../navigation.rst:86
-msgid ""
-"Zoom or pan within one panel to compare detail without moving the other. "
-"Click its header to select the target panel for shared toolbar "
-"navigation."
+msgid "Zoom or pan within one panel to compare detail without moving the other. Click its header to select the target panel for shared toolbar navigation."
 msgstr "在一个面板中缩放或平移以比较细节，不会移动另一个面板。点击其标题可选择目标面板，供共享工具栏导航使用。"
 
-#: ../../navigation.rst:88
-msgid ""
-"Use the **×** in a panel header to close that panel, or choose one panel "
-"in the split menu to return to a single view."
+msgid "Use the **×** in a panel header to close that panel, or choose one panel in the split menu to return to a single view."
 msgstr "点击面板标题中的  ×  关闭该面板，或在分屏菜单中选择单个面板返回单视图。"
 
-#: ../../navigation.rst:91
 msgid "ACTB and EGFR displayed in two independent genomic panels"
 msgstr "在两个独立基因组面板中显示的 ACTB 和 EGFR"
 
-#: ../../navigation.rst:95
-msgid ""
-"ACTB (negative strand) and EGFR (positive strand) in two panels. Each has"
-" its own position field and coordinate scale: aligned screen columns do "
-"not mean the same genomic coordinate."
+msgid "ACTB (negative strand) and EGFR (positive strand) in two panels. Each has its own position field and coordinate scale: aligned screen columns do not mean the same genomic coordinate."
 msgstr "两个面板中的 ACTB（负链）和 EGFR（正链）。每个面板都有自己的位置输入框和坐标比例：屏幕上对齐的列不表示相同的基因组坐标。"
 
-#: ../../navigation.rst:100
 msgid "Four-panel example"
 msgstr "四面板示例"
 
-#: ../../navigation.rst:102
-msgid ""
-"Choose **4 panels**, then enter ``ACTB``, ``EGFR``, ``TP53`` and ``MYC`` "
-"in their respective header inputs. Alternatively, enter ``ACTB, EGFR, "
-"TP53, MYC`` in the main search box to open multiple loci. Check the pane "
-"count and gene names before exporting. Ctrl+number is not a supported "
-"panel-focus shortcut."
-msgstr ""
-"选择  4 panels ，然后在相应标题输入框中输入 ``ACTB``、``EGFR``、``TP53`` 和 "
-"``MYC``。也可以在主搜索框中输入 ``ACTB, EGFR, TP53, MYC`` "
-"以打开多个位点。导出前检查面板数量和基因名称。Ctrl+数字不是受支持的面板聚焦快捷键。"
+msgid "Choose **4 panels**, then enter ``ACTB``, ``EGFR``, ``TP53`` and ``MYC`` in their respective header inputs. Alternatively, enter ``ACTB, EGFR, TP53, MYC`` in the main search box to open multiple loci. Check the pane count and gene names before exporting. Ctrl+number is not a supported panel-focus shortcut."
+msgstr "选择  4 panels ，然后在相应标题输入框中输入 ``ACTB``、``EGFR``、``TP53`` 和 ``MYC``。也可以在主搜索框中输入 ``ACTB, EGFR, TP53, MYC`` 以打开多个位点。导出前检查面板数量和基因名称。Ctrl+数字不是受支持的面板聚焦快捷键。"
 
-#: ../../navigation.rst:107
 msgid "Four panels comparing ACTB EGFR TP53 and MYC"
 msgstr "比较 ACTB、EGFR、TP53 和 MYC 的四个面板"
 
-#: ../../navigation.rst:111
-msgid ""
-"Four real gene loci side by side. The view makes gene structures easy to "
-"compare, while every panel retains its own zoom and chromosome."
+msgid "Four real gene loci side by side. The view makes gene structures easy to compare, while every panel retains its own zoom and chromosome."
 msgstr "四个真实基因位点并排显示。该视图便于比较基因结构，同时每个面板保留自己的缩放和染色体。"
 
-#: ../../navigation.rst:115
 msgid "Whole-genome overview and links"
 msgstr "全基因组总览与链接"
 
-#: ../../navigation.rst:117
-msgid ""
-"Enable the whole-genome overview from the sidebar track list. Its chevron"
-" expands the primary-chromosome bars; their count depends on the chosen "
-"species. Click a bar to navigate. In split view each panel draws its own "
-"overview and current-window marker."
+msgid "Enable the whole-genome overview from the sidebar track list. Its chevron expands the primary-chromosome bars; their count depends on the chosen species. Click a bar to navigate. In split view each panel draws its own overview and current-window marker."
 msgstr "在侧边栏轨道列表中启用全基因组总览。点击其箭头可展开主染色体条；条数取决于所选物种。点击某条即可导航。在分屏视图中，每个面板都会绘制自己的总览和当前窗口标记。"
 
-#: ../../navigation.rst:122
 msgid "In browser mode a locus can be opened with a URL such as::"
 msgstr "在浏览器模式下，可以使用如下 URL 打开位点："
 
-#: ../../navigation.rst:126
-msgid ""
-"Use the search box inside the native desktop window when no address bar "
-"is shown."
+msgid "Use the search box inside the native desktop window when no address bar is shown."
 msgstr "桌面原生窗口不显示地址栏时，请使用窗口内的搜索框。"
-

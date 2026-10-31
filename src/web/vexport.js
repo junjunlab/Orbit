@@ -374,6 +374,15 @@
     beginPath() { this.path = []; }
     moveTo(x, y) { this._seg(['M', x, y]); }
     lineTo(x, y) { this._seg(['L', x, y]); }
+    // 剪接弧（junction）用 bezierCurveTo 画，缺了这两个方法整份 SVG/PDF 会直接导出失败
+    bezierCurveTo(x1, y1, x2, y2, x, y) { this._seg(['C', x1, y1, x2, y2, x, y]); }
+    quadraticCurveTo(x1, y1, x, y) {
+      // 二次贝塞尔转三次，SVG/PDF 只需要 C
+      const p0 = this.cur;
+      this._seg(['C',
+        p0[0] + (2 / 3) * (x1 - p0[0]), p0[1] + (2 / 3) * (y1 - p0[1]),
+        x + (2 / 3) * (x1 - x), y + (2 / 3) * (y1 - y), x, y]);
+    }
     closePath() { this.path.push(['Z']); }
     rect(x, y, w, h) {
       this._seg(['M', x, y]); this._seg(['L', x + w, y]);

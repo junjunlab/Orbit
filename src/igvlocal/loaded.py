@@ -1,8 +1,7 @@
 """User-loaded tracks: bigWig / bedGraph / BAM / GTF / FASTA.
 
 These are the common IGV file types that are not part of the bundled build.
-Only the Python standard library is used; BAM files are read through ``gzip``,
-which transparently concatenates the individual BGZF members.
+仅使用 Python 标准库；BAM 通过 BGZF 块读取，并利用可用 BAI 索引按窗口查询。
 
 Every track exposes one of three interfaces:
 
@@ -24,6 +23,7 @@ import os
 import pickle
 import re
 import shutil
+import statistics
 import struct
 import sys
 import threading
@@ -43,6 +43,13 @@ FORMAT_BY_EXT = {
     ".bam": "bam",
     # SAM：未压缩的文本比对格式，解析后与 BAM 走同一套覆盖度/reads 视图
     ".sam": "sam",
+    # SEG：拷贝数分段（GISTIC / TCGA / GDC 的 .seg）。一行 = 一个区间 + 平均 log2 拷贝数，
+    # 走信号轨道那条渲染路径，但纵轴以 0 为中心、按正负分色（见 SegTrack）。
+    ".seg": "seg",
+    # 纯 .txt / .tsv 不写进这张表：它们没有固定含义，靠首行表头嗅探（_looks_like_seg），
+    # 这样 xxx.seg.txt / xxx.seg.v2.txt / 任意名字的 SEG 表都能进。
+    # .segtxt 只是早期版本留下的别名，留着不影响。
+    ".segtxt": "seg",
     ".gtf": "gtf", ".gff": "gtf", ".gff3": "gtf",
     # 区间注释：BED 家族。narrowPeak/broadPeak 就是 BED6+4，解析逻辑完全一样，
     # 只是多出来的 signalValue/pValue/qValue/peak 列先不参与绘制。
@@ -383,6 +390,173 @@ class WigSignal(BedGraphSignal):
         _install_interval_signal(self, data)
 
 
+# ------------------------------------------------------------------- SEG
+# 表头里各列的可能写法（统一转小写再比）。首列在 GDC 里叫 GDC_Aliquot_ID，
+# 在 TCGA / GISTIC 里叫 Sample，也有直接叫 ID / Name 的 —— 所以按列名认，不按位置。
+_SEG_COLS = {
+    "sample": ("sample", "sample_id", "sampleid", "gdc_aliquot_id", "aliquot_id",
+               "tumor_sample_barcode", "case_id", "id", "name"),
+    "chrom": ("chromosome", "chrom", "chr", "contig"),
+    "start": ("start", "start_position", "loc.start", "start_bp", "startpos"),
+    "end": ("end", "end_position", "loc.end", "end_bp", "endpos"),
+    "value": ("segment_mean", "seg.mean", "segmean", "segmentmean", "value",
+              "log2_ratio", "log2ratio", "log2", "copy_number", "total_cn", "cn"),
+}
+
+
+def _seg_header_map(cells):
+    """表头行 → {列名: 下标}；不像 SEG 表头就返回 None。"""
+    low = [str(c).strip().lower().replace(" ", "_") for c in cells]
+    m = {}
+    for key, names in _SEG_COLS.items():
+        for i, c in enumerate(low):
+            if c in names:
+                m[key] = i
+                break
+    if all(k in m for k in ("chrom", "start", "end", "value")):
+        return m
+    return None
+
+
+def _looks_like_seg(path) -> bool:
+    """扩展名不认识时（GDC 的 xxx.seg.v2.txt）按表头内容认一下。"""
+    try:
+        with _open_text(path) as f:
+            for _ in range(30):
+                line = f.readline()
+                if not line:
+                    break
+                if not line.strip() or line[0] in "#;":
+                    continue
+                cells = line.rstrip("\r\n").split("\t") if "\t" in line else line.split(",")
+                return _seg_header_map(cells) is not None
+    except OSError:
+        pass
+    return False
+
+
+class SegTrack(BedGraphSignal):
+    """SEG：拷贝数分段文件（GISTIC / TCGA / GDC 的 .seg / .seg.txt）。
+
+    一行 = 一个基因组区间 + 该区间的平均 log2 拷贝数，典型列：
+    ``Sample  Chromosome  Start  End  Num_Probes  Segment_Mean``。
+    渲染复用信号轨道那套（分箱取均值），区别只有两点：纵轴以 0 为中心对称、
+    柱子按正负分色（增益红 / 缺失蓝），也就是 IGV 的 copy-number 画法。
+
+    一个文件里可能塞了多个样本（GISTIC 的输入常见），这里先画第一个样本，
+    样本清单留在 meta 里，之后要加「切换样本」不用再改解析。
+    """
+
+    kind = "signal"
+    diverging = True          # 前端据此把纵轴做成以 0 为中心
+
+    def __init__(self, tid, name, path):
+        BaseTrack.__init__(self, tid, name, path, "seg")
+        self.samples = []
+        self.sample = None
+        self.n_segments = 0
+        self._by_sample = {}
+        self._iv_cache = {}      # (样本, 染色体) -> _Intervals，热图逐行取数时复用
+        self._parse()
+        self._use(self.samples[0])
+
+    def _parse(self):
+        by: dict[str, dict[str, list]] = {}
+        idx = None
+        with _open_text(self.path) as f:
+            for raw in f:
+                line = raw.rstrip("\r\n")
+                if not line.strip() or line[0] in "#;":
+                    continue
+                if "\t" in line:
+                    cells = line.split("\t")
+                elif line.count(",") >= 5:
+                    cells = line.split(",")
+                else:
+                    cells = line.split()
+                if idx is None:
+                    m = _seg_header_map(cells)
+                    if m is not None:
+                        idx = m
+                        continue
+                    # 没有表头（纯 6 列数据）：按最常见的位置解析
+                    idx = {"sample": 0, "chrom": 1, "start": 2, "end": 3, "value": 5}
+                try:
+                    chrom = cells[idx["chrom"]].strip()
+                    s = int(float(cells[idx["start"]]))
+                    e = int(float(cells[idx["end"]]))
+                    v = float(cells[idx["value"]])
+                except (ValueError, IndexError):
+                    continue
+                if not chrom or e <= s:
+                    continue
+                si = idx.get("sample")
+                sid = cells[si].strip() if si is not None and si < len(cells) else ""
+                by.setdefault(sid, {}).setdefault(chrom, []).append((s, e, v))
+        if not by:
+            raise ValueError("SEG 文件里没有可解析的数据行（需要 Chromosome/Start/End/Segment_Mean）")
+        self._by_sample = by
+        self.samples = list(by.keys())
+        # 多样本时「区间数」按全部样本累计，热图轨道只有一条，报单样本的数会误导
+        self.n_segments = sum(len(arr) for d in by.values() for arr in d.values())
+        # 颜色定标用「整个文件」的 |Segment_Mean| 97 分位，而不是当前窗口的：
+        # 1) IGV 的 CNV 热图缩放时颜色是稳定的，不跟着视野跳；
+        # 2) 窗口分位数在放大后常常只有 0.3，会把整张图涂成深红深蓝。
+        # 用 97 分位而不是 99：SEG 的长尾（同源缺失能到 log2 −30）会把 99 分位抬到 5 以上，
+        # 那样整张图又变成一片惨白。
+        mags = sorted(abs(v) for d in by.values() for arr in d.values() for (_, _, v) in arr)
+        self.scale = (mags[min(len(mags) - 1, int(len(mags) * 0.97))] if mags else 0.5) or 0.5
+
+    def _use(self, sid: str) -> None:
+        self.sample = sid
+        data = self._by_sample[sid]
+        _install_interval_signal(self, data)
+        # 全文件（含其它样本）的极值：纵轴和左侧色块都要用
+        lo = hi = 0.0
+        for d in self._by_sample.values():
+            for arr in d.values():
+                for _, _, v in arr:
+                    if v < lo:
+                        lo = v
+                    elif v > hi:
+                        hi = v
+        self.total = {"max": hi, "min": lo}
+
+    def meta(self) -> dict:
+        m = super().meta()
+        m["diverging"] = True
+        m["min"] = (self.total or {}).get("min") if isinstance(self.total, dict) else None
+        m["segments"] = self.n_segments
+        m["scale"] = round(self.scale, 4)   # 整个文件的 |Segment_Mean| 99 分位，热图定标用
+        m["samples"] = len(self.samples)
+        m["sample"] = self.sample
+        # 多个样本 → 前端画成热图：一行一个样本、一列一个 bin
+        m["heatmap"] = len(self.samples) > 1
+        if len(self.samples) > 1:
+            m["sampleNames"] = list(self.samples)
+            m["note"] = f"{len(self.samples)} 个样本"
+        return m
+
+    def matrix(self, chrom, start, end, bins):
+        """样本 × bin 的均值矩阵（热图用）；没有数据的格子返回 None。"""
+        key = self.resolve_chrom(chrom)
+        rows = []
+        for sid in self.samples:
+            data = self._by_sample[sid].get(key)
+            if not data:
+                rows.append([None] * bins)
+                continue
+            # 缓存必须按 (样本, 染色体) 取：只按样本做 key 的话，先看过 chr1 再用 chr6
+            # 就会拿 chr1 的区间去分 chr6 的箱，前半截是别的染色体的数据、后半截空白
+            ck = (sid, key)
+            iv = self._iv_cache.get(ck)
+            if iv is None:
+                iv = self._iv_cache[ck] = _Intervals(data)
+            cells = _bin_summary(iv.overlapping(start, end), start, end, bins)
+            rows.append([(c["m"] if c else None) for c in cells])
+        return rows
+
+
 # CIGAR op codes that consume the reference
 _CIGAR_REF = {0, 2, 3, 7, 8}
 _CIGAR_OPS = "MIDNSHP=X"
@@ -399,6 +573,73 @@ def _passes_igv_defaults(flag: int) -> bool:
 _REC_HDR = struct.Struct("<iiBBHHH")
 _I32 = struct.Struct("<i")
 _U32 = struct.Struct("<I")
+_EXPERIMENT_SAMPLE_READS = 1000
+_EXPERIMENT_PROBE_BYTES = 8 * 1024 * 1024
+_EXPERIMENT_PROBE_RECORDS = 10000
+
+
+# 实验类型规则改编自 IGV src/main/java/org/igv/alignment/ReadStats.java。
+# 本实现仅采样最多 1000 条 mapped，不实现 SBX 质量值推断。
+# The MIT License (MIT)
+# Copyright (c) 2007-2026 Broad Institute and Regents of the University of California
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+class _ReadStats:
+    """按 IGV ReadStats 判定实验类型；此采样不参与 reads 展示。"""
+
+    def __init__(self):
+        self.read_lengths = []
+        self.cigar_lengths = []
+        self.ref_to_read_ratios = []
+        self.n_count = 0
+
+    def add(self, read_length, ops):
+        if len(self.read_lengths) >= _EXPERIMENT_SAMPLE_READS:
+            return
+        self.read_lengths.append(read_length)
+        self.cigar_lengths.append(sum(len(str(length)) + 1 for length, _ in ops))
+        if any(op == 3 for _, op in ops):
+            self.n_count += 1
+            if read_length > 0:
+                self.ref_to_read_ratios.append(sum(n for n, op in ops if op in _CIGAR_REF) / read_length)
+
+    def meta(self):
+        n = len(self.read_lengths)
+        median_length = statistics.median(self.read_lengths) if n else None
+        stddev = statistics.stdev(self.read_lengths) if n > 1 else 0.0
+        average_cigar = statistics.mean(self.cigar_lengths) if n else 0.0
+        median_ratio = statistics.median(self.ref_to_read_ratios) if self.ref_to_read_ratios else 0.0
+        fraction_ns = self.n_count / n if n else 0.0
+        experiment = "unknown"
+        if n >= 20:
+            if median_ratio > 5 or fraction_ns > 0.01:
+                experiment = "rna"
+            elif (stddev > 100 or median_length > 1000) and average_cigar > 10:
+                experiment = "third_gen"
+            else:
+                experiment = "other"
+        return {"experimentType": experiment, "experimentSampled": n,
+                "experimentStats": {"medianReadLength": median_length,
+                                    "readLengthStdDev": stddev,
+                                    "averageCigarLength": average_cigar,
+                                    "medianRefToReadRatio": median_ratio,
+                                    "fracReadsWithNs": fraction_ns}}
 
 
 class _BgzfStream:
@@ -494,6 +735,10 @@ class _BgzfStream:
         return b"".join(parts)
 
     def tell(self):
+        # A virtual offset at a block boundary must point to the next compressed
+        # block, not use a 65536-byte uncompressed offset (which overflows 16 bits).
+        if self.pos >= len(self.buf):
+            return self.next_coffset << 16
         return self.buf_v + self.pos
 
     def seek_virtual(self, v):
@@ -556,24 +801,96 @@ def _decode_read(blk):
             "c": "".join(parts), "lseq": lseq, "seq": seq, "ops": ops, "mm": []}
 
 
-def _mismatches(rec, refseq):
-    """read 碱基 vs 参考，返回 [[相对起点的参考偏移, 碱基], ...]。
+def _bam_aligned_blocks(blk):
+    """仅 M/= /X 贡献覆盖度，N/D 只推进参考坐标。"""
+    _, pos, lrn, _, _, ncig, _ = _REC_HDR.unpack_from(blk)
+    for i in range(ncig):
+        cv = _U32.unpack_from(blk, 32 + lrn + 4 * i)[0]
+        op, length = cv & 15, cv >> 4
+        if op in (0, 7, 8):
+            yield pos, pos + length
+        if op in _CIGAR_REF:
+            pos += length
 
-    只报 SNV（M/=/X 段内的单碱基替换）；插入/缺失由 CIGAR 交给前端画。
-    """
+
+def _bam_aux_tags(blk, off):
+    """解析 BAM aux 字段；损坏/未知字段跳过，不影响主记录。"""
+    out = {}
+    n = len(blk)
+    while off + 3 <= n:
+        tag = blk[off:off + 2].decode("ascii", "replace")
+        typ = chr(blk[off + 2])
+        off += 3
+        try:
+            if typ == "A":
+                if off >= n: break
+                out[tag] = chr(blk[off]); off += 1
+            elif typ == "c":
+                if off + 1 > n: break
+                out[tag] = struct.unpack_from("<b", blk, off)[0]; off += 1
+            elif typ == "C":
+                if off + 1 > n: break
+                out[tag] = blk[off]; off += 1
+            elif typ == "s":
+                if off + 2 > n: break
+                out[tag] = struct.unpack_from("<h", blk, off)[0]; off += 2
+            elif typ == "S":
+                if off + 2 > n: break
+                out[tag] = struct.unpack_from("<H", blk, off)[0]; off += 2
+            elif typ == "i":
+                if off + 4 > n: break
+                out[tag] = struct.unpack_from("<i", blk, off)[0]; off += 4
+            elif typ == "I":
+                if off + 4 > n: break
+                out[tag] = struct.unpack_from("<I", blk, off)[0]; off += 4
+            elif typ == "f":
+                if off + 4 > n: break
+                out[tag] = struct.unpack_from("<f", blk, off)[0]; off += 4
+            elif typ in ("Z", "H"):
+                end = blk.find(b"\x00", off)
+                if end < 0: break
+                out[tag] = blk[off:end].decode("utf-8", "replace"); off = end + 1
+            elif typ == "B":
+                if off + 5 > n: break
+                subtype = chr(blk[off]); count = struct.unpack_from("<i", blk, off + 1)[0]
+                off += 5
+                widths = {"c": 1, "C": 1, "s": 2, "S": 2, "i": 4, "I": 4, "f": 4}
+                width = widths.get(subtype)
+                if width is None or count < 0 or off + width * count > n: break
+                vals = []
+                fmts = {"c":"b", "C":"B", "s":"h", "S":"H", "i":"i", "I":"I", "f":"f"}
+                fmt = fmts[subtype]
+                for _ in range(count):
+                    vals.append(struct.unpack_from("<" + fmt, blk, off)[0]); off += width
+                out[tag] = vals
+            else:
+                break
+        except (struct.error, UnicodeError):
+            break
+    return out
+
+def _mismatches(rec, refseq, ref_start=None, clip=None):
+    """返回相对 read 起点的错配偏移；参考序列可为整个查询窗口。"""
     out = []
     qi = 0
     ri = 0
+    pos = rec["p"]
+    if ref_start is None:
+        ref_start = pos
     seq = rec["seq"].upper()
     rl = len(refseq)
     sl = len(seq)
     for ln, op in rec["ops"]:
         if op in (0, 7, 8):
-            for k in range(ln):
-                if ri + k >= rl or qi + k >= sl:
-                    break
+            ref_i = pos + ri - ref_start
+            lo = max(0, -ref_i)
+            hi = min(ln, rl - ref_i, sl - qi)
+            if clip is not None:
+                lo = max(lo, clip[0] - pos - ri)
+                hi = min(hi, clip[1] - pos - ri)
+            for k in range(lo, hi):
                 b = seq[qi + k]
-                if b != refseq[ri + k].upper() and b != "N":
+                if b != refseq[ref_i + k].upper() and b != "N":
                     out.append([ri + k, b])
             qi += ln
             ri += ln
@@ -586,8 +903,10 @@ def _mismatches(rec, refseq):
 
 class BamSignal(BaseTrack):
     kind = "signal"
-    def __init__(self, tid, name, path, max_reads: int = 6_000_000):
+    def __init__(self, tid, name, path, max_reads: int | None = None, *, index_path=None):
         super().__init__(tid, name, path, "bam")
+        self._index_override = Path(index_path) if index_path is not None else None
+        self.index_error = None
         self._iv: dict[str, _Intervals] = {}
         # 每条比对记录在压缩流里的虚拟偏移，下标与 _iv[chrom] 一一对应
         self._voff: dict[str, array] = {}
@@ -595,9 +914,376 @@ class BamSignal(BaseTrack):
         self.n_reads = 0
         self.has_seq = False
         self.paired = False
-        self._load(max_reads)
+        self._read_stats = _ReadStats()
+        # 有 BAI 时按窗口读取；导入只解析头部并进行有界元信息采样。
+        # 没有索引才退回整个文件顺序扫描，默认不限制导入记录数。
+        self._chunks: dict[str, list] | None = None
+        self._cache: dict = {}
+        self._read_header_only()
+        if not self._load_index():
+            # Invalid source indexes are never overwritten. Rebuild a private
+            # cache index instead; explicit index_path also isolates integration tests.
+            if self.index_error and self._index_override is None:
+                stat = self.path.stat()
+                cache = self.path.parent / ".cache"
+                cache.mkdir(exist_ok=True)
+                self._index_override = cache / f"{self.path.name}.{stat.st_size}.{stat.st_mtime_ns}.v2.bai"
+            try:
+                if self._index_override is not None and self._index_override.exists() and self._load_index():
+                    return
+                if self.build_index() and self._load_index():
+                    return
+            except (OSError, ValueError, struct.error) as exc:
+                self.index_error = str(exc)
+            self._load(max_reads)
 
-    def _load(self, max_reads: int) -> None:
+    # ---- 头部 / 索引 ---------------------------------------------------
+    def _read_header_only(self) -> None:
+        st = _BgzfStream(self.path)
+        try:
+            if st.read(4) != b"BAM\x01":
+                raise ValueError("not a BAM file")
+            (l_text,) = struct.unpack("<i", st.read(4))
+            st.read(l_text)
+            (n_ref,) = struct.unpack("<i", st.read(4))
+            names = []
+            for _ in range(n_ref):
+                (l_name,) = struct.unpack("<i", st.read(4))
+                nm = st.read(l_name).rstrip(b"\x00").decode("utf-8", "replace")
+                (l_ref,) = struct.unpack("<i", st.read(4))
+                names.append((nm, l_ref))
+            self.chroms = {nm: l for nm, l in names}
+            self._refs = names
+            self._probe_read_stats(st)
+        finally:
+            st.close()
+
+    def _probe_read_stats(self, st):
+        """最多读取 8 MiB/10000 条记录，并仅统计前 1000 条 mapped。"""
+        consumed = 0
+        for _ in range(_EXPERIMENT_PROBE_RECORDS):
+            if len(self._read_stats.read_lengths) >= _EXPERIMENT_SAMPLE_READS:
+                break
+            if consumed + 4 > _EXPERIMENT_PROBE_BYTES:
+                break
+            size_data = st.read(4)
+            if len(size_data) < 4:
+                break
+            size = _I32.unpack(size_data)[0]
+            consumed += 4
+            if size < 32 or size > _EXPERIMENT_PROBE_BYTES - consumed:
+                break
+            blk = st.read(size)
+            consumed += size
+            if len(blk) != size:
+                break
+            ref_id, _pos, name_len, _mq, _bin, ncig, flag = _REC_HDR.unpack_from(blk)
+            if flag & 4 or ref_id < 0 or ref_id >= len(self._refs):
+                continue
+            if 32 + name_len + ncig * 4 > size:
+                break
+            read_length = _I32.unpack_from(blk, 16)[0]
+            ops = []
+            for i in range(ncig):
+                cv = _U32.unpack_from(blk, 32 + name_len + i * 4)[0]
+                ops.append((cv >> 4, cv & 15))
+            self._read_stats.add(read_length, ops)
+            self.has_seq |= read_length > 0
+            self.paired |= bool(flag & 1)
+
+    def _bai_path(self):
+        """Find BAI sidecars; CSI is not supported by this reader."""
+        override = getattr(self, "_index_override", None)
+        if override is not None:
+            return override if override.exists() else None
+        cands = [Path(str(self.path) + ".bai")]
+        try:
+            cands.append(self.path.with_suffix(".bai"))
+        except ValueError:
+            pass
+        for c in cands:
+            if c.exists():
+                return c
+        return None
+
+    def _load_index(self) -> bool:
+        bp = self._bai_path()
+        if bp is None:
+            return False
+        try:
+            data = bp.read_bytes()
+        except OSError:
+            return False
+        if data[:4] != b"BAI\x01":
+            return False
+        o = 4
+        bam_size = self.path.stat().st_size
+        try:
+            (n_ref,) = struct.unpack_from("<i", data, o); o += 4
+            if n_ref != len(self._refs):
+                raise ValueError("BAI reference count does not match BAM")
+            bins_by_ref = []
+            lin_by_ref = []
+            for _ in range(n_ref):
+                (n_bin,) = struct.unpack_from("<i", data, o); o += 4
+                bm = {}
+                for _ in range(n_bin):
+                    bi, n_chunk = struct.unpack_from("<Ii", data, o); o += 8
+                    ch = []
+                    for _ in range(n_chunk):
+                        b, e = struct.unpack_from("<QQ", data, o); o += 16
+                        # 37450 is optional metadata (counts, not virtual offsets).
+                        if bi != 37450 and (b >= e or (e >> 16) > bam_size):
+                            raise ValueError("Invalid BAI chunk offsets; rebuilding private index")
+                        ch.append((b, e))
+                    if ch and bi != 37450:
+                        bm[bi] = ch
+                (n_intv,) = struct.unpack_from("<i", data, o); o += 4
+                lin = [struct.unpack_from("<Q", data, o + 8 * i)[0] for i in range(n_intv)] if n_intv else []
+                o += 8 * n_intv
+                bins_by_ref.append(bm)
+                lin_by_ref.append(lin)
+        except (struct.error, IndexError, ValueError) as exc:
+            self.index_error = str(exc)
+            return False
+        names = [nm for nm, _ in getattr(self, "_refs", [])]
+        self._bins = {}
+        self._lin = {}
+        for i, bm in enumerate(bins_by_ref):
+            if i < len(names) and bm:
+                self._bins[names[i]] = bm
+                if i < len(lin_by_ref):
+                    self._lin[names[i]] = lin_by_ref[i]
+        self._chunks = self._bins if self._bins else None
+        return bool(self._bins)
+
+    def _bin_chunks(self, chrom, start, end):
+        """BAI 的 bin 层级过滤：只取和窗口重叠的 bin 的 chunk。
+
+        不能把所有 chunk 合并成一个——BAM 索引里 bin 0 代表整条染色体，
+        合并之后等于每次查询都从染色体开头扫，几千万条记录要几十秒。
+        """
+        bm = (self._bins or {}).get(chrom)
+        if not bm:
+            return [], 0
+        end = min(end, 1 << 29)
+        if end <= start:
+            return [], 0
+        e = end - 1
+        # bin 0 也可能包含跨越大区间的真实比对，不能为提速丢弃。
+        # 扫描下限由 BAI 线性索引控制。
+        want = {0}
+        for lo, sh in ((1, 26), (9, 23), (73, 20), (585, 17), (4681, 14)):
+            for k in range(lo + (start >> sh), lo + (e >> sh) + 1):
+                want.add(k)
+        ch = []
+        for bi in want:
+            got = bm.get(bi)
+            if got:
+                ch.extend(got)
+        ch.sort()
+        merged = []
+        for b, ce in ch:
+            if merged and b <= merged[-1][1]:
+                if ce > merged[-1][1]:
+                    merged[-1][1] = ce
+            else:
+                merged.append([b, ce])
+        lin = (self._lin or {}).get(chrom) or []
+        k = start >> 14
+        floor_v = lin[k] if k < len(lin) and lin[k] else 0
+        return [tuple(x) for x in merged], floor_v
+
+    # ---- 自建索引（有 IGV 的 SamIndexer 同样的作用：没有 .bai 时扫一遍生成） ----
+    @staticmethod
+    def _reg2bin(beg: int, end: int) -> int:
+        end -= 1
+        if beg >> 14 == end >> 14:
+            return 4681 + (beg >> 14)
+        if beg >> 17 == end >> 17:
+            return 585 + (beg >> 17)
+        if beg >> 20 == end >> 20:
+            return 73 + (beg >> 20)
+        if beg >> 23 == end >> 23:
+            return 9 + (beg >> 23)
+        if beg >> 26 == end >> 26:
+            return 1 + (beg >> 26)
+        return 0
+
+    def build_index(self) -> bool:
+        """扫一遍 BAM，写出 BAI 的 bin/chunk 与 16 kb 线性索引。
+
+        没有索引时需顺序扫描；此实现的外部工具互操作性未在本测试中验证。
+        """
+        n_ref = len(getattr(self, "_refs", []) or [])
+        if n_ref == 0:
+            return False
+        bins = [dict() for _ in range(n_ref)]        # refID -> bin -> [[beg, end], ...]
+        lin = [dict() for _ in range(n_ref)]         # refID -> 16kb 窗口 -> 最小虚拟偏移
+        st = _BgzfStream(self.path)
+        hdr_un = _REC_HDR.unpack_from
+        u32 = _U32.unpack_from
+        try:
+            if st.read(4) != b"BAM\x01":
+                return False
+            (l_text,) = struct.unpack("<i", st.read(4))
+            st.read(l_text)
+            (hdr_n) = struct.unpack("<i", st.read(4))[0]
+            for _ in range(hdr_n):
+                (l_name,) = struct.unpack("<i", st.read(4))
+                st.read(l_name)
+                st.read(4)
+            previous = None
+            while True:
+                # Capture offset BEFORE reading: the four-byte length prefix can
+                # itself straddle BGZF blocks. Never combine a new buf_v with pos
+                # from the preceding block.
+                voff = st.tell()
+                hdr = st.read(4)
+                if not hdr:
+                    break
+                if len(hdr) != 4:
+                    raise ValueError("Truncated BAM record length")
+                bs = _I32.unpack(hdr)[0]
+                if bs < 32:
+                    raise ValueError("Invalid BAM record size")
+                blk = st.read(bs)
+                end_voff = st.tell()
+                if len(blk) != bs:
+                    raise ValueError("Truncated BAM record")
+                refID, rpos, lrn, _mapq, _bin, ncig, _flag = hdr_un(blk)
+                if refID < 0 or refID >= n_ref or rpos < 0:
+                    continue
+                coord = (refID, rpos)
+                if previous is not None and coord < previous:
+                    raise ValueError("BAM must be coordinate-sorted to build BAI")
+                previous = coord
+                if rpos >= (1 << 29):
+                    raise ValueError("BAI coordinate limit exceeded; CSI support required")
+                cigar_off = 32 + lrn
+                refend = rpos
+                for ci in range(ncig):
+                    (c,) = u32(blk, cigar_off + ci * 4)
+                    if (c & 0xF) in _CIGAR_REF:
+                        refend += c >> 4
+                if refend <= rpos:
+                    refend = rpos + 1
+                b = self._reg2bin(rpos, refend)
+                ch = bins[refID].setdefault(b, [])
+                if ch and voff <= ch[-1][1]:
+                    if end_voff > ch[-1][1]:
+                        ch[-1][1] = end_voff
+                else:
+                    ch.append([voff, end_voff])
+                lm = lin[refID]
+                for w in range(rpos >> 14, ((refend - 1) >> 14) + 1):
+                    cur = lm.get(w)
+                    if cur is None or voff < cur:
+                        lm[w] = voff
+        finally:
+            st.close()
+
+        # ---- 写 BAI ----
+        out = bytearray(b"BAI\x01")
+        out += struct.pack("<i", n_ref)
+        for i in range(n_ref):
+            bm = bins[i]
+            out += struct.pack("<i", len(bm))
+            for b, chs in sorted(bm.items()):
+                out += struct.pack("<Ii", b, len(chs))
+                for beg, end in chs:
+                    out += struct.pack("<QQ", beg, end)
+            lm = lin[i]
+            n_intv = (max(lm) + 1) if lm else 0
+            out += struct.pack("<i", n_intv)
+            last = 0
+            for w in range(n_intv):
+                v = lm.get(w, last)
+                out += struct.pack("<Q", v)
+                last = v
+        target = getattr(self, "_index_override", None) or Path(str(self.path) + ".bai")
+        temporary = target.with_name(target.name + f".{os.getpid()}.{threading.get_ident()}.tmp")
+        try:
+            with open(temporary, "xb") as handle:
+                handle.write(out)
+                handle.flush()
+                os.fsync(handle.fileno())
+            os.replace(temporary, target)
+        except OSError:
+            try:
+                temporary.unlink(missing_ok=True)
+            except OSError:
+                pass
+            return False
+        return True
+
+    def _scan(self, chrom, start, end):
+        """按索引扫窗口内的记录，产出 (起点, 终点, 虚拟偏移)。"""
+        chunks, floor_v = self._bin_chunks(chrom, start, end)
+        if not chunks:
+            return
+        st = _BgzfStream(self.path)
+        hdr_un = _REC_HDR.unpack_from
+        u32 = _U32.unpack_from
+        try:
+            for beg, cend in chunks:
+                beg = max(beg, floor_v)   # 线性索引把起点压到窗口附近，别从 0 开始扫
+                if beg >= cend:
+                    continue
+                try:
+                    st.seek_virtual(beg)
+                except ValueError:
+                    break
+                while True:
+                    if st.buf_v + st.pos >= cend:
+                        break
+                    buf = st.buf
+                    pos = st.pos
+                    v = st.tell()
+                    if len(buf) - pos < 4:
+                        st.pos = pos
+                        hdr = st.read(4)
+                        if len(hdr) < 4:
+                            return
+                        (bs,) = _I32.unpack_from(hdr, 0)
+                        if bs <= 0:
+                            return
+                        blk = st.read(bs)
+                    else:
+                        (bs,) = _I32.unpack_from(buf, pos)
+                        if bs <= 0:
+                            return
+                        if len(buf) - pos - 4 < bs:
+                            st.pos = pos
+                            st.read(4)
+                            blk = st.read(bs)
+                        else:
+                            blk = buf[pos + 4:pos + 4 + bs]
+                            st.pos = pos + 4 + bs
+                    if len(blk) < 32:
+                        return
+                    refID, rpos, lrn, _mapq, _bin, ncig, flag = hdr_un(blk)
+                    if refID < 0 or refID >= len(self._refs):
+                        continue
+                    if self._refs[refID][0] != chrom:
+                        continue
+                    if rpos >= end:
+                        return
+                    cigar_off = 32 + lrn
+                    refend = rpos
+                    for ci in range(ncig):
+                        (c,) = u32(blk, cigar_off + ci * 4)
+                        op = c & 0xF
+                        if op in _CIGAR_REF:
+                            refend += c >> 4
+                    if refend <= rpos:
+                        continue
+                    if refend > start and _passes_igv_defaults(flag):
+                        yield rpos, refend, v, blk
+        finally:
+            st.close()
+
+    def _load(self, max_reads: int | None) -> None:
         raw: dict[str, list] = {}
         voff: dict[str, array] = {}
         st = _BgzfStream(self.path)
@@ -624,7 +1310,7 @@ class BamSignal(BaseTrack):
             while True:
                 buf = st.buf
                 pos = st.pos
-                v = st.buf_v + pos
+                v = st.tell()
                 if len(buf) - pos < 4:
                     # 记录头跨块（或走到文件末尾的空块）：交给 st.read 处理
                     st.pos = pos
@@ -668,6 +1354,9 @@ class BamSignal(BaseTrack):
                 if refend <= pos:
                     continue
                 chrom = refs[refID][0]
+                if max_reads is not None and max_reads > 0 and n >= max_reads:
+                    self.truncated = True
+                    break
                 arr = voff.get(chrom)
                 if arr is None:
                     arr = voff[chrom] = array("Q")
@@ -675,9 +1364,6 @@ class BamSignal(BaseTrack):
                 raw[chrom].append((pos, refend))
                 arr.append(v)
                 n += 1
-                if n >= max_reads:
-                    self.truncated = True
-                    break
         finally:
             st.close()
 
@@ -695,80 +1381,187 @@ class BamSignal(BaseTrack):
         self.total = {"max": None}
 
     def summary(self, chrom, start, end, bins):
-        it = self._iv.get(self.resolve_chrom(chrom))
-        if it is None:
-            return []
-        return _coverage_summary(it.overlapping(start, end), start, end, bins)
-
-    def has_reads(self, chrom):
-        """该染色体是否有任何比对记录（BAM 头里声明 ≠ 实际有数据）。"""
-        return self.resolve_chrom(chrom) in self._iv
-
-    # ---- 比对视图（IGV 的 reads 堆叠） --------------------------------
-    def reads(self, chrom, start, end, max_n=200, ref=None):
-        """取回窗口内的原始比对记录，供前端画 reads 堆叠。
-
-        返回 (reads, total, sampled)。``ref`` 是参考序列获取函数
-        ``ref(chrom, s, e) -> str|None``，用来算错配；没有序列的 BAM
-        （SEQ 为 ``*``）会跳过这一步，只画灰块。
-        """
         c = self.resolve_chrom(chrom)
+        if self._chunks is not None:
+            key = (c, start, end, bins)
+            hit = self._cache.get(key)
+            if hit is not None:
+                return hit
+            def aligned_blocks():
+                for _s, _e, _v, blk in self._scan(c, start, end):
+                    yield from _bam_aligned_blocks(blk)
+            out = _coverage_summary(aligned_blocks(), start, end, bins)
+            if len(self._cache) > 24:
+                self._cache.clear()
+            self._cache[key] = out
+            return out
         it = self._iv.get(c)
         voffs = self._voff.get(c)
         if it is None or not voffs:
-            return [], 0, False
-        idxs = it.overlapping_idx(start, end)
-        total = len(idxs)
-        sampled = total > max_n
-        if sampled:
-            # 等距抽样：均匀铺满整个窗口，而不是只画最左边一坨
-            step = total / max_n
-            idxs = [idxs[int(i * step)] for i in range(max_n)]
+            return []
+        def aligned_blocks():
+            st = _BgzfStream(self.path)
+            try:
+                for i in it.overlapping_idx(start, end):
+                    blk = st.read_record(voffs[i])
+                    if blk is not None:
+                        yield from _bam_aligned_blocks(blk)
+            finally:
+                st.close()
+        return _coverage_summary(aligned_blocks(), start, end, bins)
+
+    def junctions(self, chrom, start, end, min_count: int = 1):
+        """窗口内的剪接位点（CIGAR 的 N 段）按 (donor, acceptor, strand) 聚合。
+
+        参考 IGV 的 SpliceJunctionHelper：不额外读盘，就在已取回的记录块上解析。
+        donor/acceptor 用 0-based 半开区间，和 BED 一致。
+        """
+        c = self.resolve_chrom(chrom)
+        agg = {}
+        u32 = _U32.unpack_from
+        hdr_un = _REC_HDR.unpack_from
+        blocks = []
+        if self._chunks is not None:
+            blocks = [b for (_s, _e, _v, b) in self._scan(c, start, end)]
+        else:
+            itv = self._iv.get(c)
+            voffs = self._voff.get(c) or []
+            if itv is not None and voffs:
+                st = _BgzfStream(self.path)
+                try:
+                    for i in itv.overlapping_idx(start, end):
+                        blk = st.read_record(voffs[i])
+                        if blk is not None:
+                            blocks.append(blk)
+                finally:
+                    st.close()
+        for blk in blocks:
+            refID, rpos, lrn, _mq, _bn, ncig, flag = hdr_un(blk)
+            # IGV：TS 优先于 XS；无标签时 paired first-of-pair strand，单端看 FLAG。
+            aux_off = 32 + lrn + ncig * 4
+            lseq = struct.unpack_from("<i", blk, 16)[0]
+            aux_off += (lseq + 1) // 2 + lseq
+            tags = _bam_aux_tags(blk, aux_off)
+            attr = tags.get("TS", tags.get("XS"))
+            if isinstance(attr, str) and attr:
+                strand = '-' if attr[0] == '-' else '+'
+            elif flag & 0x1:
+                neg = bool(flag & 0x10) if (flag & 0x40) else bool(flag & 0x20)
+                strand = '-' if neg else '+'
+            else:
+                strand = '-' if (flag & 0x10) else '+'
+            cur = rpos
+            left_flank = 0
+            off = 32 + lrn
+            for ci in range(ncig):
+                (cv,) = u32(blk, off + ci * 4)
+                op = cv & 0xF
+                ln = cv >> 4
+                if op == 3:              # N：剪接，坐标为 0-based 半开
+                    d, a = cur, cur + ln
+                    right_flank = 0
+                    for cj in range(ci + 1, ncig):
+                        nv = u32(blk, off + cj * 4)[0]
+                        nop, nlen = nv & 0xF, nv >> 4
+                        if nop in (0, 7, 8):
+                            right_flank += nlen
+                        elif nop in _CIGAR_REF:
+                            break
+                        else:
+                            continue
+                    if left_flank >= 0 and right_flank >= 0 and a > start and d < end:
+                        k = (d, a, strand)
+                        agg[k] = agg.get(k, 0) + 1
+                if op in (0, 7, 8):
+                    left_flank += ln
+                elif op in _CIGAR_REF:
+                    left_flank = 0
+                cur += ln if op in _CIGAR_REF else 0
+        out = [{"d": d, "a": a, "strand": st2, "n": n}
+               for (d, a, st2), n in agg.items() if n >= min_count]
+        out.sort(key=lambda x: -x["n"])
+        return out
+
+    def has_reads(self, chrom):
+        """该染色体是否有任何比对记录（BAM 头里声明 ≠ 实际有数据）。"""
+        c = self.resolve_chrom(chrom)
+        if self._chunks is not None:
+            return c in self._chunks
+        return c in self._iv
+
+    # ---- 比对视图（IGV 的 reads 堆叠） --------------------------------
+    def reads(self, chrom, start, end, max_n=None, ref=None):
+        """返回窗口内全部比对；仅内部调用显式正整数 max_n 时截断。
+
+        参考序列按窗口读取一次，错配偏移仍相对于 read 起点。
+        """
+        c = self.resolve_chrom(chrom)
+        limit = max_n if isinstance(max_n, int) and max_n > 0 else None
+        refseq = None
+        if ref is not None:
+            try:
+                refseq = ref(chrom, start, end)
+            except Exception:  # noqa: BLE001
+                pass
         out = []
-        st = _BgzfStream(self.path)
-        try:
-            for i in idxs:
-                blk = st.read_record(voffs[i])
-                if blk is None:
-                    continue
-                rec = _decode_read(blk)
-                if rec is None:
-                    continue
-                if rec["lseq"] and ref is not None:
-                    try:
-                        rs = ref(chrom, rec["p"], rec["e"])
-                    except Exception:
-                        rs = None
-                    if rs:
-                        rec["mm"] = _mismatches(rec, rs)
-                out.append({"p": rec["p"], "e": rec["e"], "q": rec["q"],
-                            "f": rec["f"], "n": rec["n"], "c": rec["c"],
-                            "mm": rec["mm"]})
-        finally:
-            st.close()
-        return out, total, sampled
+        total = 0
+
+        def append_read(blk):
+            rec = _decode_read(blk)
+            if rec is None:
+                return
+            if rec["lseq"] and refseq:
+                rec["mm"] = _mismatches(rec, refseq, start, (start, end))
+            out.append({"p": rec["p"], "e": rec["e"], "q": rec["q"],
+                        "f": rec["f"], "n": rec["n"], "c": rec["c"],
+                        "mm": rec["mm"]})
+
+        if self._chunks is not None:
+            # 直接解码扫描器已读出的记录，不缓存整个窗口的原始 BAM 块。
+            for _s, _e, _v, blk in self._scan(c, start, end):
+                total += 1
+                if limit is None or total <= limit:
+                    append_read(blk)
+        else:
+            it = self._iv.get(c)
+            voffs = self._voff.get(c)
+            if it is None or not voffs:
+                return [], 0, False
+            idxs = it.overlapping_idx(start, end)
+            total = len(idxs)
+            if limit is not None:
+                idxs = idxs[:limit]
+            st = _BgzfStream(self.path)
+            try:
+                for i in idxs:
+                    blk = st.read_record(voffs[i])
+                    if blk is not None:
+                        append_read(blk)
+            finally:
+                st.close()
+        return out, total, limit is not None and total > limit
 
     def meta(self):
         m = super().meta()
-        m["reads"] = self.n_reads
-        m["truncated"] = self.truncated
+        m["indexed"] = self._chunks is not None
+        m["reads"] = None if self._chunks is not None else self.n_reads
+        m["truncated"] = bool(self.truncated)
         m["hasSeq"] = self.has_seq
         m["paired"] = self.paired
+        m.update(self._read_stats.meta())
         return m
 
 
 class SamSignal(BaseTrack):
-    """A SAM (plain-text) alignment file, exposed like :class:`BamSignal`.
+    """以 BAM 相同接口提供 SAM 文本比对的覆盖度及 reads。
 
-    SAM is parsed once into memory: per-chromosome intervals drive coverage,
-    and the decoded records drive the stacked-reads view, so no index, BGZF or
-    virtual offsets are involved. Very large files are capped the same way BAM
-    is, to keep memory bounded.
+    SAM 完整解析到内存，区间用于查询、解码记录用于覆盖度和堆叠视图；
+    无需 BGZF 或虚拟偏移。仅显式 max_reads 才限制导入记录数。
     """
 
     kind = "signal"
 
-    def __init__(self, tid, name, path, max_reads: int = 3_000_000):
+    def __init__(self, tid, name, path, max_reads: int | None = None):
         super().__init__(tid, name, path, "sam")
         self._iv: dict[str, _Intervals] = {}
         self._recs: dict[str, list] = {}
@@ -776,9 +1569,10 @@ class SamSignal(BaseTrack):
         self.n_reads = 0
         self.has_seq = False
         self.paired = False
+        self._read_stats = _ReadStats()
         self._load(max_reads)
 
-    def _load(self, max_reads: int) -> None:
+    def _load(self, max_reads: int | None) -> None:
         ivs: dict[str, list] = {}
         recs: dict[str, list] = {}
         chroms: dict[str, int] = {}
@@ -801,9 +1595,6 @@ class SamSignal(BaseTrack):
                         if sn is not None and ln is not None:
                             chroms[sn] = ln
                     continue
-                if self.n_reads >= max_reads:
-                    self.truncated = True
-                    break
                 p = raw.rstrip("\r\n").split("\t")
                 if len(p) < 11:
                     continue
@@ -814,10 +1605,6 @@ class SamSignal(BaseTrack):
                     flag = int(p[1])
                     mapq = int(p[4])
                 except ValueError:
-                    continue
-                # IGV 默认口径：跳过未比对 / 厂商质控失败 / 重复，
-                # 但 secondary(0x100) 与 supplementary(0x800) 照常显示。
-                if not _passes_igv_defaults(flag):
                     continue
                 start = int(pos_s) - 1
                 ops = []
@@ -838,6 +1625,14 @@ class SamSignal(BaseTrack):
                     num = 0
                 if bad or ref_len <= 0:
                     continue
+                if not flag & 4:
+                    self._read_stats.add(len(p[9]) if p[9] != "*" else 0, ops)
+                # 实验类型采样保留所有 mapped，展示沿用 IGV 默认 FLAG 过滤。
+                if not _passes_igv_defaults(flag):
+                    continue
+                if max_reads is not None and max_reads > 0 and self.n_reads >= max_reads:
+                    self.truncated = True
+                    break
                 seq = p[9]
                 if seq == "*":
                     seq = ""
@@ -861,35 +1656,44 @@ class SamSignal(BaseTrack):
         self.chroms = chroms
 
     def summary(self, chrom, start, end, bins):
-        it = self._iv.get(self.resolve_chrom(chrom))
-        if it is None:
+        recs = self._recs.get(self.resolve_chrom(chrom))
+        if not recs:
             return []
-        return _coverage_summary(it.overlapping(start, end), start, end, bins)
+        def aligned_blocks():
+            for rec in recs:
+                if rec["e"] <= start or rec["p"] >= end:
+                    continue
+                pos = rec["p"]
+                for length, op in rec["ops"]:
+                    if op in (0, 7, 8):
+                        yield pos, pos + length
+                    if op in _CIGAR_REF:
+                        pos += length
+        return _coverage_summary(aligned_blocks(), start, end, bins)
 
     def has_reads(self, chrom):
         return self.resolve_chrom(chrom) in self._iv
 
-    def reads(self, chrom, start, end, max_n=200, ref=None):
+    def reads(self, chrom, start, end, max_n=None, ref=None):
         c = self.resolve_chrom(chrom)
         lst = self._recs.get(c)
         if not lst:
             return [], 0, False
         hits = [r for r in lst if r["e"] > start and r["p"] < end]
         total = len(hits)
-        sampled = total > max_n
-        if sampled and max_n > 0:
-            step = total / max_n
-            hits = [hits[int(i * step)] for i in range(max_n)]
+        limit = max_n if isinstance(max_n, int) and max_n > 0 else None
+        sampled = limit is not None and total > limit
+        if limit is not None:
+            hits = hits[:limit]
+        refseq = None
+        if ref is not None:
+            try:
+                refseq = ref(chrom, start, end)
+            except Exception:  # noqa: BLE001
+                pass
         out = []
         for r in hits:
-            mm = []
-            if r["seq"] and ref is not None:
-                try:
-                    rs = ref(chrom, r["p"], r["e"])
-                except Exception:  # noqa: BLE001
-                    rs = None
-                if rs:
-                    mm = _mismatches(r, rs)
+            mm = _mismatches(r, refseq, start, (start, end)) if r["seq"] and refseq else []
             out.append({"p": r["p"], "e": r["e"], "q": r["q"], "f": r["f"],
                         "n": r["n"], "c": r["c"], "mm": mm})
         return out, total, sampled
@@ -900,6 +1704,7 @@ class SamSignal(BaseTrack):
         m["truncated"] = self.truncated
         m["hasSeq"] = self.has_seq
         m["paired"] = self.paired
+        m.update(self._read_stats.meta())
         return m
 
 
@@ -1050,6 +1855,14 @@ def _looks_like_gff3(path) -> bool:
     return False
 
 
+# 复合扩展名：GDC 的拷贝数分段文件叫 xxx.seg.txt（Path().suffix 只会给出 .txt），
+# 所以先按整串匹配，再退回普通单扩展名。压缩后缀在匹配前已经剥掉。
+_COMPOUND_EXT = (
+    (".seg.txt", "seg", ".seg.txt"),
+    (".seg.tsv", "seg", ".seg.tsv"),
+)
+
+
 def _split_ext(name: str):
     """文件名 → (格式键, 保存用扩展名)。``x.gtf.gz`` → ``('gtf', '.gtf.gz')``"""
     low = Path(name).name.lower()
@@ -1058,6 +1871,9 @@ def _split_ext(name: str):
         comp, low = ".gz", low[:-3]
     elif low.endswith(".bgz"):
         comp, low = ".bgz", low[:-4]
+    for suf, fmt, save in _COMPOUND_EXT:
+        if low.endswith(suf):
+            return fmt, save + comp
     return FORMAT_BY_EXT.get(Path(low).suffix), Path(low).suffix + comp
 
 
@@ -1153,6 +1969,12 @@ class GtfTrack(BaseTrack):
                 chrom = cols[0]
                 feature = cols[2]
                 attr = cols[8]
+                # BRAKER / AUGUSTUS 的 GFF3 会把每条 intron 单独列一行
+                # （ID=g247.t1.intron2;Parent=g247.t1）。这些行没有 gene_id，
+                # 会被当成独立基因画出一堆「xxx.t1.intron12」的框，必须跳过。
+                # 外显子结构由 exon/CDS 行决定，intron 不需要单独入模型。
+                if feature == "intron" or feature == "Intron":
+                    continue
 
                 gid = _gtf_val(attr, "gene_id")
                 if gid is not None:
@@ -1160,7 +1982,8 @@ class GtfTrack(BaseTrack):
                     txid = _gtf_val(attr, "transcript_id")
                 else:
                     a = _parse_attrs(attr)
-                    gid = a.get("gene_id") or a.get("gene") or a.get("ID") or a.get("Parent")
+                    gid = (a.get("gene_id") or a.get("gene")
+                           or a.get("Parent") or a.get("ID"))
                     if not gid:
                         gid = a.get("gene_name") or "unknown"
                     gn = a.get("gene_name") or a.get("Name") or a.get("gene")
@@ -1265,6 +2088,13 @@ class GtfTrack(BaseTrack):
                 feat = cols[2].lower()
                 strand = cols[6] if cols[6] in ("+", "-") else "+"
                 attr = cols[8]
+
+                # intron：BRAKER / AUGUSTUS 会把每条内含子单独列一行
+                # （ID=g1.t1.intron1;Parent=g1.t1）。它带 Parent 但没有外显子信息，
+                # 落进下面的「其余」分支会被当成一个新转录本，于是图上多出一堆
+                # 「xxx.t1.intron12」的框。内含子由 exon 的间隙隐含，直接丢弃。
+                if feat == "intron":
+                    continue
 
                 # ---- gene / pseudogene / *_gene：只记录基因名与边界
                 if feat == "gene" or feat == "pseudogene" or feat.endswith("_gene"):
@@ -1938,22 +2768,30 @@ def writable_loaded_dir(data_dir: Path) -> Path:
 
 
 class LoadedManager:
+    # Session-only imports by default (user preference, 2026-10-31).
+    # Keep registrations on disk, but never parse/reopen any format at startup.
+    _RESTORE_FORMATS = ()
+
     def __init__(self, data_dir: Path):
         self.dir = writable_loaded_dir(data_dir)
         self.dir.mkdir(parents=True, exist_ok=True)
         self._index_path = self.dir / "index.json"
         self._lock = threading.Lock()
         self.tracks: dict[str, BaseTrack] = {}
-        # 导入的轨道默认是「会话级」的：重启时不恢复上次的导入。
-        # 原因：大文件（1.5 GB GTF / 70 MB BAM）会在开浏览器之前被同步解析
-        # （BAM 逐条建区间约 8 s、GTF 反序列化约 0.8 s），导致启动要等好几秒；
-        # 而且用户期望每次启动轨道列表都是空的。
-        # 需要恢复旧的「记住导入」行为时，设置环境变量 IGV_RESTORE_LOADED=1。
+        # 索引里这次没恢复的条目（见 _RESTORE_FORMATS），写回时原样带上，
+        # 免得新增一个文件就把它们的记录冲掉。
+        self._kept_index: list[dict] = []
+        # Imported tracks are session-only. IGV_RESTORE_LOADED=1 is an explicit
+        # developer opt-in; the normal launcher disables it.
+        # Explicit opt-in only. Normal launches preserve registrations without
+        # opening any previous files or building their indexes.
         if os.environ.get("IGV_RESTORE_LOADED") == "1":
             self._load_index()
+        else:
+            self._load_index(only_cheap=True)
 
     # ------------------------------------------------------------- persistence
-    def _load_index(self) -> None:
+    def _load_index(self, only_cheap: bool = False) -> None:
         if not self._index_path.exists():
             return
         try:
@@ -1961,6 +2799,9 @@ class LoadedManager:
         except Exception:  # noqa: BLE001
             return
         for m in meta:
+            if only_cheap and m.get("format") not in self._RESTORE_FORMATS:
+                self._kept_index.append(m)
+                continue
             fname = m.get("file")
             if not fname:
                 continue
@@ -1969,15 +2810,30 @@ class LoadedManager:
                 continue
             try:
                 t = self._make(m["id"], m.get("name") or fname, p, m.get("format"))
+                if isinstance(t, SegTrack) and m.get("sample") in t.samples:
+                    t._use(m["sample"])
                 self.tracks[t.id] = t
             except Exception:  # noqa: BLE001
                 continue
 
     def _save_index(self) -> None:
+        # 去重：同一个 (id, file) 只留一条。之前反复导入/恢复会让 index.json 里
+        # 堆出同名同文件的重复条目，重启后列表里就出现 xxx 和 xxx_2 两个轨道。
         meta = []
+        seen = set()
+        for m in self._kept_index:
+            key = (m.get("id"), m.get("file"))
+            if key in seen:
+                continue
+            seen.add(key)
+            meta.append(m)
         for t in self.tracks.values():
-            meta.append({"id": t.id, "name": t.name, "file": t.path.name,
-                         "format": t.format, "kind": t.kind})
+            item = {"id": t.id, "name": t.name, "file": t.path.name,
+                    "format": t.format, "kind": t.kind}
+            if isinstance(t, SegTrack):
+                # 多个样本共用同一个文件，恢复时要记清这条轨道对应哪个样本
+                item["sample"] = t.sample
+            meta.append(item)
         try:
             self._index_path.write_text(json.dumps(meta, ensure_ascii=False, indent=1), encoding="utf-8")
         except OSError:
@@ -1994,17 +2850,29 @@ class LoadedManager:
             "bigwig": BigWigSignal,
             "bedgraph": BedGraphSignal,
             "wig": WigSignal,
+            "seg": SegTrack,
             "bam": BamSignal,
             "sam": SamSignal,
             "gtf": GtfTrack,
             "fasta": FastaTrack,
         }[fmt](tid, name, path)
 
-    def add(self, src: Path, orig_name: str) -> BaseTrack:
-        fmt, save_ext = _split_ext(orig_name)
+    def add_local(self, src: Path) -> list[BaseTrack]:
+        """直接挂载本机路径（不复制文件）。
+
+        BAM 动辄几个 GB，走浏览器上传要传一遍、再在 data/loaded 存一份，两个都很慢。
+        同盘用硬链接（瞬时、不占空间），跨盘才退回复制。顺带把同名 ``.bai`` 一起挂上，
+        有了索引就能按窗口随机访问，不必把整个文件扫进内存。
+        """
+        src = Path(src).expanduser().resolve()
+        if not src.exists():
+            raise ValueError(f"文件不存在：{src}")
+        fmt, save_ext = _split_ext(src.name)
+        if fmt is None and _looks_like_seg(src):
+            fmt, save_ext = "seg", ".seg.txt"
         if fmt is None:
-            raise ValueError(f"不支持的文件类型：{Path(orig_name).suffix or '(无扩展名)'}")
-        base = _safe_stem(orig_name)
+            raise ValueError(f"不支持的文件类型：{src.suffix}")
+        base = _safe_stem(src.name)
         with self._lock:
             tid = base
             k = 2
@@ -2012,6 +2880,103 @@ class LoadedManager:
                 tid = f"{base}_{k}"
                 k += 1
             dest = self.dir / f"{tid}{save_ext}"
+            same = False
+            try:
+                same = dest.exists() and (dest.resolve() == src or (dest.exists() and src.exists() and os.path.samefile(dest, src)))
+            except OSError:
+                same = False
+            if not same:
+                if dest.exists():
+                    try:
+                        dest.unlink()
+                    except OSError:
+                        pass
+                if not dest.exists():
+                    try:
+                        os.link(src, dest)
+                    except OSError:
+                        shutil.copyfile(src, dest)
+            # 索引文件一起挂上（不占空间，且 BamSignal 直接就能用）
+            # 索引文件：原目录里的 xxx.bam.bai / xxx.bai / xxx.csi 都自动带过来，
+            # 用户不需要额外操作（这也是 IGV 的行为：索引就在 bam 旁边）
+            side_cands = [Path(str(src) + ".bai"), Path(str(src) + ".csi")]
+            try:
+                side_cands += [src.with_suffix(".bai"), src.with_suffix(".csi")]
+            except ValueError:
+                pass
+            for side in side_cands:
+                tgt = Path(str(dest) + side.suffix)
+                if not side.exists() or tgt.exists():
+                    continue
+                try:
+                    os.link(side, tgt)
+                except OSError:
+                    try:
+                        shutil.copyfile(side, tgt)
+                    except Exception:  # noqa: BLE001
+                        pass
+        try:
+            track = self._make(tid, src.name, dest, fmt)
+        except Exception:
+            try:
+                dest.unlink(missing_ok=True)
+            except OSError:
+                pass
+            raise
+        with self._lock:
+            self.tracks[tid] = track
+        self._save_index()
+        return [track]
+
+    def add(self, src: Path, orig_name: str) -> list[BaseTrack]:
+        fmt, save_ext = _split_ext(orig_name)
+        if fmt is None and _looks_like_seg(src):
+            # 扩展名是 .txt / .v2.txt 之类时靠表头认出来
+            fmt, save_ext = "seg", ".seg.txt"
+        if fmt is None:
+            ext = Path(orig_name).suffix or "(无扩展名)"
+            # .txt / .tsv 没有固定含义，靠表头认成 SEG；认不出来时把话说明白，
+            # 否则用户只会看到「不支持 .txt」，却不知道差在哪。
+            hint = "（.txt / .tsv 需要是带表头的 SEG 表）" if ext.lower() in (".txt", ".tsv") else ""
+            raise ValueError(f"不支持的文件类型：{ext}{hint}")
+        base = _safe_stem(orig_name)
+        # 同一个文件被重复导入时直接复用已有轨道，不再生成 xxx_2 副本：
+        # 否则列表里会出现两行同名轨道、画两张一模一样的热图，用户分不清哪个是哪个。
+        # 判据用「原始文件名 + 字节数」，既不读内容也能挡住误拖两次的情况。
+        name = Path(orig_name).name
+        try:
+            size = src.stat().st_size
+        except OSError:
+            size = -1
+        with self._lock:
+            for t in self.tracks.values():
+                if t.name != name or size < 0:
+                    continue
+                try:
+                    if t.path.stat().st_size == size:
+                        return [t]
+                except OSError:
+                    continue
+            tid = base
+            k = 2
+            while tid in self.tracks:
+                tid = f"{base}_{k}"
+                k += 1
+            dest = self.dir / f"{tid}{save_ext}"
+            # 目标文件可能还在：删掉的轨道在 Windows 上常留了残骸（文件被 mmap 占用），
+            # 直接 move 覆盖会抛 WinError 1224，整个导入就失败了。能删就删，删不掉就换个名字。
+            if dest.exists():
+                try:
+                    dest.unlink()
+                except OSError:
+                    k = 2
+                    while True:
+                        alt_tid = f"{base}_{k}"
+                        alt = self.dir / f"{alt_tid}{save_ext}"
+                        if alt_tid not in self.tracks and not alt.exists():
+                            tid, dest = alt_tid, alt
+                            break
+                        k += 1
         # 同盘时 shutil.move 走 rename（0 拷贝），跨盘才退化成复制
         if src.stat().st_dev == dest.parent.stat().st_dev:
             shutil.move(str(src), str(dest))
@@ -2021,11 +2986,22 @@ class LoadedManager:
                 src.unlink()
             except OSError:
                 pass
-        track = self._make(tid, Path(orig_name).name, dest, fmt)
+        try:
+            track = self._make(tid, Path(orig_name).name, dest, fmt)
+        except Exception:
+            # 解析/建索引失败时别把文件留在 data/loaded：它会在下一次同名导入时
+            # 变成「目标已存在」的拦路石（Windows 上还可能因为被占用而覆盖失败）
+            try:
+                dest.unlink(missing_ok=True)
+            except OSError:
+                pass
+            raise
         with self._lock:
             self.tracks[tid] = track
         self._save_index()
-        return track
+        # 返回列表：一个文件将来可能展开成多条轨道（现在只有 SEG 的多样本会用，
+        # 但接口先按列表定下来，server/前端就不用再改）
+        return [track]
 
     # ---------------------------------------------------------------- queries
     def get(self, tid: str) -> BaseTrack | None:
@@ -2055,10 +3031,22 @@ class LoadedManager:
                 cp = t.cache_path()
             except OSError:
                 cp = None
-        try:
-            t.path.unlink(missing_ok=True)
-        except OSError:
-            pass
+        # 多样本 SEG 的几条轨道共用同一个文件：还有人在用时不能删
+        if not any(x.path == t.path for x in self.tracks.values()):
+            # 先把 mmap / 文件句柄关掉：Windows 上还映射着就 unlink 会失败，
+            # 结果文件残留在 data/loaded 里，下次用同名文件重新导入时覆盖不了
+            for attr in ("bw", "fa", "ann"):
+                obj = getattr(t, attr, None)
+                close = getattr(obj, "close", None)
+                if callable(close):
+                    try:
+                        close()
+                    except Exception:  # noqa: BLE001
+                        pass
+            try:
+                t.path.unlink(missing_ok=True)
+            except OSError:
+                pass
         if cp is not None:
             try:
                 cp.unlink(missing_ok=True)

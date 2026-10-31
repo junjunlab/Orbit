@@ -30,9 +30,9 @@ Download the package for your platform from [Releases](https://github.com/junjun
 
 | Platform | File | Size |
 |---|---|---|
-| Windows 10/11 x64 | `Orbit-1.0.1-Windows-x64-Setup.exe` | ~150 MB |
-| macOS Apple Silicon | `Orbit-1.0.1-macOS-arm64.dmg` | ~244 MB |
-| macOS Intel | `Orbit-1.0.1-macOS-x86_64.dmg` | ~253 MB |
+| Windows 10/11 x64 | `Orbit-1.0.2-Windows-x64-Setup.exe` | ~150 MB |
+| macOS Apple Silicon | `Orbit-1.0.2-macOS-arm64.dmg` | ~244 MB |
+| macOS Intel | `Orbit-1.0.2-macOS-x86_64.dmg` | ~253 MB |
 
 - **Windows** — per-user install, no admin rights needed (`%LOCALAPPDATA%\Programs\Orbit`).
 - **macOS** — drag `Orbit.app` into Applications. Builds are ad-hoc signed, not notarized,
@@ -42,6 +42,12 @@ Download the package for your platform from [Releases](https://github.com/junjun
 ## Features
 
 - Gene tracks from RefSeq with transcript expansion (exon/intron, CDS, strand)
+- Right-click a gene model for the transcript, exon / CDS / UTR fragment or
+  intron under the pointer, with coordinates and length — plus every intron in
+  the transcript
+- BAM/SAM as three labelled tracks: coverage, splice junctions, alignments.
+  Collapsed / Expanded / Squished / Full, wheel scrolling through every read,
+  and the visibility window chosen from the experiment type
 - Cytobands, GC content, and sequence track (colored bases at high zoom)
 - Signal tracks: bigWig, bedGraph — multi-sample overlays with grouped scaling
 - Import your own bigWig / bedGraph / BAM / GTF / FASTA at runtime

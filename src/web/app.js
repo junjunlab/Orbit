@@ -18,6 +18,9 @@
 
   const fmt = (n) => n.toLocaleString('en-US');
   const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+  // 模块级的 HTML 转义（染色体名 / 文件名里可能有 & < 等字符）
+  const escAttr = (s) => String(s == null ? '' : s).replace(/[&<>"']/g,
+    (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
   // a well known gene to land on when an assembly is opened
   const LANDMARKS = {
@@ -47,10 +50,14 @@
       groups: [],   // [{id, name, shared}]  shared = 组内共用纵轴
       sel: new Set(), // multi-selection of track ids for batch ops
       hidden: new Set(), // bundled track ids the user removed (persisted, restorable)
+      // 导入轨道的勾选状态（存 localStorage）。内置轨道不记，仍按「前 6 条默认开」；
+      // 导入轨道记住上次的开关，否则重开软件时热图 / 信号轨道全是关的，像没导入成功。
+      onSaved: {},
     },
     loaded: { list: [], on: {}, data: {}, _pending: {}, expanded: new Set(), tint: {}, sel: new Set(),
       expandAll: new Set(),   // 一键展开：轨道 id 集合
       collapsed: new Set(),   // 一键展开模式下被单独收起的基因
+      pack: new Set(),        // 「分行排布」的导入基因轨道（默认折叠为一行，见 geneCollapsed）
       flip: new Set() },      // 导入序列轨道里「显示互补链」的轨道 id（同 RefSeq 的 Flip strand）
     // Find motif（对应 IGV 的 Tools → Find Motif）：会话内有效，不落盘
     motif: { list: [], cache: {}, inflight: {}, seq: 0, lastPattern: '', nameTouched: false },
@@ -69,6 +76,12 @@
     // 这样平移/缩放之后新出现的基因也保持展开（比「把当前可见基因挨个加进 expanded」好用）
     expandAll: false,
     collapsed: new Set(),
+    // 基因轨道默认「折叠为一行」（同 IGV 的 collapsed 模式）：所有基因画在同一行，
+    // 重叠就重叠。关掉后回到「分行排布」（重叠的基因逐行往上叠）。
+    geneCollapsed: true,
+    // 全基因组视图（染色体下拉里选「全部染色体」）：会话内有效，不落盘
+    genomeView: false,
+    genomeData: null,   // 当前装配的基因密度（/api/genome 结果，按装配缓存）
     pending: 0,
     dpr: window.devicePixelRatio || 1,
   };
@@ -136,6 +149,8 @@
       viewLine: v('--view-line') || '#d81e2b',
       motifPos: v('--motif-pos') || '#1f6fb2',
       motifNeg: v('--motif-neg') || '#c0392b',
+      cnvGain: v('--cnv-gain') || '#c0392b',
+      cnvLoss: v('--cnv-loss') || '#2a6fb0',
       accent: v('--accent'),
       read: v('--read') || '#c9c9c9',
       readEdge: v('--read-edge') || '#b0b0b0',
@@ -181,8 +196,9 @@
     loadLoadedTracks({ fresh: true });
     const params = new URLSearchParams(location.search);
     const wantDb = params.get('db');
-    const chosen = (wantDb && S.assemblies.find((a) => a.id === wantDb))
-      || S.assemblies.find((a) => a.hasSeq) || S.assemblies[0];
+    // 默认进「自定义（空）」：主场景是用户自带的 FASTA / GTF / BAM，
+    // 需要内置物种时从下拉里选，或者带 ?db=hg38。
+    const chosen = (wantDb && S.assemblies.find((a) => a.id === wantDb)) || CUSTOM_ASM;
     await selectAssembly(chosen.id, true);
 
     const locus = params.get('locus');
@@ -217,13 +233,36 @@
       hexLum, inkOn, drawSeq, render,
       setActivePanel, ensureAll, togglePane, composePlot, plotRows, doExport, exportName,
       composeVector, loadCJKFont, pdfFromCanvas,
+      pickChrom, enterGenomeView, exitGenomeView,
       panels: () => S.panels };
   }
 
   /* -------------------------------------------------------------- assemblies */
+  // 「自定义（空）」装配：不预置任何染色体/注释，用户导入自己的 FASTA / GTF / BAM
+  // 之后坐标轴由导入文件自己撑起来（染色体字典从后端 track_chroms 取）。
+  const CUSTOM_ASM = {
+    id: '__custom__', organism: T('自定义'), scientificName: '', description: T('空 · 用自己导入的 FASTA / GTF'),
+    chroms: {}, hasSeq: false, hasGenes: false, geneCount: 0, custom: true,
+  };
+
   function renderAsmMenu() {
     const menu = $('#asmMenu');
     menu.innerHTML = '';
+    // 置顶一个空装配，方便用自备文件
+    {
+      const el = document.createElement('div');
+      el.className = 'asm-item' + (S.asm && S.asm.custom ? ' active' : '');
+      el.dataset.id = CUSTOM_ASM.id;
+      el.innerHTML = T(`
+        <div class="t">${CUSTOM_ASM.organism}<small>${T('空')}</small></div>
+        <div class="d">${CUSTOM_ASM.description}</div>
+        <div class="tags">
+          <span class="tag no">${T('无内置序列')}</span>
+          <span class="tag no">${T('无内置注释')}</span>
+        </div>`);
+      el.onclick = () => { menu.classList.remove('open'); selectAssembly(CUSTOM_ASM.id); };
+      menu.appendChild(el);
+    }
     for (const a of S.assemblies) {
       const el = document.createElement('div');
       el.className = 'asm-item' + (S.asm && a.id === S.asm.id ? ' active' : '');
@@ -261,19 +300,65 @@
     }
   }
 
+  // 自定义装配：从已导入的轨道里收集染色体字典（后端 track_chroms），
+  // 用户拖进来的 BAM / bigWig / GTF 自己就能把坐标轴撑起来。
+  let customChromsBusy = false;
+  async function refreshCustomChroms() {
+    if (!S.asm || !S.asm.custom || customChromsBusy) return;
+    customChromsBusy = true;
+    try {
+      const ids = [...(S.bw.list || []).map((t) => t.id), ...(S.loaded.list || []).map((t) => t.id)];
+      const merged = {};
+      for (const id of ids) {
+        try {
+          const r = await api('track_chroms', { track: id });
+          let got = 0;
+          for (const [c, len] of Object.entries(r.chroms || {})) {
+            if (!(len > 0)) continue;
+            merged[c] = Math.max(merged[c] || 0, len);
+            got++;
+          }
+          if (got) break;          // 有一条能提供字典就够了
+        } catch { /* 单条失败继续试下一条 */ }
+      }
+      if (!Object.keys(merged).length) return;
+      S.asm.chroms = merged;
+      renderChromMenu();
+      if (!S.view.chrom) {
+        const best = Object.entries(merged).sort((a, b) => b[1] - a[1])[0];
+        await navigate(best[0], 0, best[1]);
+      } else {
+        scheduleRender();
+      }
+      updateStatus();
+    } finally {
+      customChromsBusy = false;
+    }
+  }
+
   async function selectAssembly(id, first) {
-    const a = S.assemblies.find((x) => x.id === id);
+    const a = id === CUSTOM_ASM.id ? CUSTOM_ASM : S.assemblies.find((x) => x.id === id);
     if (!a) return;
     S.asm = a;
-    $('#asmName').textContent = `${a.organism} ${a.id}`;
+    $('#asmName').textContent = a.custom ? T('自定义（空）') : `${a.organism} ${a.id}`;
     $('#asmDot').className = 'dot' + (a.hasSeq ? '' : ' warn');
     syncSeqTrackAvailability();
     $('#stAsm').textContent = `${a.scientificName || a.organism} · ${a.description || ''}`;
     renderAsmMenu();
-    renderChromList();
+    renderChromMenu();
     closeTrackPop();
     if (S.bw.list.length) { renderBwList(); ensureBwTrackEls(); }
 
+    if (a.custom) {
+      S.bands = {};
+      S.view = { chrom: '', start: 0, end: 0 };
+      S.genomeView = false;
+      renderChromMenu();
+      refreshCustomChroms();
+      scheduleRender();
+      updateStatus();
+      return;
+    }
     if (!bandsCache[id]) {
       try {
         const r = await api('cytobands', { db: id });
@@ -318,28 +403,47 @@
     return (a.primary && a.primary.length) ? a.primary : Object.keys(a.chroms);
   }
 
-  function renderChromList() {
-    const box = $('#chromList');
-    box.innerHTML = '';
+  function genomeTotalLen() {
+    let t = 0;
+    for (const c of primaryChroms()) t += S.asm.chroms[c] || 0;
+    return t;
+  }
+
+  /* 染色体下拉（同 IGV 的染色体选择器）：选某条 = 整条染色体视野，
+     选「全部染色体」= 全基因组视野（所有染色体并排）。 */
+  function renderChromMenu() {
+    const menu = $('#chromMenu');
+    if (!menu || !S.asm) return;
     const a = S.asm;
+    const row = (key, name, len, cur) => {
+      const mb = len >= 1e9 ? `${(len / 1e9).toFixed(2)} Gb` : `${(len / 1e6).toFixed(1)} Mb`;
+      return `<div class="scope-item${cur ? ' cur' : ''}" data-chrom="${escAttr(key)}" role="option">`
+        + `<span class="nm">${escAttr(name)}</span><span class="len">${mb}</span>`
+        + `${cur ? '<span class="ck">✓</span>' : ''}</div>`;
+    };
+    const parts = [row('*', T('全部染色体'), genomeTotalLen(), !!S.genomeView)];
     for (const chrom of primaryChroms()) {
-      const len = a.chroms[chrom];
-      const el = document.createElement('div');
-      el.className = 'chrom-item' + (S.view.chrom === chrom ? ' active' : '');
-      el.innerHTML = `<span>${chrom}</span><span>${(len / 1e6).toFixed(1)} Mb</span>`;
-      el.onclick = () => {
-        const size = Math.min(len, 200000);
-        const start = Math.max(0, Math.round(len * 0.5 - size / 2));
-        navigate(chrom, start, Math.min(len, start + size));
-      };
-      box.appendChild(el);
+      const len = a.chroms[chrom] || 0;
+      parts.push(row(chrom, chrom, len, !S.genomeView && S.view.chrom === chrom));
     }
-    // 折叠态 chip 显示当前染色体 + 长度（列表默认收起，见 index.html）
-    const chip = $('#chromChip');
-    if (chip && chip.firstElementChild) {
-      const cur = S.view.chrom;
-      chip.firstElementChild.textContent = `${cur} · ${((a.chroms[cur] || 0) / 1e6).toFixed(1)} Mb`;
-    }
+    menu.innerHTML = parts.join('');
+    syncChromPicker();
+  }
+
+  // 下拉按钮上的当前值：全基因组视野显示「全部」，否则是当前染色体
+  function syncChromPicker() {
+    const lab = $('#chromSelLabel');
+    if (!lab) return;
+    lab.textContent = S.genomeView ? T('全部') : (S.view.chrom || '—');
+  }
+
+  function pickChrom(key) {
+    if (!S.asm) return;
+    if (key === '*') { enterGenomeView(); return; }
+    const len = S.asm.chroms[key];
+    if (!len) return;
+    exitGenomeView();
+    navigate(key, 0, len);      // 整条染色体（同 IGV：选染色体 = 看全染色体）
   }
 
   /* --------------------------------------------------------------- navigation */
@@ -385,6 +489,8 @@
     if (!P) return;
     const len = S.asm.chroms[chrom];
     if (!len) return;
+    // 任何一次正常导航都退出全基因组视野（同 IGV：从 whole genome 跳进某条染色体）
+    if (S.genomeView) { S.genomeView = false; syncChromPicker(); }
     const chromChanged = P.view.chrom !== chrom;
     let size = clamp(end - start, 40, len);
     start = clamp(Math.round(start), 0, len - size);
@@ -396,7 +502,7 @@
       P.bwData = {};
       if (idx === S.act) {
         S.sel = null;
-        renderChromList();
+        renderChromMenu();
         renderInfo();
       }
     }
@@ -406,6 +512,29 @@
     if (idx === S.act) updateStatus();
   }
 
+  /* ------------------------------------------------------- 全基因组视野 */
+  /* 同 IGV 的 whole genome view：所有染色体按长度比例并排（一条一格），
+     点某格 → 整条染色体。染色体下拉里选「全部染色体」进入这里。 */
+  function enterGenomeView() {
+    if (!S.asm || S.genomeView) return;
+    S.genomeView = true;
+    closeTrackPop();
+    closeBwCtx();
+    closeLoadedCtx();
+    syncChromPicker();
+    renderChromMenu();
+    scheduleRender();
+    updateStatus();
+  }
+
+  function exitGenomeView() {
+    if (!S.genomeView) return;
+    S.genomeView = false;
+    syncChromPicker();
+    renderChromMenu();
+    scheduleRender();
+  }
+
   function currentDataRange() {
     return dataRangeFor(S.view);
   }
@@ -413,7 +542,10 @@
   function dataRangeFor(view) {
     const { start, end } = view;
     const pad = Math.round((end - start) * 0.5);
-    return { start: Math.max(0, start - pad), end: end + pad };
+    // 右边的 padding 要夹到染色体末尾：看整条 chr6 时 end+pad 会到 256 Mb，
+    // 多出来的部分既没有数据、又把有限的 bin 摊薄，热图分辨率白白掉 1/3
+    const len = (S.asm && S.asm.chroms && S.asm.chroms[view.chrom]) || Infinity;
+    return { start: Math.max(0, start - pad), end: Math.min(len, end + pad) };
   }
 
   // 活动面板刷新（大部分调用点用它）
@@ -427,94 +559,148 @@
   }
 
   async function ensureDataFor(P, idx, force) {
-    const view = P.view;
-    if (!view.chrom || !S.asm) return;
+    const view = { ...P.view };
+    const asm = S.asm;
+    if (!view.chrom || !asm) return;
     const need = dataRangeFor(view);
+    const alignNeed = { start: view.start, end: view.end };
     const d = P.data;
     const covered = !force && d.range.start <= need.start && d.range.end >= need.end
       && d.loadedFor === view.chrom;
     const bpPerPx = (view.end - view.start) / paneWidth(idx);
-    const wantSeq = bpPerPx <= 1.2 && S.tracks.seq && S.asm.hasSeq;
-    if (covered && (!wantSeq || d.seq)) return;
-
-    d.range = need;
-    d.loadedFor = view.chrom;
-    // 同一个面板上一次取数还没回来就又开始新的（连续平移/缩放）：取消旧的。
-    // 否则浏览器每个域只有 6 个并发连接，很快被占满，界面就像卡死。
+    const wantSeq = bpPerPx <= 1.2 && S.tracks.seq && asm.hasSeq;
+    // 缓存只代表已完成的数据；取消旧请求后，缺失的各条轨道仍独立补取。
     if (P._ac) { try { P._ac.abort(); } catch { /* ignore */ } }
     const ac = new AbortController();
     P._ac = ac;
     const sig = ac.signal;
+    const current = () => !sig.aborted && P._ac === ac && S.asm === asm
+      && S.panels.includes(P) && P.view.chrom === view.chrom
+      && P.view.start === view.start && P.view.end === view.end;
+    const trackCurrent = (t, alignment = false) => current() && S.bw.list.includes(t)
+      && (alignment ? alignActive(t) : bwActive(t));
+    const cached = (prev, range) => !force && prev && prev.loaded === true
+      && !prev.tooWide && !prev.error && !prev.reason && prev.chrom === view.chrom
+      && prev.start <= range.start && prev.end >= range.end;
     S.pending++;
     setLoading(true);
+    let counted = true;
+    const releaseLoading = () => {
+      if (!counted) return;
+      counted = false;
+      S.pending = Math.max(0, S.pending - 1);
+      if (S.pending <= 0) setLoading(false);
+    };
+    // Aborting a removed/obsolete track releases its UI loading token now;
+    // its late finally must not decrement a newer request's loading count.
+    sig.addEventListener('abort', releaseLoading, { once: true });
     const t0 = performance.now();
-    const jobs = [
-      api('genes', { db: S.asm.id, chrom: view.chrom, s: need.start, e: need.end }, { signal: sig })
-        .then((r) => { d.genes = r.genes; d.truncated = r.truncated; d.ms = r.ms; }),
-    ];
-    // GC 与序列改为后台加载：不阻塞其它轨道的绘制。
-    // 以前它们和 genes 一起 await Promise.all，只要远程序列慢，整个视图就不刷新。
-    if (S.tracks.gc && S.asm.hasSeq) {
-      d.gc = null;
-      api('gc', { db: S.asm.id, chrom: view.chrom, s: need.start, e: need.end, bins: 700 }, { signal: sig })
-        .then((r) => { d.gc = r.gc; d.gcRange = { ...need }; scheduleRender(); })
-        .catch(() => { /* 取消或失败：保持占位，不打断其它轨道 */ });
+    const jobs = [];
+    if (!covered) {
+      jobs.push(api('genes', { db: asm.id, chrom: view.chrom, s: need.start, e: need.end }, { signal: sig })
+        .then((r) => {
+          if (!current()) return;
+          d.genes = r.genes; d.truncated = r.truncated; d.ms = r.ms;
+          d.range = { ...need }; d.loadedFor = view.chrom;
+        })
+        .catch((err) => {
+          if (current() && err?.name !== 'AbortError') toast(T('数据加载失败：') + err.message);
+        }));
     }
-    if (wantSeq) {
+    // GC 与序列后台加载，不阻塞其它轨道；迟到结果不可污染新窗口。
+    if (S.tracks.gc && asm.hasSeq && !(covered && d.gc && d.gcRange
+      && d.gcRange.start <= need.start && d.gcRange.end >= need.end)) {
+      d.gc = null;
+      api('gc', { db: asm.id, chrom: view.chrom, s: need.start, e: need.end, bins: 700 }, { signal: sig })
+        .then((r) => {
+          if (!current() || !S.tracks.gc) return;
+          d.gc = r.gc; d.gcRange = { ...need }; scheduleRender();
+        })
+        .catch(() => { /* 取消或失败：保持占位 */ });
+    }
+    if (wantSeq && !(covered && d.seq && d.seqStart <= need.start
+      && d.seqStart + d.seq.length >= need.end)) {
       d.seq = null;
       d.seqStart = null;
-      api('seq', { db: S.asm.id, chrom: view.chrom, s: need.start, e: need.end }, { signal: sig })
-        .then((r) => { d.seq = r.seq; d.seqStart = r.start ?? need.start; scheduleRender(); })
-        .catch(() => { /* 取消或失败：drawSeq 会显示“读取序列…” */ });
-    } else {
+      api('seq', { db: asm.id, chrom: view.chrom, s: need.start, e: need.end }, { signal: sig })
+        .then((r) => {
+          if (!current() || !S.tracks.seq) return;
+          d.seq = r.seq; d.seqStart = r.start ?? need.start; scheduleRender();
+        })
+        .catch(() => { /* 取消或失败：保持占位 */ });
+    } else if (!wantSeq) {
       d.seq = null;
     }
-    // bigWig signal tracks: one request per enabled track, binned to pixel count
     const bins = Math.max(120, Math.min(2400, Math.round(paneWidth(idx))));
     for (const t of S.bw.list) {
       if (!bwActive(t)) continue;
-      const prev = P.bwData[t.id];
-      if (!force && prev && prev.chrom === view.chrom
-        && prev.start <= need.start && prev.end >= need.end) continue;
-      jobs.push(api('bw', { track: t.id, chrom: view.chrom, s: need.start, e: need.end, bins }, { signal: sig })
+      const range = isBam(t) ? alignNeed : need;
+      // IGV 的同一 alignment manager 为覆盖度、reads 和剪接统一控制窗口，先判门槛再查缓存。
+      if (isBam(t) && (view.end - view.start) > alignmentVisibility(t)) {
+        P.bwData[t.id] = { chrom: view.chrom, ...range, loaded: false, tooWide: true,
+          values: null, reason: '放大查看覆盖度（Zoom in to see coverage）' };
+        continue;
+      }
+      if (cached(P.bwData[t.id], range)) continue;
+      if (t.heatmap) {
+        jobs.push(api('loaded/seg', { track: t.id, chrom: view.chrom, s: range.start, e: range.end, bins }, { signal: sig })
+          .then((r) => {
+            if (!trackCurrent(t)) return;
+            P.bwData[t.id] = { chrom: view.chrom, start: r.start, end: r.end, bins: r.bins,
+              rows: r.rows, samples: r.samples, heat: true, loaded: !r.reason && Array.isArray(r.rows), reason: r.reason || null };
+          })
+          .catch((err) => {
+            if (!trackCurrent(t) || err?.name === 'AbortError') return;
+            P.bwData[t.id] = { chrom: view.chrom, ...range, loaded: false, error: true,
+              rows: null, heat: true, reason: T('读取失败：') + err.message };
+          }));
+        continue;
+      }
+      jobs.push(api('bw', { track: t.id, chrom: view.chrom, s: range.start, e: range.end, bins }, { signal: sig })
         .then((r) => {
+          if (!trackCurrent(t)) return;
           P.bwData[t.id] = { chrom: view.chrom, start: r.start, end: r.end,
-            values: r.values, peak: r.peak, fileMax: r.fileMax,
-            reason: r.reason || null };
+            values: r.values, peak: r.peak, trough: r.trough || 0,
+            diverging: !!r.diverging, fileMax: r.fileMax,
+            loaded: !r.reason && Array.isArray(r.values), reason: r.reason || null };
         })
         .catch((err) => {
-          if (err && err.name === 'AbortError') return;
-          P.bwData[t.id] = { chrom: view.chrom, start: need.start, end: need.end,
+          if (!trackCurrent(t) || err?.name === 'AbortError') return;
+          P.bwData[t.id] = { chrom: view.chrom, ...range, loaded: false, error: true,
             values: null, reason: T('读取失败：') + err.message };
         }));
     }
-    // BAM 比对视图：一次最多取 1500 条 read，超出就等距抽样（等价 IGV 的 downsampling）
+    // 请求整个可见窗口，不传 max，也不以 padding 放大 BAM 读取范围。
     for (const t of S.bw.list) {
       if (!alignActive(t)) continue;
-      const prev = P.alignData[t.id];
-      if (!force && prev && prev.chrom === view.chrom
-        && prev.start <= need.start && prev.end >= need.end) continue;
-      jobs.push(api('loaded/bam', { track: t.id, db: S.asm.id, chrom: view.chrom,
-        s: need.start, e: need.end, max: 1500 }, { signal: sig })
+      if ((view.end - view.start) > alignmentVisibility(t)) {
+        P.alignData[t.id] = { chrom: view.chrom, ...alignNeed, loaded: false,
+          reads: null, tooWide: true, total: 0, reason: '放大查看比对（Zoom in to see alignments）' };
+        continue;
+      }
+      if (cached(P.alignData[t.id], alignNeed)) continue;
+      jobs.push(api('loaded/bam', { track: t.id, db: asm.id, chrom: view.chrom,
+        s: alignNeed.start, e: alignNeed.end }, { signal: sig })
         .then((r) => {
+          if (!trackCurrent(t, true)) return;
           P.alignData[t.id] = { chrom: view.chrom, start: r.start, end: r.end,
             reads: r.reads, total: r.total, sampled: r.sampled,
-            hasSeq: r.hasSeq, reason: r.reason || null };
+            loaded: !r.reason && Array.isArray(r.reads), hasSeq: r.hasSeq, reason: r.reason || null };
         })
         .catch((err) => {
-          if (err && err.name === 'AbortError') return;
-          P.alignData[t.id] = { chrom: view.chrom, start: need.start, end: need.end,
+          if (!trackCurrent(t, true) || err?.name === 'AbortError') return;
+          P.alignData[t.id] = { chrom: view.chrom, ...alignNeed, loaded: false, error: true,
             reads: null, reason: T('读取失败：') + err.message };
         }));
     }
     try {
       await Promise.all(jobs);
-    } catch (err) {
-      if (!(err && err.name === 'AbortError')) toast(T('数据加载失败：') + err.message);
-    } finally {      S.pending--;
-      if (S.pending <= 0) setLoading(false);
-      $('#stPerf').textContent = T(`载入 ${(performance.now() - t0).toFixed(0)} ms`);
-      scheduleRender();
+    } finally {
+      releaseLoading();
+      if (current()) {
+        $('#stPerf').textContent = T(`载入 ${(performance.now() - t0).toFixed(0)} ms`);
+        scheduleRender();
+      }
     }
   }
 
@@ -683,7 +869,7 @@
     const row = $('#paneHead');
     if (!box || !row) return;
     const n = paneCount();
-    row.hidden = n === 1;
+    row.hidden = n === 1 || !!S.genomeView;
     if (n === 1) { box.innerHTML = ''; return; }
     if (box.children.length !== n) {
       box.innerHTML = '';
@@ -1371,11 +1557,30 @@
     if (!S.asm) return;
     syncPanes();
     refreshPaneW();   // px() 靠它，必须先于任何绘制
+    const gv = !!S.genomeView;
+    const gtrack = $('#view .track[data-track="genome"]');
+    if (gtrack) gtrack.hidden = !gv;
     for (const name of ['ideogram', 'ruler', 'genes', 'gc', 'seq', 'overview']) {
       const track = $(`.track[data-track="${name}"]`);
       if (!track) continue;
-      track.hidden = !S.tracks[name];
+      track.hidden = gv || !S.tracks[name];
       if (track.hidden) continue;
+    }
+    // 全基因组视野里把信号 / 导入轨道也一起收起，只留一条「所有染色体」的带子；
+    // 例外是多样本 SEG 热图——IGV 的 whole-genome 视图会把 CNV 铺成「染色体 × 样本」整块图
+    for (const el of $$('#view .track[data-bw], #view .track[data-loaded], #view .track[data-align], #view .track[data-junc]')) {
+      const isHeat = el.dataset.bw && (S.bw.list.find((t) => t.id === el.dataset.bw) || {}).heatmap;
+      el.hidden = gv ? !isHeat : el.hidden;
+    }
+    if (gv) {
+      drawGenomeView();
+      drawBwTracks();
+      const sub = $('#gvSub');
+      if (sub) sub.textContent = T(`${(S._gvSlots || []).length} 条`);
+      syncPaneHeads();
+      syncOverviewCtl();
+      updateStatus();
+      return;
     }
     const keep = S.act;
     // 逐面板绘制：切换活动面板上下文，原有绘制函数无需改签名
@@ -1385,6 +1590,7 @@
       if (S.tracks.ruler) drawRuler();
       drawBwTracks();
       drawAlignTracks();
+      drawJunctionTracks();
       drawLoadedTracks();
       if (S.tracks.genes) drawGenes(); else { S._geneToggles = []; }
       if (S.tracks.gc) drawGC();
@@ -1624,6 +1830,25 @@
     scheduleRender();
   }
 
+  /* 「折叠为一行」= IGV 基因轨道的 collapsed 模式（默认）：所有基因挤在第 0 行，
+     重叠就重叠；「分行排布」= packed，重叠的基因逐行往上叠。导入的 GTF 轨道各自记
+     在 S.loaded.pack 里（不在集合里 = 折叠）。 */
+  function geneCollapsed(trackId) {
+    return trackId ? !S.loaded.pack.has(trackId) : S.geneCollapsed !== false;
+  }
+
+  function setGeneCollapsed(trackId, on) {
+    if (trackId) {
+      if (on) S.loaded.pack.delete(trackId); else S.loaded.pack.add(trackId);
+    } else {
+      S.geneCollapsed = !!on;
+    }
+    // 折叠时把逐个展开的记录一起清掉，否则「折叠为一行」之后行数还是很多
+    if (on) setExpandAll(trackId || null, false);
+    savePrefs();
+    scheduleRender();
+  }
+
   // multi-row packing that honours expanded genes (each transcript = 1 row)
   function geneLayout() {
     const w = trackWidth();
@@ -1634,6 +1859,9 @@
     const rowsEnd = [];   // rightmost occupied x per row
     const rowsStart = []; // leftmost occupied x per row (labels may flip left)
     const placed = [];
+    const collapsed = geneCollapsed(null);
+    // 折叠模式下第 0 行留给「所有基因」，被展开的基因从第 1 行开始排
+    if (collapsed) { rowsEnd.push(Infinity); rowsStart.push(-Infinity); }
     for (const g of genes.slice().sort((a, b) => a.start - b.start)) {
       const x1 = px(g.start);
       const x2 = px(g.end);
@@ -1642,9 +1870,10 @@
       const multi = txl.length > 1;
       const expanded = multi && isExpanded(g);
 
-      // expand toggle: right of the gene when it fits, otherwise in the left gutter
+      // 折叠模式不画 +/−（一行里挤满了基因，按钮会压在别的基因上抢点击）；
+      // 已经展开的基因仍然保留按钮，方便再收起来。
       let tgl = null;
-      if (multi) {
+      if (multi && (!collapsed || expanded)) {
         const TGL = 12, GAP = 4;
         const rx = Math.max(0, x2) + GAP;
         if (rx + TGL <= w - 2) tgl = { x: rx, w: TGL, h: TGL, left: false };
@@ -1665,6 +1894,11 @@
       const tglReserve = tgl && !tgl.left ? tgl.w + 8 : 0;
       const need = Math.max(x2, x1 + 3) + lw + tglReserve;
       const span = expanded ? txl.length : 1;
+      // 折叠模式：没展开的基因一律放第 0 行，不参与排布（IGV 的 collapsed）
+      if (collapsed && !expanded) {
+        placed.push({ g, x1, x2, r: 0, span: 1, label, lw, need, tgl, expanded: false, txl });
+        continue;
+      }
       // a left-side toggle needs clearance from the previous gene in the row
       const minGap = tgl && tgl.left ? 18 : 6;
       // Clamp the threshold at 0: a gene that starts left of the viewport has
@@ -2699,6 +2933,121 @@
     return chroms[i][0];
   }
 
+  /* ------------------------------------------------------ 全基因组视野（IGV） */
+  /* 一条染色体一格，宽度按长度比例分配；格子里画细胞遗传带（复用 S.bands）。
+     点格子 = 看整条染色体；这是染色体下拉里「全部染色体」的落点。 */
+  const GV = { pad: 12, gap: 4, bandH: 34, nameH: 16 };
+
+  function genomeSlots() {
+    const chroms = primaryChroms()
+      .map((c) => ({ name: c, len: S.asm.chroms[c] || 0 }))
+      .filter((c) => c.len > 0);
+    const total = chroms.reduce((s, c) => s + c.len, 0) || 1;
+    return { chroms, total };
+  }
+
+  function genomeLayout(w) {
+    const { chroms, total } = genomeSlots();
+    const avail = Math.max(60, w - GV.pad * 2 - GV.gap * Math.max(0, chroms.length - 1));
+    let x = GV.pad;
+    const slots = [];
+    for (const c of chroms) {
+      const sw = Math.max(5, (c.len / total) * avail);
+      slots.push({ name: c.name, len: c.len, x, w: sw });
+      x += sw + GV.gap;
+    }
+    return { slots, total };
+  }
+
+  function drawGenomeView() {
+    const canvas = paneCanvas('.track[data-track="genome"]');
+    if (!canvas || !S.asm) return;
+    const view = $('#view');
+    // 画布高度取可视区一半（有上下限），内容垂直居中：
+    // 只有一条带子时既不显得像没画完，也不会留下一大片空白
+    const vh = view ? view.clientHeight : 420;
+    // 下面还要放 SEG 全基因组热图时，染色体带子只占一条，别把屏幕吃光
+    const hasHeat = S.bw.list.some((t) => t.heatmap && bwActive(t));
+    const H = hasHeat ? 132 : Math.max(200, Math.min(420, Math.round(vh * 0.5)));
+    const { ctx, w } = fitCanvas(canvas, H);
+    const { slots, total } = genomeLayout(w);
+    S._gvSlots = slots;
+    const blockH = GV.bandH + GV.nameH + 6;
+    const y0 = Math.max(10, Math.round((H - blockH) / 2));
+    const y = y0;
+    const yb = y + GV.bandH;
+    const outline = S.theme === 'dark' ? '#808080' : '#000000';
+    const dpr = S.dpr || 1;
+    const ln = 1 / dpr;
+    const snap = (v) => Math.round(v * dpr) / dpr;
+
+    // 顶部的总览说明
+    ctx.textBaseline = 'middle';
+    ctx.font = '11px ui-monospace, Menlo, Consolas, monospace';
+    ctx.fillStyle = C.muted;
+    const head = T(`${S.asm.id} · ${(total / 1e9).toFixed(2)} Gb · ${slots.length} 条染色体 · 点染色体看整条`);
+    ctx.fillText(head, GV.pad, y - 16);
+
+    for (const s of slots) {
+      const bands = (S.bands || {})[s.name] || [];
+      const x0 = snap(s.x);
+      const bw = Math.max(ln, snap(s.x + s.w) - x0);
+      const sx = (bp) => x0 + (bp / s.len) * bw;
+      if (!bands.length) {
+        ctx.fillStyle = C.grid;
+        ctx.globalAlpha = 0.5;
+        ctx.fillRect(x0, y, bw, GV.bandH);
+        ctx.globalAlpha = 1;
+      } else {
+        for (const [bs, be, bname, stain] of bands) {
+          const a = snap(sx(bs));
+          const b = snap(sx(be));
+          const wband = Math.max(ln, b - a);
+          if (stain === 'acen') {
+            const pArm = String(bname || '').startsWith('p');
+            const cy = (y + yb) / 2;
+            ctx.beginPath();
+            if (pArm) { ctx.moveTo(a, yb); ctx.lineTo(a, y); ctx.lineTo(b, cy); }
+            else { ctx.moveTo(b, yb); ctx.lineTo(b, y); ctx.lineTo(a, cy); }
+            ctx.closePath();
+            ctx.fillStyle = '#b20000';
+            ctx.fill();
+            continue;
+          }
+          const m = /^gpos(\d+)$/.exec(stain || '');
+          const shade = m ? Math.round(255 - (Number(m[1]) / 100) * 255) : null;
+          ctx.fillStyle = shade === null ? '#ffffff' : `rgb(${shade},${shade},${shade})`;
+          ctx.fillRect(a, y, wband, GV.bandH);
+          // 带子窄到 1 px 以下时不要描边：几十条黑边叠起来会把整条染色体糊成黑块
+          if (wband >= 2) {
+            ctx.strokeStyle = outline;
+            ctx.lineWidth = ln;
+            ctx.strokeRect(a + ln / 2, y + ln / 2, Math.max(ln, wband - ln), GV.bandH - ln);
+          }
+        }
+      }
+      ctx.lineWidth = 1;
+      // 染色体名（窄格子里放不下就不画，悬停有提示）
+      ctx.font = '10.5px ui-monospace, Menlo, Consolas, monospace';
+      const label = s.name.replace(/^chr/, '');
+      const tw = ctx.measureText(label).width;
+      if (tw + 4 <= s.w) {
+        ctx.fillStyle = C.text;
+        ctx.fillText(label, x0 + (s.w - tw) / 2, yb + 10);
+      }
+    }
+    // 底部提示
+    ctx.font = '10.5px system-ui, sans-serif';
+    ctx.fillStyle = C.dim;
+    ctx.fillText(T('点击任意染色体进入该条染色体的完整视野'), GV.pad, yb + GV.nameH + 14);
+  }
+
+  function genomeHit(x) {
+    const slots = S._gvSlots || [];
+    for (const s of slots) if (x >= s.x - GV.gap / 2 && x <= s.x + s.w + GV.gap / 2) return s;
+    return null;
+  }
+
   /* ------------------------------------------------------ find motif（IGV） */
   /* 对齐 IGV 的 Tools → Find Motif：
        · 输入按行拆，每行一套 pattern，各生成「正链 / 负链」两条轨道；
@@ -2980,10 +3329,20 @@
   // 包括轨道顺序、标签列宽度、展开的转录本、隐藏的轨道、配色/分组/基因配色、
   // 以及上次的分屏布局。想改回「记住上次」把它设成 false 即可。
   const FRESH_EACH_LAUNCH = true;
+  // 上面这一整份重置里，只有一项要跨启动保留：导入轨道的显示/隐藏。
+  // 否则用户导入的 SEG 热图、bigWig 下次打开全是关的，看起来像「导入没成功」。
+  const KEEP_ACROSS_LAUNCH = ['bwOnSaved'];
+  let keptPrefs = null;   // resetStoredPrefs 里抢出来的、要延续到下次启动的几项
 
   function resetStoredPrefs() {
     if (!FRESH_EACH_LAUNCH) return;
     try {
+      const raw = localStorage.getItem(PREFS_KEY);
+      if (raw) {
+        const p = JSON.parse(raw) || {};
+        keptPrefs = {};
+        for (const k of KEEP_ACROSS_LAUNCH) if (p[k] !== undefined) keptPrefs[k] = p[k];
+      }
       localStorage.removeItem(PREFS_KEY);
       localStorage.removeItem('orbit.expLabels');
       // 改名前的旧键（igvlocal.*）顺手清掉，免得老机器上留一堆死数据
@@ -3012,6 +3371,7 @@
         if (Array.isArray(p.loadedExpanded)) S.loaded.expanded = new Set(p.loadedExpanded);
         if (Array.isArray(p.loadedFlip)) S.loaded.flip = new Set(p.loadedFlip);
         if (Array.isArray(p.bwHidden)) S.bw.hidden = new Set(p.bwHidden);
+        if (p.bwOnSaved && typeof p.bwOnSaved === 'object') S.bw.onSaved = p.bwOnSaved;
         if (Number.isFinite(p.labelW)) S.labelW = p.labelW;
         if (Array.isArray(p.trackOrder)) S.trackOrder = p.trackOrder.filter((k) => typeof k === 'string');
         if (typeof p.seqFlip === 'boolean') S.seqFlip = p.seqFlip;
@@ -3035,6 +3395,10 @@
         if (sp && typeof sp === 'object') S._splitPref = sp;
       }
     } catch { /* ignore */ }
+    // FRESH_EACH_LAUNCH 清掉的那份偏好里，只有导入轨道的显示状态继续沿用
+    if (keptPrefs && keptPrefs.bwOnSaved && typeof keptPrefs.bwOnSaved === 'object') {
+      S.bw.onSaved = keptPrefs.bwOnSaved;
+    }
   }
 
   function savePrefs() {
@@ -3046,6 +3410,7 @@
         loadedExpanded: [...S.loaded.expanded],
         loadedFlip: [...S.loaded.flip],
         bwHidden: [...S.bw.hidden],
+        bwOnSaved: S.bw.onSaved,
         labelW: S.labelW,
         trackOrder: S.trackOrder,
         seqFlip: !!S.seqFlip,
@@ -3075,7 +3440,36 @@
       log: !!c.log,
       // 比对视图专用：按正负链给 read 上色（IGV 的 Color by → strand）
       strandColor: !!c.strandColor,
+      junctionVisible: c.junctionVisible !== false,
+      alignDisplay: ['collapsed', 'expanded', 'squished', 'full'].includes(c.alignDisplay) ? c.alignDisplay : 'squished',
+      experimentType: ['auto', 'other', 'rna', 'third_gen'].includes(c.experimentType) ? c.experimentType : 'auto',
+      visibilityWindowKb: Number.isFinite(c.visibilityWindowKb) && c.visibilityWindowKb > 0
+        ? c.visibilityWindowKb : null,
+      // 拷贝数热图：增益色 / 缺失色 / 振幅（0 = 自动）
+      heatHigh: c.heatHigh || '',
+      heatLow: c.heatLow || '',
+      heatMax: Number.isFinite(c.heatMax) ? c.heatMax : 0,
+      // 中性色（值为 0 的格子）：空 = 自动（面板色掺 7% 前景色）
+      heatMid: c.heatMid || '',
+      // 拷贝数热图布局：row = 样本为行（默认）；col = 样本为列（转置，常规 CNV 矩阵）；
+      // none = 紧凑，不画样本名（悬停看）
+      segLayout: c.segLayout === 'col' ? 'col' : (c.segLayout === 'none' ? 'none' : 'row'),
+      segNameW: Number.isFinite(c.segNameW) ? c.segNameW : 0,   // 0 = 按最长样本名自动
+      // 是否显示左侧样本名列（默认显示）；关掉后热图多出一列的宽度
+      segNames: c.segNames !== false,
+      // 是否在热图下方显示 CNV Summary 汇总行（默认显示）
+      segSummary: c.segSummary !== false,
+      // 不想看的样本（按 d.rows 下标）：空数组 = 全部显示，这是默认
+      segHide: Array.isArray(c.segHide) ? c.segHide.filter((n) => Number.isInteger(n) && n >= 0) : [],
     };
+  }
+
+  // 勾选后的可见样本下标；样本顺序跟 d.rows 一致（后端按 t.samples 顺序出行）
+  function segVisible(cfg, n) {
+    const off = new Set(cfg.segHide || []);
+    const idx = [];
+    for (let i = 0; i < n; i++) if (!off.has(i)) idx.push(i);
+    return idx;
   }
 
   function setBwCfg(tid, patch) {
@@ -3129,6 +3523,22 @@
     }
     const d = S.bw.data[t.id];
     if (!d || !d.values) return { lo: 0, hi: 1 };
+    // 拷贝数（SEG）：纵轴必须关于 0 对称。否则 +1.2 的增益和 −0.6 的缺失
+    // 会画成一样高，一眼看不出方向 —— IGV 的 copy-number 轨也是这样做的。
+    // 振幅封顶 5（log2 5 ≈ 32 拷贝）：SEG 里 −29.9 这种值只出现在「只有两三个
+    // 探针」的区间，是纯合缺失的假信号；不封顶的话它一个人就能把整条轨道压成一条线。
+    if (d.diverging || t.diverging) {
+      const amp = Math.min(Math.max(d.peak || 0, Math.abs(d.trough || 0)), 5);
+      // 刻度用更细的档位：niceMax 只有 1/2/5 三档，2.87 会被抬到 5，
+      // 柱子只剩一半高，看着像没数据。拷贝数常用档位是 0.5 / 1 / 1.5 / 2 / 3 …
+      const LADDER = [0.2, 0.4, 0.6, 0.8, 1, 1.25, 1.5, 2, 2.5, 3, 3.5, 4, 5];
+      let m = 1;
+      if (amp > 0) {
+        const want = amp * 1.08;
+        m = LADDER.find((s) => want <= s) || 5;
+      }
+      return { lo: -m, hi: m };
+    }
     const peak = d.peak || 0;
     // peak 为 0（窗口里全是 0）时不能拿 1e-9 当底：niceMax 会算出 2e-9，
     // 刻度就变成 0 – 2.0e-9 这种没法读的东西。回落成 0–1 更符合直觉。
@@ -3160,8 +3570,8 @@
     popTarget = null;
   }
 
-  function openTrackPop(anchor, kind, id) {
-    popTarget = { kind, id };
+  function openTrackPop(anchor, kind, id, detail = null) {
+    popTarget = { kind, id, detail };
     const pop = $('#tpop');
     renderPop();
     pop.hidden = false;
@@ -3174,6 +3584,49 @@
     if (top + h > window.innerHeight - 8) top = Math.max(8, window.innerHeight - h - 8);
     pop.style.left = left + 'px';
     pop.style.top = top + 'px';
+    bindTrackPopDrag(pop);
+  }
+
+  // 弹窗内容变高以后（例如展开「全部内含子」）要重新贴回窗口内，
+  // 否则底部连同「重置 / 完成」一起被切在窗口外。
+  function clampTrackPop() {
+    const pop = $('#tpop');
+    if (!pop || pop.hidden) return;
+    const r = pop.getBoundingClientRect();
+    const left = Math.max(8, Math.min(r.left, Math.max(8, window.innerWidth - r.width - 8)));
+    const top = Math.max(8, Math.min(r.top, Math.max(8, window.innerHeight - r.height - 8)));
+    if (left !== r.left) pop.style.left = left + 'px';
+    if (top !== r.top) pop.style.top = top + 'px';
+  }
+
+  function bindTrackPopDrag(pop) {
+    if (pop._dragBound) return;
+    pop._dragBound = true;
+    let drag = null;
+    pop.addEventListener('pointerdown', (e) => {
+      const header = e.target.closest('h5');
+      if (e.button !== 0 || !header || !pop.contains(header)) return;
+      const r = pop.getBoundingClientRect();
+      drag = { id: e.pointerId, dx: e.clientX - r.left, dy: e.clientY - r.top };
+      pop.setPointerCapture(e.pointerId);
+      e.preventDefault(); e.stopPropagation();
+    });
+    pop.addEventListener('pointermove', (e) => {
+      if (!drag || drag.id !== e.pointerId) return;
+      const r = pop.getBoundingClientRect();
+      const left = Math.max(8, Math.min(Math.max(8, window.innerWidth - r.width - 8), e.clientX - drag.dx));
+      const top = Math.max(8, Math.min(Math.max(8, window.innerHeight - 32), e.clientY - drag.dy));
+      pop.style.left = left + 'px'; pop.style.top = top + 'px';
+      e.preventDefault();
+    });
+    const end = (e) => {
+      if (!drag || drag.id !== e.pointerId) return;
+      drag = null;
+      if (pop.hasPointerCapture(e.pointerId)) pop.releasePointerCapture(e.pointerId);
+    };
+    pop.addEventListener('pointerup', end);
+    pop.addEventListener('pointercancel', end);
+    pop.addEventListener('lostpointercapture', () => { drag = null; });
   }
 
   function colorRow(current, onPick) {
@@ -3210,6 +3663,8 @@
     const pop = $('#tpop');
     if (!popTarget) { pop.hidden = true; return; }
     pop.innerHTML = '';
+    if (popTarget.kind === 'align') return renderPopAlign(pop, popTarget.id);
+    if (popTarget.kind === 'junc') return renderPopJunc(pop, popTarget.id);
     if (popTarget.kind === 'bw') return renderPopBw(pop, popTarget.id);
     if (popTarget.kind === 'genes') return renderPopGenes(pop);
     if (popTarget.kind === 'lgenes') return renderPopGenes(pop, popTarget.id);
@@ -3254,9 +3709,202 @@
     return row;
   }
 
+  // 多样本 SEG 的热图设置：增益 / 缺失两套颜色 + 振幅
+  function renderPopSegHeat(pop, tid, cfg, track) {
+    popHead(pop, T(`拷贝数热图 · ${tid}`));
+
+    // 布局：样本为行（默认）/ 样本为列（转置）/ 紧凑（不画名字）
+    const layRow = popRow(pop, T('布局'));
+    const mkLay = (text, val, title) => {
+      const b = document.createElement('button');
+      b.className = 'btn' + (cfg.segLayout === val ? ' pri' : '');
+      b.textContent = T(text);
+      b.title = T(title);
+      b.onclick = () => { setBwCfg(tid, { segLayout: val }); renderPop(); };
+      return b;
+    };
+    layRow.append(
+      mkLay('样本为行', 'row', '一行一个样本，样本名在左侧（默认）'),
+      mkLay('样本为列', 'col', '一列一个样本（常规 CNV 矩阵的摆法），样本名在顶部'),
+      mkLay('紧凑', 'none', '不画样本名，轨道更矮；点轨道看详情'),
+    );
+
+    popSep(pop);
+    // 样本名列：和侧栏那个「Aa」按钮是同一项设置
+    const nmRow = popRow(pop, T('样本名列'));
+    const nmChk = document.createElement('input');
+    nmChk.type = 'checkbox';
+    nmChk.checked = cfg.segNames !== false;
+    nmChk.onchange = () => { setBwCfg(tid, { segNames: nmChk.checked }); };
+    const nmTxt = document.createElement('span');
+    nmTxt.style.cssText = 'font-size:11.5px;color:var(--text-dim)';
+    nmTxt.textContent = T('在热图左侧单独占一列');
+    nmRow.append(nmChk, nmTxt);
+
+    const smRow = popRow(pop, T('CNV Summary 行'));
+    const smChk = document.createElement('input');
+    smChk.type = 'checkbox';
+    smChk.checked = cfg.segSummary !== false;
+    smChk.onchange = () => { setBwCfg(tid, { segSummary: smChk.checked }); };
+    const smTxt = document.createElement('span');
+    smTxt.style.cssText = 'font-size:11.5px;color:var(--text-dim)';
+    smTxt.textContent = T('热图下方汇总所有选中样本');
+    smRow.append(smChk, smTxt);
+
+    // 显示哪些样本：默认全选。取消勾选的样本既不画行也不画列，
+    // 轨道高度（样本为行/紧凑）和振幅定标都只按勾上的样本算。
+    popSep(pop);
+    const dNow = S.bw.data[tid];
+    const allNames = (dNow && dNow.samples) || track.sampleNames || [];
+    const nAll = Math.max(track.samples || 0, allNames.length, 0);
+    let off = new Set(cfg.segHide || []);
+    const head = document.createElement('div');
+    head.className = 'smp-head';
+    const hl = document.createElement('span');
+    hl.className = 'lbl';
+    hl.textContent = T('显示样本');
+    const cnt = document.createElement('span');
+    cnt.className = 'cnt';
+    const syncCnt = () => { cnt.textContent = `${nAll - off.size}/${nAll}`; };
+    syncCnt();
+    const mkAct = (text, fn) => {
+      const b = document.createElement('button');
+      b.className = 'btn';
+      b.textContent = T(text);
+      b.onclick = fn;
+      return b;
+    };
+    head.append(hl, cnt, mkAct('全选', () => { setBwCfg(tid, { segHide: [] }); renderPop(); }),
+      mkAct('全不选', () => {
+        const all = [];
+        for (let i = 0; i < nAll; i++) all.push(i);
+        setBwCfg(tid, { segHide: all });
+        renderPop();   // 批量改要重建浮层，否则勾选框还停在旧状态
+      }));
+    pop.appendChild(head);
+
+    const list = document.createElement('div');
+    list.className = 'smp-list';
+    for (let i = 0; i < nAll; i++) {
+      const nm = String(allNames[i] || `#${i + 1}`);
+      const lab = document.createElement('label');
+      lab.className = 'smp' + (off.has(i) ? ' off' : '');
+      lab.title = nm;
+      const cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.checked = !off.has(i);
+      cb.onchange = () => {
+        const next = new Set(off);
+        if (cb.checked) next.delete(i); else next.add(i);
+        off = next;
+        lab.classList.toggle('off', !cb.checked);
+        syncCnt();
+        setBwCfg(tid, { segHide: [...next].sort((a, b) => a - b) });
+      };
+      const sp = document.createElement('span');
+      sp.textContent = nm;
+      lab.append(cb, sp);
+      list.appendChild(lab);
+    }
+    pop.appendChild(list);
+    if (!nAll) { head.hidden = true; list.hidden = true; }
+
+    popSep(pop);
+    const gRow = popRow(pop, T('增益颜色'));
+    gRow.appendChild(colorRow(cfg.heatHigh || C.cnvGain, (c) => setBwCfg(tid, { heatHigh: c })));
+    const lRow = popRow(pop, T('缺失颜色'));
+    lRow.appendChild(colorRow(cfg.heatLow || C.cnvLoss, (c) => setBwCfg(tid, { heatLow: c })));
+    // 中性色：值为 0（log2 ratio ≈ 0）时用的颜色
+    const mRow = popRow(pop, T('零值颜色'));
+    mRow.appendChild(colorRow(cfg.heatMid || rgbHex(segMidRGB()), (c) => setBwCfg(tid, { heatMid: c })));
+    popSep(pop);
+    const aRow = popRow(pop, T('振幅 ±'));
+    const inp = document.createElement('input');
+    inp.type = 'number';
+    inp.step = 'any';
+    inp.min = '0';
+    inp.value = cfg.heatMax > 0 ? cfg.heatMax : '';
+    inp.placeholder = T('自动');
+    inp.onchange = () => {
+      const v = parseFloat(inp.value);
+      setBwCfg(tid, { heatMax: Number.isFinite(v) && v > 0 ? v : 0 });
+    };
+    aRow.appendChild(inp);
+    const hint = document.createElement('div');
+    hint.className = 'hint';
+    hint.textContent = T('振幅留空时按整个文件的 |log2 比值| 97 分位自动定标，缩放时颜色不变。');
+    pop.appendChild(hint);
+
+    // 删除该轨道：SEG 走的是热图这一套浮层，以前漏了这个按钮，
+    // 结果齿轮 / 右键里只有「重置 / 完成」，导入的 SEG 看起来删不掉。
+    popSep(pop);
+    const delBtn = document.createElement('button');
+    delBtn.className = 'btn danger';
+    delBtn.textContent = T('删除该轨道');
+    delBtn.style.width = '100%';
+    delBtn.onclick = () => { bwDelete([tid]); };
+    pop.appendChild(delBtn);
+
+    popFoot(pop, () => {
+      setBwCfg(tid, { heatHigh: '', heatLow: '', heatMid: '', heatMax: 0, segLayout: 'row', segNameW: 0, segHide: [] });
+      renderPop();
+    });
+  }
+
+  function renderPopJunc(pop, tid) {
+    popHead(pop, 'Junctions');
+    const hint = document.createElement('div');
+    hint.className = 'hint';
+    hint.textContent = T('仅隐藏当前子轨道，不删除 BAM 文件。');
+    pop.appendChild(hint);
+    const row = document.createElement('label');
+    row.className = 'row tight';
+    const cb = document.createElement('input');
+    cb.type = 'checkbox'; cb.checked = bwCfg(tid).junctionVisible;
+    cb.onchange = () => { setBwCfg(tid, { junctionVisible: cb.checked }); ensureBwTrackEls(); clearJunctionTrack(tid); };
+    const text = document.createElement('span'); text.textContent = T('显示 Junctions');
+    row.append(cb, text); pop.appendChild(row);
+    const remove = document.createElement('button');
+    remove.className = 'btn'; remove.textContent = T('移除当前轨道');
+    remove.onclick = () => { setBwCfg(tid, { junctionVisible: false }); clearJunctionTrack(tid); ensureBwTrackEls(); closeTrackPop(); };
+    pop.appendChild(remove);
+  }
+
+  function renderPopAlign(pop, tid) {
+    popHead(pop, 'Alignments');
+    const cfg = bwCfg(tid);
+    const remove = document.createElement('button');
+    remove.className = 'btn'; remove.textContent = T('移除当前轨道');
+    remove.onclick = () => { S.bw.on[tid + ALIGN_SUF] = false; ensureBwTrackEls(); renderBwList(); closeTrackPop(); scheduleRender(); };
+    remove.title = T('仅隐藏当前子轨道，不删除 BAM 文件。');
+    pop.appendChild(remove);
+    for (const [value, title] of [['collapsed', 'Collapsed'], ['expanded', 'Expanded'], ['squished', 'Squished'], ['full', 'Full']]) {
+      const row = document.createElement('label');
+      row.className = 'row tight';
+      const radio = document.createElement('input');
+      radio.type = 'radio';
+      radio.name = 'align-display-' + tid;
+      radio.checked = cfg.alignDisplay === value;
+      radio.onchange = () => {
+        setBwCfg(tid, { alignDisplay: value });
+        for (const P of S.panels) {
+          const d = P.alignData[tid];
+          if (d) { delete d.readLayout; delete d.alignScroll; }
+        }
+        closeTrackPop();
+      };
+      const text = document.createElement('span');
+      text.textContent = title;
+      row.append(radio, text);
+      pop.appendChild(row);
+    }
+  }
+
   function renderPopBw(pop, tid) {
     const cfg = bwCfg(tid);
     const d = S.bw.data[tid];
+    const trk = S.bw.list.find((t) => t.id === tid) || {};
+    if (trk.heatmap) return renderPopSegHeat(pop, tid, cfg, trk);
     popHead(pop, T(`信号轨道 · ${tid}`));
 
     // colour
@@ -3336,6 +3984,40 @@
     // BAM 才有比对视图，按链着色只对它有意义（IGV 的 Color by → strand）
     const bt = S.bw.list.find((x) => x.id === tid);
     if (isBam(bt)) {
+      popSep(pop);
+      const experimentRow = popRow(pop, T('实验类型'));
+      const experiment = document.createElement('select');
+      for (const [value, label] of [['auto', '自动识别'], ['other', '普通'], ['rna', 'RNA'], ['third_gen', '第三代测序']]) {
+        const option = document.createElement('option');
+        option.value = value; option.textContent = T(label); experiment.appendChild(option);
+      }
+      experiment.value = cfg.experimentType;
+      experiment.onchange = () => {
+        setBwCfg(tid, { experimentType: experiment.value });
+        resetAlignmentWindow(tid);
+        renderPop();
+      };
+      experimentRow.appendChild(experiment);
+      const windowRow = popRow(pop, T('最大窗口（kb）'));
+      const windowInput = document.createElement('input');
+      windowInput.type = 'number'; windowInput.min = '0'; windowInput.step = 'any';
+      windowInput.placeholder = T('默认');
+      windowInput.value = cfg.visibilityWindowKb ?? '';
+      windowInput.onchange = () => {
+        const value = Number(windowInput.value);
+        if (windowInput.value.trim() && (!Number.isFinite(value) || value <= 0)) {
+          windowInput.value = cfg.visibilityWindowKb ?? '';
+          return;
+        }
+        setBwCfg(tid, { visibilityWindowKb: windowInput.value.trim() ? value : null });
+        resetAlignmentWindow(tid);
+        renderPop();
+      };
+      windowRow.appendChild(windowInput);
+      const windowHint = document.createElement('div');
+      windowHint.className = 'hint';
+      windowHint.textContent = T(`当前生效 ${alignmentVisibility(bt) / 1000} kb；覆盖度、比对和剪接共用。留空按实验类型：普通 30、RNA 300、第三代 1000 kb；自动识别未知时按普通。`);
+      pop.appendChild(windowHint);
       const sRow = document.createElement('label');
       sRow.className = 'row tight';
       const sCb = document.createElement('input');
@@ -3425,6 +4107,7 @@
       delete S.bw.cfg[tid];
       savePrefs();
       renderBwList();
+      if (isBam(trk)) resetAlignmentWindow(tid);
       scheduleRender();
       renderPop();
     });
@@ -3444,25 +4127,182 @@
     scheduleRender();
   }
 
+  // 编号来自当前转录本模型，CDS/UTR 片段由 exon 与 CDS 范围相交得到。
+  function geneFeatureDetails(g, tx, bp) {
+    if (!tx || bp < tx.start || bp >= tx.end) return null;
+    const exons = (tx.exons || []).filter((e) => e[1] > e[0]).slice().sort((a, b) => a[0] - b[0]);
+    const introns = [];
+    for (let i = 1; i < exons.length; i++) {
+      if (exons[i - 1][1] < exons[i][0]) introns.push([exons[i - 1][1], exons[i][0]]);
+    }
+    const coding = Number.isFinite(tx.cdsStart) && Number.isFinite(tx.cdsEnd) && tx.cdsEnd > tx.cdsStart;
+    const cds = [], low = [], high = [];
+    if (coding) {
+      for (const [s, e] of exons) {
+        if (Math.max(s, tx.cdsStart) < Math.min(e, tx.cdsEnd)) cds.push([Math.max(s, tx.cdsStart), Math.min(e, tx.cdsEnd)]);
+        if (s < Math.min(e, tx.cdsStart)) low.push([s, Math.min(e, tx.cdsStart)]);
+        if (Math.max(s, tx.cdsEnd) < e) high.push([Math.max(s, tx.cdsEnd), e]);
+      }
+    }
+    const reverse = g.strand === '-';
+    const features = [];
+    const add = (kind, intervals) => {
+      intervals.forEach(([start, end], i) => {
+        if (bp >= start && bp < end) features.push({ kind, number: reverse ? intervals.length - i : i + 1, total: intervals.length, start, end });
+      });
+    };
+    add('exon', exons);
+    add('intron', introns);
+    add('CDS', cds);
+    add('5UTR', reverse ? high : low);
+    add('3UTR', reverse ? low : high);
+    const intronList = introns.map(([start, end], i) => ({
+      kind: 'intron', number: reverse ? introns.length - i : i + 1,
+      total: introns.length, start, end,
+    })).sort((a, b) => a.number - b.number);
+    return { geneName: g.name || '', geneId: g.id || g.geneId || g.gene_id || '', txId: tx.name || '', strand: g.strand || '.', coding, features, introns: intronList };
+  }
+
+  function geneDetailsAt(x, y, track = null, pid = S.act) {
+    const bp = Math.floor(bpAt(x));
+    const layout = track ? { placed: placedForPane(track, pid) } : geneLayout();
+    const rowH = track ? LROW : ROW_H;
+    const entries = [];
+    for (const p of layout.placed) {
+      if (layout.maxRows != null && p.r >= layout.maxRows) continue;
+      const row = Math.floor((y - 6) / rowH) - p.r;
+      if (row < 0 || row >= p.span || bp < p.g.start || bp >= p.g.end) continue;
+      let txs = p.txl || p.g.tx || [];
+      if (p.expanded) {
+        const tx = track ? loadedTxAt({ _placedByPane: { [pid]: [p] } }, x, y, pid)
+          : txs[txs.length === 1 ? 0 : txIndexAt(p.g, y)];
+        txs = tx ? [tx] : [];
+      }
+      const matches = txs.map((tx) => geneFeatureDetails(p.g, tx, bp)).filter(Boolean);
+      if (matches.length) entries.push(...matches);
+      else if (!p.expanded) entries.push({ geneName: p.g.name || '', geneId: p.g.id || p.g.geneId || p.g.gene_id || '', txId: '', strand: p.g.strand || '.', features: [] });
+    }
+    return { chrom: S.view.chrom, bp, entries };
+  }
+
+  function geneDetailsForEvent(e, track = null) {
+    const pane = eventPane(e);
+    if (!pane.rect || !pane.el || !pane.el.querySelector('canvas')) return null;
+    const x = e.clientX - pane.rect.left;
+    const y = e.clientY - pane.rect.top;
+    if (x < 0 || x >= pane.rect.width || y < 0 || y >= pane.rect.height) return null;
+    return withPanel(pane.idx, () => geneDetailsAt(x, y, track, pane.idx));
+  }
+
+  function geneFeatureHoverText(detail) {
+    if (!detail || !detail.entries.length) return '';
+    return detail.entries.map(entry => {
+      const intron = entry.features.find(f => f.kind === 'intron');
+      const name = `${entry.geneName} · ${entry.txId}`;
+      if (!intron) return name;
+      return name + ' · ' + T('内含子') + ' ' + T(`第 ${intron.number} 个 / 共 ${intron.total} 个`) +
+        ` · ${detail.chrom}:${fmt(intron.start + 1)}–${fmt(intron.end)} · ${fmt(intron.end - intron.start)} bp`;
+    }).join('\n');
+  }
+
+  function renderGeneDetails(pop, detail) {
+    if (!detail) return;
+    popHead(pop, T('基因位置详情'));
+    const position = document.createElement('div');
+    position.textContent = T('鼠标位置（1 基）') + ': ' + detail.chrom + ':' + fmt(detail.bp + 1);
+    pop.appendChild(position);
+    const list = document.createElement('div');
+    // 内含子清单也在这块滚动区里；260px 只够三四条，展开后基本看不到内容，
+    // 所以高度跟着窗口走，展开时再把清单滚进可视范围。
+    list.style.cssText = 'max-height:clamp(200px,42vh,560px);overflow:auto;overflow-wrap:anywhere;font-size:11.5px';
+    pop.appendChild(list);
+    const featureLabels = { exon: '外显子', intron: '内含子', CDS: 'CDS 片段', '5UTR': '5′ UTR 片段', '3UTR': '3′ UTR 片段' };
+    for (const entry of detail.entries) {
+      const block = document.createElement('div');
+      block.style.cssText = 'padding:7px 0;border-bottom:1px solid var(--border-soft)';
+      const add = (label, value) => {
+        const line = document.createElement('div');
+        line.textContent = T(label) + ': ' + value;
+        block.appendChild(line);
+      };
+      add('基因名称', entry.geneName || T('未提供'));
+      add('基因 ID', entry.geneId || T('未提供'));
+      add('转录本 ID', entry.txId || T('此位置无转录本'));
+      add('链方向', entry.strand);
+      for (const f of entry.features) {
+        add(featureLabels[f.kind], T(`第 ${f.number} 个 / 共 ${f.total} 个`));
+        add('位置区间（1 基，含两端）', `${detail.chrom}:${fmt(f.start + 1)}–${fmt(f.end)}`);
+        add('长度', `${fmt(f.end - f.start)} bp`);
+      }
+      if (entry.introns) {
+        add('内含子总数', String(entry.introns.length));
+        if (entry.introns.length) {
+          const intronBox = document.createElement('details');
+          intronBox.open = entry.features.some(f => f.kind === 'intron');
+          const summary = document.createElement('summary');
+          summary.textContent = T('全部内含子：编号、区间与长度');
+          intronBox.appendChild(summary);
+          // 展开后把清单滚到滚动区可视范围内，否则它可能整段落在折叠区外
+          intronBox.addEventListener('toggle', () => {
+            if (!intronBox.open) return;
+            intronBox.scrollIntoView({ block: 'nearest' });
+            // 内容高度要等一次布局才稳定，两层 rAF 后再贴回窗口内
+            requestAnimationFrame(() => requestAnimationFrame(clampTrackPop));
+            setTimeout(clampTrackPop, 80);
+          });
+          for (const intron of entry.introns) {
+            const line = document.createElement('div');
+            line.style.cssText = 'padding:4px 0;overflow-wrap:anywhere';
+            const current = intron.start <= detail.bp && detail.bp < intron.end;
+            if (current) line.style.fontWeight = '700';
+            line.textContent = (current ? T('当前位置') + ' · ' : '') + T('内含子') + ' ' +
+              T(`第 ${intron.number} 个 / 共 ${intron.total} 个`) + ' · ' +
+              `${detail.chrom}:${fmt(intron.start + 1)}–${fmt(intron.end)} · ${fmt(intron.end - intron.start)} bp`;
+            intronBox.appendChild(line);
+          }
+          block.appendChild(intronBox);
+        }
+      }
+      if (entry.coding === false) add('编码状态', T('非编码转录本'));
+      list.appendChild(block);
+    }
+    if (!detail.entries.length) list.textContent = T('此位置未命中基因结构');
+    const note = document.createElement('div');
+    note.style.cssText = 'font-size:10.5px;color:var(--text-dim);margin-top:6px';
+    note.textContent = T('编号按转录方向；CDS/UTR 为当前模型推导片段，非原始注释 feature 编号。');
+    pop.appendChild(note);
+    popSep(pop);
+  }
+
   function renderPopGenes(pop, trackId) {
+    renderGeneDetails(pop, popTarget && popTarget.detail);
     const isLoaded = !!trackId;
     popHead(pop, isLoaded ? T(`基因轨道 · ${trackId}`) : T('基因轨道 · RefSeq'));
     const pal = geneTint(trackId || null);
 
-    // 一键展开 / 收起：开了之后平移缩放新出现的基因也保持展开
+    // 显示方式（同 IGV 基因轨道的 Display mode）：折叠为一行 / 分行排布 / 全部展开
     const allOn = expandAllOn(trackId || null);
-    const expRow = popRow(pop, T('转录本'));
-    const bAll = document.createElement('button');
-    bAll.className = 'btn' + (allOn ? ' pri' : '');
-    bAll.textContent = T('全部展开');
-    bAll.title = T('一次展开这条轨道上所有基因的转录本（平移/缩放后新出现的基因也保持展开）');
-    bAll.onclick = () => { setExpandAll(trackId || null, true); renderPop(); };
-    const bNone = document.createElement('button');
-    bNone.className = 'btn' + (allOn ? '' : ' pri');
-    bNone.textContent = T('全部收起');
-    bNone.title = T('所有基因只画合并后的基因模型');
-    bNone.onclick = () => { setExpandAll(trackId || null, false); renderPop(); };
-    expRow.append(bAll, bNone);
+    const isCollapsed = geneCollapsed(trackId || null) && !allOn;
+    const modeRow = popRow(pop, T('显示方式'));
+    const mkMode = (text, on, title, act) => {
+      const b = document.createElement('button');
+      b.className = 'btn' + (on ? ' pri' : '');
+      b.textContent = T(text);
+      b.title = T(title);
+      b.onclick = () => { act(); renderPop(); };
+      return b;
+    };
+    modeRow.append(
+      mkMode('折叠一行', isCollapsed,
+        '所有基因画在同一行，重叠就重叠（同 IGV 的 collapsed，默认）',
+        () => setGeneCollapsed(trackId || null, true)),
+      mkMode('分行排布', !isCollapsed && !allOn,
+        '重叠的基因逐行往上叠，基因多时行数会变多',
+        () => setGeneCollapsed(trackId || null, false)),
+      mkMode('全部展开', allOn,
+        '每个转录本占一行；平移/缩放后新出现的基因也保持展开',
+        () => { setGeneCollapsed(trackId || null, false); setExpandAll(trackId || null, true); }),
+    );
 
     const rows = [
       [T('正链颜色'), 'genesPlus', pal.plus],
@@ -3481,11 +4321,14 @@
       : T('作用于 RefSeq 轨道；导入的 GTF 轨道默认跟随这里的设置。'))
       + (allOn
         ? T(' 当前：全部展开（单独点某个基因的 − 可以只收起它）。')
-        : T(' 当前：按需展开（点基因右侧的 + 展开单个基因）。'));
+        : isCollapsed
+          ? T(' 当前：折叠为一行；点基因看右侧详情，或在详情里单独展开某个基因。')
+          : T(' 当前：分行排布（点基因右侧的 + 展开单个基因）。'));
     pop.appendChild(hint);
     popFoot(pop, () => {
       for (const [, key] of rows) setGeneTint(trackId, key, null, true);
       setExpandAll(trackId || null, false);
+      setGeneCollapsed(trackId || null, true);
       savePrefs();
       scheduleRender();
       renderPop();
@@ -3510,6 +4353,14 @@
   /* ---------------------------------------------------------------- bigWig */
   const BW_COLORS = ['#4a6fa5', '#a8624f', '#4f8a6b', '#7a6a9c', '#b08b3e', '#4f8a99'];
 
+  // 记住导入轨道的勾选状态（内置轨道不记，见 S.bw.onSaved 的注释）
+  function rememberBwOn(id, val) {
+    const t = S.bw.list.find((x) => x.id === id);
+    if (!t || !t.loaded) return;
+    S.bw.onSaved[id] = !!val;
+    savePrefs();
+  }
+
   async function loadBwTracks(opts) {
     const fresh = !!(opts && opts.fresh);
     let tracks = [];
@@ -3519,28 +4370,53 @@
     } catch { /* no bigWig support */ }
     // drop bundled tracks the user removed (persisted in prefs, restorable)
     tracks = tracks.filter((t) => t.loaded || !S.bw.hidden.has(t.id));
+    // 重新拉列表时要保住用户当前手动开关的状态：以前这里直接重建 S.bw.on，
+    // 结果「导入一个新文件」会把之前关掉的轨道全部重新打开（反之也可能被关掉）。
+    const prevOn = S.bw.on || {};
     S.bw.list = tracks;
     S.bw.on = {};
     for (const P of S.panels) { P.bwData = {}; P.alignData = {}; }
     tracks.forEach((t, i) => {
       S.bw.colors[t.id] = BW_COLORS[i % BW_COLORS.length];
-      // 启动时（fresh）自己导入过的轨道一律先不挂出来；刚导入的文件则照常显示
-      S.bw.on[t.id] = t.loaded && fresh ? false : i < 6;
+      // 启动时（fresh）自己导入过的轨道默认也是打开的：用户导入的文件下次打开就该还在，
+      // 全关着会让人以为「导入没成功」。（早期版本是默认关，用户反馈过两次）
+      const savedOn = t.loaded ? S.bw.onSaved[t.id] : undefined;
+      const had = Object.prototype.hasOwnProperty.call(prevOn, t.id);
+      S.bw.on[t.id] = !fresh && had ? !!prevOn[t.id]
+        : (savedOn !== undefined ? !!savedOn : (t.loaded ? true : i < 6));
       // BAM 的比对视图默认打开（想收起来就取消左侧那一行的勾）
-      if (isBam(t) && S.bw.on[alignId(t)] === undefined) S.bw.on[alignId(t)] = true;
+      const aid = alignId(t);
+      const hadAlign = Object.prototype.hasOwnProperty.call(prevOn, aid);
+      if (hadAlign && !fresh) S.bw.on[aid] = !!prevOn[aid];
+      else if (isBam(t) && S.bw.on[aid] === undefined) S.bw.on[aid] = true;
     });
     const sec = $('#bwSec');
     sec.hidden = tracks.length === 0 && S.bw.hidden.size === 0;
     renderBwList();
     ensureBwTrackEls();
+    if (S.asm && S.asm.custom) refreshCustomChroms();
     if (tracks.length) ensureAll(true);
+  }
+
+  // 侧栏用的短标签（完整文件名只出现在画布左列）
+  function bwShortKind(t) {
+    if (t.heatmap) {
+      const n = t.samples || 0;
+      const off = (bwCfg(t.id).segHide || []).length;
+      return off ? `热图 · ${Math.max(0, n - off)}/${n} 样本` : `热图 · ${n} 样本`;
+    }
+    if (isBam(t)) return 'BAM';
+    if (t.format === 'seg') return 'SEG';
+    if (t.format === 'bigwig') return 'bigWig';
+    if (t.format === 'bedgraph') return 'bedGraph';
+    if (t.format === 'wig') return 'WIG';
+    return t.format || '信号';
   }
 
   function renderBwList() {
     const box = $('#bwList');
     if (!box) return;
-    box.innerHTML = '';
-    for (const t of S.bw.list) {
+    box.innerHTML = '';    for (const t of S.bw.list) {
       const ok = bwMatchesAsm(t);
       const cfg = bwCfg(t.id);
       const tag = groupTag(cfg.group);
@@ -3559,6 +4435,7 @@
       cb.disabled = !ok;
       cb.onchange = (e) => {
         S.bw.on[t.id] = e.target.checked;
+        rememberBwOn(t.id, e.target.checked);
         ensureBwTrackEls();
         if (e.target.checked) ensureAll(true);
         scheduleRender();
@@ -3566,15 +4443,57 @@
 
       const sw = document.createElement('span');
       sw.className = 'sw';
-      sw.style.background = cfg.color;
+      // 拷贝数轨道是红/蓝双色，色块也画成上下两半，免得和实际柱子对不上
+      sw.style.background = t.heatmap
+        ? `linear-gradient(90deg, ${cfg.heatLow || C.cnvLoss}, ${C.panel}, ${cfg.heatHigh || C.cnvGain})`
+        : t.diverging
+          ? `linear-gradient(180deg, ${C.cnvGain} 0 50%, ${C.cnvLoss} 50% 100%)`
+          : cfg.color;
       sw.onclick = (e) => { toggleBwSelect(t.id, e); };
 
       const nm = document.createElement('span');
       nm.className = 'nm';
-      nm.textContent = t.id;
+      // 侧栏只留控件：文件名已经画在画布左侧的轨道名列里，这里不再重复长名字，
+      // 只标类型（热图 / bigWig / BAM …），悬停看全名、并高亮画布上对应的那一行。
+      nm.textContent = isBam(t) ? (t.name || t.id) : T(bwShortKind(t));
       nm.onclick = (e) => { toggleBwSelect(t.id, e); };
 
+      const rm = document.createElement('button');
+      rm.className = 'loaded-x';
+      rm.textContent = '×';
+      rm.title = T('删除该轨道');
+      rm.onclick = (e) => { e.stopPropagation(); bwDelete([t.id]); };
+
+      const hiLabel = (on) => {
+        const l = document.querySelector(`.track[data-bw="${CSS.escape(t.id)}"] .track-label`);
+        if (l) l.classList.toggle('hi', on);
+      };
+      el.onmouseenter = () => hiLabel(true);
+      el.onmouseleave = () => hiLabel(false);
+
       el.append(cb, sw, nm);
+      // 热图轨道多一个「Aa」按钮：一键显示 / 隐藏左侧样本名列（和轨道设置里的开关同一项）
+      if (t.heatmap) {
+        const nb = document.createElement('button');
+        nb.className = 'seg-nm-tg' + (cfg.segNames ? ' on' : '');
+        nb.textContent = 'Aa';
+        nb.title = T('显示 / 隐藏样本名列');
+        nb.onclick = (ev) => {
+          ev.stopPropagation();
+          setBwCfg(t.id, { segNames: !cfg.segNames });
+        };
+        el.appendChild(nb);
+        const sb = document.createElement('button');
+        sb.className = 'seg-nm-tg seg-sum-tg' + (cfg.segSummary ? ' on' : '');
+        sb.textContent = 'Σ';
+        sb.title = T('显示 / 隐藏 CNV Summary 汇总行');
+        sb.onclick = (ev) => {
+          ev.stopPropagation();
+          setBwCfg(t.id, { segSummary: !cfg.segSummary });
+        };
+        el.appendChild(sb);
+      }
+      el.appendChild(rm);
       if (tag) {
         const g = document.createElement('span');
         g.className = 'grp';
@@ -3605,12 +4524,27 @@
         asw.style.background = 'var(--read, #c9c9c9)';
         const anm = document.createElement('span');
         anm.className = 'nm';
-        anm.textContent = T('比对');
+        anm.textContent = 'Alignments';
         const ab = document.createElement('span');
         ab.className = 'grp';
         ab.textContent = 'BAM';
         ar.append(acb, asw, anm, ab);
         box.appendChild(ar);
+        const jr = document.createElement('div');
+        jr.className = 'trk bw-trk align-trk';
+        const jcb = document.createElement('input');
+        jcb.type = 'checkbox'; jcb.className = 'on';
+        jcb.checked = cfg.junctionVisible && !!S.bw.on[t.id];
+        jcb.disabled = !ok;
+        jcb.onchange = () => {
+          setBwCfg(t.id, { junctionVisible: jcb.checked });
+          if (!jcb.checked) clearJunctionTrack(t.id);
+          ensureBwTrackEls(); scheduleRender();
+        };
+        const jname = document.createElement('span');
+        jname.className = 'nm'; jname.textContent = 'Junctions';
+        jr.title = t.name || t.id;
+        jr.append(jcb, jname); box.appendChild(jr);
       }
     }
     if (S.bw.hidden.size) {
@@ -3697,6 +4631,25 @@
     row.classList.add('ctx-colors');
     menu.appendChild(row);
 
+    // 拷贝数热图：增益 / 缺失两套颜色（多选时一起改）
+    const hm = ids.filter((i) => (S.bw.list.find((t) => t.id === i) || {}).heatmap);
+    if (hm.length) {
+      const sep4 = document.createElement('div');
+      sep4.className = 'ctx-sep';
+      menu.appendChild(sep4);
+      const hh = document.createElement('div');
+      hh.className = 'ctx-head';
+      hh.textContent = T('热图颜色（增益 / 缺失）');
+      menu.appendChild(hh);
+      const hc = bwCfg(hm[0]);
+      const rGain = colorRow(hc.heatHigh || C.cnvGain, (c) => bwSetHeat(hm, 'heatHigh', c));
+      rGain.classList.add('ctx-colors');
+      menu.appendChild(rGain);
+      const rLoss = colorRow(hc.heatLow || C.cnvLoss, (c) => bwSetHeat(hm, 'heatLow', c));
+      rLoss.classList.add('ctx-colors');
+      menu.appendChild(rLoss);
+    }
+
     // 删除：内置轨道只隐藏（可恢复），已导入轨道连同副本文件一起删除
     const sep3 = document.createElement('div');
     sep3.className = 'ctx-sep';
@@ -3721,6 +4674,7 @@
     for (const id of ids) {
       S.bw.cfg[id] = Object.assign(bwCfg(id), { group: g.id });
       S.bw.on[id] = true; // 让 group autoscale 效果立即可见
+      rememberBwOn(id, true);
     }
     savePrefs();
     renderBwList();
@@ -3743,6 +4697,14 @@
   }
 
   // 把选中的所有轨道一起改成同一个颜色
+  // 热图配色（heatHigh / heatLow / heatMax）
+  function bwSetHeat(ids, key, color) {
+    for (const id of ids) S.bw.cfg[id] = Object.assign(bwCfg(id), { [key]: color });
+    savePrefs();
+    renderBwList();
+    scheduleRender();
+  }
+
   function bwSetColor(ids, color) {
     for (const id of ids) {
       S.bw.cfg[id] = Object.assign(bwCfg(id), { color });
@@ -3775,12 +4737,20 @@
     if (!confirm(T(`确定删除选中的 ${items.length} 条信号轨道？\n${lines.join('\n')}`))) return;
     closeBwCtx();
     closeTrackPop();
+    // 删除时把还在跑的取数请求全部作废：否则大 BAM 的 reads/覆盖度请求
+    // 挂在那儿，界面上就一直转「载入中」（用户看到：删了还在加载）
+    for (const P of S.panels) {
+      if (P._ac) { try { P._ac.abort(); } catch { /* ignore */ } }
+    }
+    S.pending = 0;
+    setLoading(false);
     // 先从界面/状态移除，避免渲染器继续为已删轨道发请求
     for (const t of bundled) S.bw.hidden.add(t.id);
     for (const t of items) {
       S.bw.sel.delete(t.id);
       delete S.bw.on[t.id];
       delete S.bw.on[alignId(t)];      // BAM 的比对视图状态一起清掉
+      delete S.bw.onSaved[t.id];
       delete S.bw.colors[t.id];
       delete S.bw.cfg[t.id];
       delete S.bw.data[t.id];
@@ -3792,6 +4762,8 @@
       if (el) el.remove();
       const ae = document.querySelector(`.track[data-align="${CSS.escape(t.id)}"]`);
       if (ae) ae.remove();
+      for (const je of document.querySelectorAll(`.track[data-junc="${CSS.escape(t.id)}"]`)) je.remove();
+      clearJunctionTrack(t.id);
     }
     const gone = new Set(ids);
     S.bw.list = S.bw.list.filter((t) => !gone.has(t.id));
@@ -3812,32 +4784,65 @@
   function ensureBwTrackEls() {
     const view = $('#view');
     const anchor = $('.track[data-track="gc"]');
+    const bamIds = new Set(S.bw.list.filter(isBam).map((t) => t.id));
+    const seen = new Set();
+    for (const je of view.querySelectorAll('.track[data-junc]')) {
+      const id = je.dataset.junc;
+      if (!bamIds.has(id) || seen.has(id)) je.remove();
+      else seen.add(id);
+      if (!bamIds.has(id)) clearJunctionTrack(id);
+    }
     for (const t of S.bw.list) {
       let el = view.querySelector(`.track[data-bw="${CSS.escape(t.id)}"]`);
       if (!el) {
         el = document.createElement('div');
-        el.className = 'track';
+        el.className = 'track' + (t.heatmap ? ' seg-track' : '');
         el.dataset.bw = t.id;
         el.innerHTML = T(`<div class="track-label bw-label"><span class="nm" title="${t.id}">${t.id}</span>
           <div class="sub"></div>
           <button class="tgear" data-gear="bw" data-bwid="${t.id}" title="轨道设置">⚙</button></div>
+          ${t.heatmap ? '<div class="seg-sample-labels" aria-label="样本名称"></div>' : ''}
           <div class="track-body" data-split><canvas></canvas></div>`);
         view.insertBefore(el, anchor);
       }
       el.hidden = !bwActive(t);
       if (!isBam(t)) continue;
-      // 比对轨道紧跟在同一条 BAM 的 coverage 下面（和 IGV 的排列一致）
+      const sample = t.name || t.id;
+      const sampleLabel = S.bw.list.some(other => other !== t && (other.name || other.id) === sample)
+        ? `${sample} [${t.id}]` : sample;
+      el.dataset.bam = 'true';
+      const coverageName = el.querySelector('.nm');
+      if (coverageName) { coverageName.textContent = `${sampleLabel} · Coverage`; coverageName.title = sampleLabel; }
+      // One BAM owns three adjacent tracks: Coverage / Junctions / Alignments.
       let ae = view.querySelector(`.track[data-align="${CSS.escape(t.id)}"]`);
       if (!ae) {
         ae = document.createElement('div');
         ae.className = 'track';
         ae.dataset.align = t.id;
-        ae.innerHTML = T(`<div class="track-label bw-label"><span class="nm" title="${t.id} 比对">${t.id}</span>
+        ae.innerHTML = T(`<div class="track-label bw-label"><span class="nm">Alignments</span>
           <div class="sub"></div></div>
           <div class="track-body" data-split><canvas></canvas></div>`);
       }
       el.after(ae);
       ae.hidden = !alignActive(t);
+      // Sashimi 剪接弧轨道：和 IGV 一样挂在 BAM 下面
+      let je = view.querySelector(`.track[data-junc="${CSS.escape(t.id)}"]`);
+      if (!je) {
+        je = document.createElement('div');
+        je.className = 'track';
+        je.dataset.junc = t.id;
+        je.innerHTML = T(`<div class="track-label bw-label"><span class="nm">Junctions</span>
+          <div class="sub"></div></div>
+          <div class="track-body" data-split><canvas></canvas></div>`);
+      }
+      el.after(je);
+      je.after(ae);
+      for (const [row, title] of [[ae, 'Alignments'], [je, 'Junctions']]) {
+        const name = row.querySelector('.nm');
+        row.dataset.bam = 'true';
+        if (name) { name.textContent = `${sampleLabel} · ${title}`; name.title = sampleLabel; }
+      }
+      je.hidden = !bwActive(t) || !bwCfg(t.id).junctionVisible || S.bw.juncOn === false || S.genomeView;
     }
     applyTrackOrder();
   }
@@ -3865,6 +4870,24 @@
   const isBam = (t) => !!t && (t.format === 'bam' || t.format === 'sam');
   const alignOn = (t) => S.bw.on[alignId(t)] !== false;
   const alignActive = (t) => isBam(t) && bwActive(t) && alignOn(t);
+  function alignmentVisibility(t) {
+    const cfg = bwCfg(t.id);
+    if (cfg.visibilityWindowKb > 0) return cfg.visibilityWindowKb * 1000;
+    const type = String(cfg.experimentType === 'auto' ? (t.experimentType || 'other') : cfg.experimentType)
+      .toLowerCase().replace(/[- ]/g, '_');
+    if (type === 'rna' || type === 'rna_seq') return 300000;
+    if (type === 'third_gen' || type === 'thirdgen') return 1000000;
+    return 30000;
+  }
+
+  function resetAlignmentWindow(tid) {
+    clearJunctionTrack(tid);
+    for (const P of S.panels) {
+      delete P.bwData[tid];
+      delete P.alignData[tid];
+    }
+    ensureAll(true);
+  }
   const ALIGN_ROW_H = 13;      // 每条 read 一行的高度（CSS 像素）；行多时按比例压缩
 
   function niceMax(v) {
@@ -3875,20 +4898,620 @@
     return step * pow;
   }
 
+  /* ------------------- 多样本 SEG：拷贝数热图（一行一个样本） ------------------- */
+  const SEG_ROW_H = 14;          // 每个样本一行的高度（CSS 像素）
+
+  function hexRGB(c) {
+    const m = /^#?([0-9a-f]{6})$/i.exec(String(c || '').trim());
+    if (!m) return [128, 128, 128];
+    const v = parseInt(m[1], 16);
+    return [(v >> 16) & 255, (v >> 8) & 255, v & 255];
+  }
+
+  function mixRGB(a, b, t) {
+    return `rgb(${Math.round(a[0] + (b[0] - a[0]) * t)},`
+      + `${Math.round(a[1] + (b[1] - a[1]) * t)},${Math.round(a[2] + (b[2] - a[2]) * t)})`;
+  }
+
+  // 振幅：轨道设置里的固定值优先；否则用窗口内 |值| 的 99 分位。
+  // 用最大值不行 —— 一两个纯合缺失格子（log2 −9）会把整张图冲成一片白。
+  function segAmp(cfg, rows, t) {
+    let amp = cfg.heatMax;
+    if (!(amp > 0)) {
+      // 优先用整份文件的 99 分位（后端 meta.scale）：IGV 的 CNV 热图缩放时颜色不跳，
+      // 而按窗口分位数定标会在放大后把整张图涂成深红深蓝，和 IGV 差得很远。
+      const fs2 = t && Number(t.scale);
+      if (fs2 > 0) {
+        amp = Math.min(Math.max(fs2, 0.1), 4);
+        return amp;
+      }
+      const mags = [];
+      for (const r of rows) {
+        for (const v of r) if (v != null) mags.push(Math.abs(v));
+      }
+      if (mags.length) {
+        mags.sort((a, b) => a - b);
+        // 99 分位（以前用 95）：SEG 的 log2 比值集中在 ±0.3，按 95 分位定标几乎每格都顶到
+        // 满色，和 IGV 那种大片浅粉/浅蓝对不上。99 分位把绝大多数格子留在淡色区。
+        amp = mags[Math.min(mags.length - 1, Math.floor(mags.length * 0.99))];
+      }
+      amp = Math.min(Math.max(amp || 0.5, 0.1), 3);
+    }
+    return amp;
+  }
+
+  // 颜色查找表：背景色 →（缺失色 / 增益色）。每帧只算 2×(N+1) 次插值，
+  // 逐格再插值的话 10 样本 × 1000 bin 就是一万次字符串拼接
+  const SEG_LUT_N = 48;
+
+  // 自动的中性色：面板色掺 7% 前景色（纯面板色会让 log2 全 0 的样本整行消失）
+  function segMidRGB() {
+    const panel = hexRGB(C.panel || '#ffffff');
+    const ink = hexRGB(C.text || '#222222');
+    return [0, 1, 2].map((k) => Math.round(panel[k] + (ink[k] - panel[k]) * 0.07));
+  }
+
+  function rgbHex(a) {
+    return '#' + a.map((v) => Math.max(0, Math.min(255, v)).toString(16).padStart(2, '0')).join('');
+  }
+
+  function segLuts(cfg) {
+    // 中性格（|值|≈0）不能直接用面板底色：log2 ratio 全为 0 的样本会整行/整列消失，
+    // 看起来像渲染空洞。掺 7% 前景色做成极浅灰，平坦样本仍能看出「有这条样本」。
+    const mid = cfg && cfg.heatMid ? hexRGB(cfg.heatMid) : segMidRGB();
+    const gain = hexRGB(cfg.heatHigh || C.cnvGain || '#c0392b');
+    const loss = hexRGB(cfg.heatLow || C.cnvLoss || '#2a6fb0');
+    const N = SEG_LUT_N;
+    const lutG = new Array(N + 1);
+    const lutL = new Array(N + 1);
+    for (let i = 0; i <= N; i++) {
+      lutG[i] = mixRGB(mid, gain, i / N);
+      lutL[i] = mixRGB(mid, loss, i / N);
+    }
+    return { lutG, lutL, N, mid };
+  }
+
+  // IGV 风格的多样本 CNV 汇总：每个 bin 对可见样本取均值，正值红、负值蓝。
+  function drawSegSummary(ctx, w, y, h, d, rows, amp, lutG, lutL, N) {
+    const bins = d.bins || (rows[0] || []).length;
+    if (!bins || !rows.length) return;
+    const dpr = S.dpr || 1;
+    const sn = (v) => Math.round(v * dpr) / dpr;
+    const midY = y + Math.round(h * 0.5);
+    ctx.save();
+    ctx.fillStyle = C.panel;
+    ctx.fillRect(0, y, w, h);
+    ctx.strokeStyle = C.border;
+    ctx.beginPath(); ctx.moveTo(0, sn(midY) + 0.5); ctx.lineTo(w, sn(midY) + 0.5); ctx.stroke();
+    const bw = w / bins;
+    // 汇总值比单样本小得多（多样本平均互相抵消），单独定标才不会画成一条平线
+    const vals = [];
+    for (let i = 0; i < bins; i++) {
+      let s2 = 0; let cn = 0;
+      for (const row of rows) { const v = row && row[i]; if (v != null) { s2 += v; cn++; } }
+      vals.push(cn ? Math.abs(s2 / cn) : 0);
+    }
+    const srt = vals.slice().sort((a, b) => a - b);
+    const sumAmp = Math.max(0.05, srt.length ? srt[Math.min(srt.length - 1, Math.floor(srt.length * 0.98))] : 1);
+    for (let i = 0; i < bins; i++) {
+      let sum = 0; let n = 0;
+      for (const row of rows) { const v = row && row[i]; if (v != null) { sum += v; n++; } }
+      if (!n) continue;
+      const v = sum / n;
+      const k = Math.round(segK(v, sumAmp, N));
+      ctx.fillStyle = v >= 0 ? lutG[k] : lutL[k];
+      const x0 = sn(i * bw); const x1 = sn((i + 1) * bw);
+      const bar = Math.max(1 / dpr, Math.abs(v) / sumAmp * (h * 0.42));
+      ctx.fillRect(x0, v >= 0 ? sn(midY - bar) : sn(midY), Math.max(1 / dpr, x1 - x0), Math.max(1 / dpr, bar));
+    }
+    ctx.fillStyle = C.muted;
+    ctx.font = '10px system-ui, sans-serif';
+    ctx.textBaseline = 'top';
+    // 名称由左侧独立的 .seg-sample-labels 列显示，这里只画汇总曲线
+    ctx.restore();
+  }
+
+  /* 全基因组视野（选「全部染色体」）的 SEG：像 IGV 那样把每条染色体按长度排成一排，
+     样本 × 染色体铺成整块图，下面再跟一条全基因组 CNV Summary。 */
+  function drawSegGenome(ctx, w, h, t, d, cfg) {
+    const order = (d && d.order) || [];
+    if (!order.length) {
+      ctx.fillStyle = C.muted;
+      ctx.font = '11.5px system-ui, sans-serif';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(d && d.tooWide ? T('放大查看比对（Zoom in to see alignments）')
+        : (d && d.reason ? T(d.reason) : T('读取中…')), 12, h / 2);
+      return { amp: 1, n: 0 };
+    }
+    const allRows = d.rows || [];
+    const allNames = d.samples || t.sampleNames || [];
+    const idx = segVisible(cfg, allRows.length);
+    if (!idx.length) {
+      ctx.fillStyle = C.muted;
+      ctx.font = '11.5px system-ui, sans-serif';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(T('未选择样本 · 在轨道设置里勾选'), 12, h / 2);
+      return { amp: 1, n: 0 };
+    }
+    const rows = idx.map((i) => allRows[i]);
+    const amp = segAmp(cfg, rows, t);
+    const { lutG, lutL, N } = segLuts(cfg);
+    const { slots } = genomeLayout(w);
+    const byName = {};
+    for (const s of slots) byName[s.name] = s;
+    const dpr = S.dpr || 1;
+    const sn = (v) => Math.round(v * dpr) / dpr;
+    const minPx = 1 / dpr;
+    const top = 3;
+    const summaryH = cfg.segSummary === false ? 0 : 44;
+    const n = rows.length;
+    const rowH = Math.max(6, Math.floor((Math.max(40, h - summaryH) - top * 2) / Math.max(1, n)));
+    // 每条染色体在拼接行里的 bin 偏移
+    const offs = [];
+    let off = 0;
+    for (const o of order) { offs.push(off); off += o.bins || 0; }
+
+    for (let r = 0; r < n; r++) {
+      const y = sn(top + r * rowH);
+      const rh = Math.max(minPx, sn(rowH - 1));
+      const row = rows[r] || [];
+      for (let c = 0; c < order.length; c++) {
+        const o = order[c];
+        const slot = byName[o.name];
+        if (!slot || !o.bins) continue;
+        const bw = slot.w / o.bins;
+        for (let i = 0; i < o.bins; i++) {
+          const v = row[offs[c] + i];
+          if (v == null) continue;
+          const x0 = sn(slot.x + i * bw);
+          const x1 = sn(slot.x + (i + 1) * bw);
+          const k = Math.round(segK(v, amp, N));
+          ctx.fillStyle = v >= 0 ? lutG[k] : lutL[k];
+          ctx.fillRect(x0, y, Math.max(minPx, x1 - x0), rh);
+        }
+      }
+    }
+
+    // 染色体之间的细竖线：和上方染色体条对齐，一眼能看出哪块是哪条染色体
+    ctx.fillStyle = C.borderSoft;
+    for (const s of slots) {
+      ctx.fillRect(sn(s.x + s.w), 0, minPx, Math.max(40, h - summaryH));
+    }
+
+    // 全基因组 CNV Summary：逐 bin 对可见样本取均值，正值向上红、负值向下蓝
+    if (summaryH) {
+    const sy = Math.max(40, h - summaryH);
+    const midY = sy + Math.round(summaryH * 0.5);
+    // 汇总值比单样本小得多（多样本平均会互相抵消），单独定标才不会画成一条平线
+    const sums = [];
+    for (let c = 0; c < order.length; c++) {
+      const o = order[c];
+      if (!o.bins) continue;
+      for (let i = 0; i < o.bins; i++) {
+        let s2 = 0;
+        let cn = 0;
+        for (const row of rows) {
+          const v = row && row[offs[c] + i];
+          if (v != null) { s2 += v; cn++; }
+        }
+        sums.push(cn ? Math.abs(s2 / cn) : 0);
+      }
+    }
+    sums.sort((a, b) => a - b);
+    const sumAmp = Math.max(0.05, sums.length ? sums[Math.min(sums.length - 1, Math.floor(sums.length * 0.98))] : 1);
+    ctx.fillStyle = C.panel;
+    ctx.fillRect(0, sy, w, summaryH);
+    ctx.strokeStyle = C.border;
+    ctx.beginPath(); ctx.moveTo(0, sn(midY) + 0.5); ctx.lineTo(w, sn(midY) + 0.5); ctx.stroke();
+    const half = summaryH * 0.42;
+    for (let c = 0; c < order.length; c++) {
+      const o = order[c];
+      const slot = byName[o.name];
+      if (!slot || !o.bins) continue;
+      const bw = slot.w / o.bins;
+      for (let i = 0; i < o.bins; i++) {
+        let sum = 0;
+        let cnt = 0;
+        for (const row of rows) {
+          const v = row && row[offs[c] + i];
+          if (v != null) { sum += v; cnt++; }
+        }
+        if (!cnt) continue;
+        const v = sum / cnt;
+        const k = Math.round(segK(v, sumAmp, N));
+        ctx.fillStyle = v >= 0 ? lutG[k] : lutL[k];
+        const x0 = sn(slot.x + i * bw);
+        const x1 = sn(slot.x + (i + 1) * bw);
+        const bar = Math.max(minPx, Math.abs(v) / sumAmp * half);
+        ctx.fillRect(x0, v >= 0 ? sn(midY - bar) : sn(midY), Math.max(minPx, x1 - x0), bar);
+      }
+    }
+    }
+    return { amp, n };
+  }
+
+  // 值 → 色阶下标。用 gamma 0.6 而不是线性：按 99 分位定标后（和 IGV 观感一致），
+  // 线性映射会让 |v| 只有零点几的格子几乎和中性色一样，整块区域看起来「没数据」。
+  // 开方级别的压缩把小幅变化抬起来，同时高值仍然会饱和。
+  function segK(v, amp, N) {
+    const t = Math.min(1, Math.abs(v) / (amp || 1));
+    return Math.pow(t, 0.6) * N;
+  }
+
+  // 返回 { amp, n } 供调用方写副标题
+  function drawSegHeatmap(ctx, w, h, t, d, cfg) {
+    if (!d || !d.rows || !d.rows.length) {
+      ctx.fillStyle = C.muted;
+      ctx.font = '11.5px system-ui, sans-serif';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(d && d.reason ? T(d.reason) : T('读取中…'), 12, h / 2);
+      return { amp: 1, n: 0 };
+    }
+    // 只画勾选上的样本：d.rows 与 d.samples 同序，按下标筛
+    const allRows = d.rows;
+    const allNames = d.samples || t.sampleNames || [];
+    const idx = segVisible(cfg, allRows.length);
+    if (!idx.length) {
+      ctx.fillStyle = C.muted;
+      ctx.font = '11.5px system-ui, sans-serif';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(T('未选择样本 · 在轨道设置里勾选'), 12, h / 2);
+      return { amp: 1, n: 0 };
+    }
+    const rows = idx.map((i) => allRows[i]);
+    const names = idx.map((i) => allNames[i]);
+    const amp = segAmp(cfg, rows, t);
+    const { lutG, lutL, N, mid } = segLuts(cfg);
+    if (cfg.segLayout === 'col') {
+      const res = drawSegHeatCols(ctx, w, h, d, rows, names, amp, lutG, lutL, N);
+      ctx.restore();
+      return res;
+    }
+    const n = rows.length;
+    const summaryH = cfg.segSummary === false ? 0 : 44;
+    const heatH = Math.max(40, h - summaryH);
+    const top = 3;
+    const rowH = Math.max(6, Math.floor((heatH - top * 2) / Math.max(1, n)));
+    const bins = d.bins || (rows[0] || []).length;
+    const bp = (d.end - d.start) / Math.max(1, bins);
+    const dpr = S.dpr || 1;
+    const sn = (v) => Math.round(v * dpr) / dpr;
+    const minPx = 1 / dpr;
+
+    // 样本名称由 .seg-sample-labels 独立 DOM 列承担；Canvas 从第一个 bin 开始完整画数据。
+    const gutter = 0;
+    // px() 是按整幅画布宽度算的，这里把结果压进数据区 [gutter, w]
+    const kx = Math.max(1, w - gutter) / Math.max(1, w);
+    const X = (v) => gutter + px(v) * kx;
+    for (let r = 0; r < n; r++) {
+      const y = sn(top + r * rowH);
+      const rh = Math.max(minPx, sn(rowH - 1));
+      const row = rows[r] || [];
+      for (let i = 0; i < bins; i++) {
+        const v = row[i];
+        if (v == null) continue;
+        const x0 = sn(X(d.start + i * bp));
+        const x1 = sn(X(d.start + (i + 1) * bp));
+        if (x1 < 0 || x0 > w) continue;
+        const k = Math.round(segK(v, amp, N));
+        ctx.fillStyle = v >= 0 ? lutG[k] : lutL[k];
+        ctx.fillRect(x0, y, Math.max(minPx, x1 - x0), rh);
+      }
+    }
+    if (gutter > 0) {
+      // 名称列：不透明底色 + 右侧分隔线，和画布上的轨道名列一个观感
+      ctx.fillStyle = C.panel;
+      ctx.fillRect(0, 0, gutter, h);
+      ctx.fillStyle = C.border;
+      ctx.fillRect(gutter - 1 / dpr, 0, 1 / dpr, h);
+      ctx.fillStyle = C.text;
+      for (let r = 0; r < n; r++) {
+        const nm = names[r];
+        if (!nm) continue;
+        let label = String(nm);
+        while (label.length > 4 && ctx.measureText(label).width > gutter - 8) label = label.slice(0, -1);
+        if (label !== nm) label = label.slice(0, -1) + '…';
+        ctx.fillText(label, 5, top + r * rowH + rowH / 2);
+      }
+    }
+    if (summaryH) drawSegSummary(ctx, w, heatH, summaryH, d, rows, amp, lutG, lutL, N);
+    ctx.restore();
+    return { amp, n };
+  }
+
+  /* 样本为列（转置）：常规 CNV 矩阵的摆法——一列一个样本，纵向是基因组区间。
+     行数由像素高度决定，一行像素覆盖多个 bin 时取这些 bin 的均值。 */
+  function drawSegHeatCols(ctx, w, h, d, rows, names, amp, lutG, lutL, N) {
+    const nS = rows.length;
+    const bins = d.bins || (rows[0] || []).length;
+    ctx.font = '10px ui-monospace, Menlo, Consolas, monospace';
+    ctx.textBaseline = 'middle';
+    const top = 13;          // 顶部留给样本名
+    const bot = 2;
+    const H = Math.max(12, h - top - bot);
+    const colW = w / Math.max(1, nS);
+    const dpr = S.dpr || 1;
+    const sn = (v) => Math.round(v * dpr) / dpr;
+    const minPx = 1 / dpr;
+    for (let j = 0; j < nS; j++) {
+      const row = rows[j] || [];
+      const x0 = sn(j * colW);
+      const x1 = sn((j + 1) * colW);
+      const cw = Math.max(minPx, x1 - x0);   // 列与列之间不留缝，否则整张图看起来像网格
+      for (let py = 0; py < H; py++) {
+        const b0 = Math.floor((py / H) * bins);
+        const b1 = Math.max(b0 + 1, Math.floor(((py + 1) / H) * bins));
+        let sum = 0;
+        let cnt = 0;
+        for (let i = b0; i < b1 && i < bins; i++) {
+          const v = row[i];
+          if (v != null) { sum += v; cnt++; }
+        }
+        if (!cnt) continue;
+        const v = sum / cnt;
+        const k = Math.round(segK(v, amp, N));
+        ctx.fillStyle = v >= 0 ? lutG[k] : lutL[k];
+        // 行高按设备像素对齐：直接用 minPx 会在 1.5× 屏上留下 1px 白缝
+        const y0 = sn(top + py);
+        const y1 = sn(top + py + 1);
+        ctx.fillRect(x0, y0, cw, Math.max(minPx, y1 - y0));
+      }
+    }
+    // 列名（样本名）画在顶部；列太窄就截断，悬停看全名
+    ctx.fillStyle = C.text;
+    for (let j = 0; j < nS; j++) {
+      const nm = String(names[j] || '');
+      if (!nm) continue;
+      let label = nm;
+      while (label.length > 3 && ctx.measureText(label).width > colW - 4) label = label.slice(0, -1);
+      if (label !== nm) label = label.slice(0, -1) + '…';
+      ctx.fillText(label, sn(j * colW) + 1, top - 6);
+    }
+    return { amp, n: nS };
+  }
+
+  // 全基因组视野（「全部染色体」）的 SEG 取数：一次拿回所有染色体拼起来的矩阵
+  function ensureSegGenome() {
+    if (!S.genomeView || !S.asm) return;
+    const chroms = primaryChroms().filter((c) => (S.asm.chroms[c] || 0) > 0);
+    for (const t of S.bw.list) {
+      if (!t.heatmap || !bwActive(t)) continue;
+      const d = S.bw.data[t.id];
+      if (d && (d.genome || d._gvPending)) continue;
+      S.bw.data[t.id] = { genome: true, rows: [], order: [], _gvPending: true };
+      api('loaded/seg_genome', { track: t.id, chroms: chroms.join(','), bins: 2400 })
+        .then((r) => {
+          S.bw.data[t.id] = { genome: true, order: r.order || [], bins: r.bins || 0,
+            rows: r.rows || [], samples: r.samples, reason: r.reason || null };
+          scheduleRender();
+        })
+        .catch((err) => {
+          S.bw.data[t.id] = { genome: true, rows: [], order: [],
+            reason: T('读取失败：') + err.message };
+          scheduleRender();
+        });
+    }
+  }
+
+  function clearJunctionTrack(id) {
+    for (const [key, req] of S.bw.juncPending || []) {
+      if (req.id !== id) continue;
+      req.ac.abort();
+      S.bw.juncPending.delete(key);
+    }
+    for (const [key, rec] of S.bw.juncData || []) {
+      if (rec.id === id) S.bw.juncData.delete(key);
+    }
+  }
+
+  function junctionRequestCurrent(req) {
+    const t = S.bw.list.find((t) => t.id === req.id);
+    const v = req.panel.view;
+    return !req.ac.signal.aborted && S.panels.includes(req.panel) && S.asm === req.asm
+      && t && t === req.track && bwActive(t) && bwCfg(t.id).junctionVisible && S.bw.juncOn !== false && !S.genomeView
+      && (v.end - v.start) <= alignmentVisibility(t)
+      && v.chrom === req.chrom && v.start === req.start && v.end === req.end;
+  }
+
+  /* Sashimi 剪接弧：窗口内的 junction 画成贝塞尔弧，弧高按跨度、线宽按支持 reads 数 */
+  function drawJunctionTracks() {
+    const pending = (S.bw.juncPending = S.bw.juncPending || new Map());
+    const cache = (S.bw.juncData = S.bw.juncData || new Map());
+    for (const [key, req] of pending) {
+      if (junctionRequestCurrent(req)) continue;
+      req.ac.abort();
+      pending.delete(key);
+    }
+    for (const t of S.bw.list) {
+      const el = document.querySelector(`.track[data-junc="${CSS.escape(t.id)}"]`);
+      if (!el) continue;
+      el.hidden = !bwActive(t) || !bwCfg(t.id).junctionVisible || S.bw.juncOn === false || S.genomeView;
+      if (el.hidden) continue;
+      const canvas = paneCanvas(el);
+      if (!canvas) continue;
+      const { ctx, w, h } = fitCanvas(canvas, 64);
+      const v = S.view;
+      const sub = el.querySelector('.sub');
+      if (!v.chrom || (v.end - v.start) > alignmentVisibility(t)) {
+        ctx.fillStyle = C.muted; ctx.font = '11.5px system-ui'; ctx.textBaseline = 'middle';
+        ctx.fillText(T('放大查看剪接（Zoom in to see junctions）'), 12, h / 2);
+        if (sub) sub.textContent = '';
+        continue;
+      }
+      const key = JSON.stringify([S.asm && S.asm.id, S.act, t.id, v.chrom, v.start, v.end]);
+      const entry = cache.get(key);
+      const rec = entry?.junctions;
+      if (!entry) {
+        if (!pending.has(key)) {
+          const req = { id: t.id, track: t, panel: S.panels[S.act], asm: S.asm,
+            chrom: v.chrom, start: v.start, end: v.end, ac: new AbortController() };
+          pending.set(key, req);
+          const store = (result) => {
+            if (pending.get(key) !== req || !junctionRequestCurrent(req)) return;
+            cache.set(key, { id: t.id, ...result });
+            while (cache.size > 64) cache.delete(cache.keys().next().value);
+          };
+          api('loaded/junctions', { track: t.id, chrom: v.chrom, s: v.start, e: v.end, min: 1 },
+            { signal: req.ac.signal })
+            .then((r) => {
+              if (r.reason || !Array.isArray(r.junctions)) {
+                store({ error: true, reason: r.reason || T('剪接数据格式无效') });
+              } else store({ junctions: r.junctions });
+            })
+            .catch((err) => {
+              if (err?.name !== 'AbortError') store({ error: true, reason: T('读取失败：') + err.message });
+            })
+            .finally(() => {
+              if (pending.get(key) !== req) return;
+              pending.delete(key);
+              if (junctionRequestCurrent(req)) scheduleRender();
+            });
+        }
+        ctx.fillStyle = C.muted; ctx.font = '11.5px system-ui'; ctx.textBaseline = 'middle';
+        ctx.fillText(T('读取中…'), 12, h / 2);
+        continue;
+      }
+      if (entry.error || entry.reason) {
+        ctx.fillStyle = C.muted; ctx.font = '11.5px system-ui'; ctx.textBaseline = 'middle';
+        ctx.fillText(T(entry.reason || '读取失败'), 12, h / 2);
+        if (sub) sub.textContent = '';
+        continue;
+      }
+      // 弧带几何移植自 IGV src/main/java/org/igv/renderer/SpliceJunctionRenderer.java:194-234。
+      // 深度标尺采用 SpliceJunctionTrack 构造中的 60；保留当前配色，不移植侧翼与交互。
+      /* 上游 MIT 许可（保留版权及许可声明）：
+       * Copyright (c) 2007-2026 Broad Institute and Regents of the University of California
+       * Permission is hereby granted, free of charge, to any person obtaining a copy
+       * of this software and associated documentation files (the "Software"), to deal
+       * in the Software without restriction, including without limitation the rights
+       * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+       * copies of the Software, and to permit persons to whom the Software is
+       * furnished to do so, subject to the following conditions:
+       * The above copyright notice and this permission notice shall be included in
+       * all copies or substantial portions of the Software.
+       * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+       * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+       * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+       * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+       * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+       * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+       * THE SOFTWARE.
+       */
+      const px = (bp) => Math.round(((bp - v.start) / (v.end - v.start)) * w);
+      const center = Math.trunc(h / 2);
+      const maxHeight = Math.trunc((h - 1) / 2);
+      const maxDepth = 60;
+      const innerHeight = Math.trunc(maxHeight * 0.33);
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(0, 0, w, h);
+      ctx.clip();
+      rec.forEach((j) => {
+        const x1 = px(j.d), x2 = px(j.a);
+        if (x2 < 0 || x1 > w) return;
+        const span = Math.max(1, x2 - x1);
+        const direction = j.strand === '-' ? 1 : -1;
+        const beginY = center + direction;
+        const outerHeight = innerHeight + Math.max(1, Math.trunc(0.67 * maxHeight * Math.min(1, j.n / maxDepth)));
+        const outerY = beginY + Math.trunc(1.3 * direction * outerHeight);
+        const innerY = beginY + Math.trunc(1.3 * direction * innerHeight);
+        const xpad = Math.max(1, Math.trunc(span / 30));
+        ctx.strokeStyle = j.strand === '-' ? (C.cnvLoss || '#2a6fb0') : (C.cnvGain || '#c0392b');
+        ctx.fillStyle = ctx.strokeStyle;
+        ctx.globalAlpha = 140 / 255;
+        ctx.lineWidth = 1;
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(x1, 0, span, h);
+        ctx.clip();
+        ctx.beginPath();
+        ctx.moveTo(x1, beginY);
+        ctx.bezierCurveTo(x1 - xpad, outerY, x2 + xpad, outerY, x2, beginY);
+        ctx.bezierCurveTo(x2 + xpad, innerY, x1 - xpad, innerY, x1, beginY);
+        ctx.closePath();
+        ctx.stroke();
+        ctx.fill();
+        ctx.restore();
+      });
+      ctx.globalAlpha = 100 / 255;
+      ctx.strokeStyle = C.muted;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(0, center);
+      ctx.lineTo(w, center);
+      ctx.stroke();
+      ctx.restore();
+      if (sub) sub.textContent = T(`${rec.length} 个剪接位点`);
+    }
+  }
+
   function drawBwTracks() {
     for (const t of S.bw.list) {
-      if (!bwActive(t)) continue;
       const el = document.querySelector(`.track[data-bw="${CSS.escape(t.id)}"]`);
-      if (!el || el.hidden) continue;
+      if (!el) continue;
+      // 关掉的轨道整行隐藏。以前只跳过绘制，行还留着，canvas 保持 300×150 的
+      // 默认尺寸、被 CSS 的 width:100% 按比例拉成几百像素高的空白块。
+      if (!bwActive(t) || (S.genomeView && !t.heatmap)) { el.hidden = true; continue; }
+      el.hidden = false;
       const canvas = paneCanvas(el);
       if (!canvas) continue;
       const d = S.bw.data[t.id];
-      const cfg = bwCfg(t.id);
+    const cfg = bwCfg(t.id);
+      // 多样本 SEG：一行一个样本的热图，轨道高度跟着样本数走
+      if (t.heatmap) {
+        el.classList.toggle('seg-col', cfg.segLayout === 'col');
+        el.classList.toggle('seg-none', cfg.segLayout === 'none');
+        const gvMode = !!S.genomeView;
+        if (gvMode) ensureSegGenome();
+        el.classList.toggle('seg-nonames', !cfg.segNames);
+        const nameBox = el.querySelector('.seg-sample-labels');
+        if (nameBox) {
+          nameBox.replaceChildren();
+          if (cfg.segNames) {
+            const allNames = (d && d.samples) || t.sampleNames || [];
+            const show = segVisible(cfg, allNames.length);
+            for (const i of show) {
+              const s = document.createElement('div');
+              s.className = 'seg-sample-name'; s.textContent = allNames[i] || `#${i + 1}`;
+              nameBox.appendChild(s);
+            }
+            if (show.length && cfg.segSummary !== false) { const sm = document.createElement('div'); sm.className = 'seg-summary-name'; sm.textContent = T('CNV Summary'); nameBox.appendChild(sm); }
+          }
+        }
+        const nAll = Math.max(1, (d && d.rows && d.rows.length) || t.samples || 1);
+        // 高度按「勾选上的样本数」算：全部取消勾选时留 1 行的位置显示提示
+        const nRow = Math.max(1, segVisible(cfg, nAll).length);
+        // 样本为列（转置）时高度固定；样本为行时跟着样本数走；紧凑模式每行更矮
+        const rowUnit = cfg.segLayout === 'none' ? 8 : SEG_ROW_H;
+        const sumH = cfg.segSummary === false ? 0 : 44;
+        const HH = cfg.segLayout === 'col'
+          ? 300
+          : Math.min(720, Math.max(40, nRow * rowUnit + 8 + sumH));
+        const { ctx, w, h } = fitCanvas(canvas, HH);
+        const res = gvMode
+          ? drawSegGenome(ctx, w, h, t, d, cfg)
+          : drawSegHeatmap(ctx, w, h, t, d, cfg);
+        const subEl = el.querySelector('.sub');
+        if (subEl) {
+          subEl.textContent = res.n
+            ? T(`${res.n}${res.n < nAll ? `/${nAll}` : ''} 个样本 · ±${formatVal(res.amp)}`)
+            : '';
+        }
+        continue;
+      }
       const H = 78;
       const { ctx, w, h } = fitCanvas(canvas, H);
       const sub = el.querySelector('.sub');
       const color = cfg.color;
 
+      if (isBam(t) && (S.view.end - S.view.start) > alignmentVisibility(t)) {
+        ctx.fillStyle = C.muted;
+        ctx.font = '11.5px system-ui, sans-serif';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(T('放大查看覆盖度（Zoom in to see coverage）'), 12, h / 2);
+        if (sub) sub.textContent = '';
+        continue;
+      }
       if (!d || !d.values || !d.values.length) {
         // 后端说「这条染色体没有数据」时优先显示原因；空数组也不再走画轴分支，
         // 否则 peak=0 会让轴退化成 0 – 2.0e-9（见 bwRange 的注释）
@@ -3960,12 +5583,22 @@
       const dpr = S.dpr || 1;
       const sn = (v) => Math.round(v * dpr) / dpr;
       const minPx = 1 / dpr;
+      // 拷贝数：增益红 / 缺失蓝。只在颜色变化时切一次 fillStyle，
+      // 免得每个 bin 都做一次字符串比较（几十万 bin 时这点开销看得见）
+      const diverging = !!(d.diverging || t.diverging);
+      const gainCol = C.cnvGain || '#c0392b';
+      const lossCol = C.cnvLoss || '#2a6fb0';
+      let curCol = null;
       for (let i = 0; i < n; i++) {
         const v = vals[i];
         if (!v) continue;
         const x0 = sn(xOf(i));
         const x1 = sn(i + 1 < n ? xOf(i + 1) : xOf(n));
         if (x1 < 0 || x0 > w) continue;
+        if (diverging) {
+          const col = v.m >= 0 ? gainCol : lossCol;
+          if (col !== curCol) { ctx.fillStyle = col; curCol = col; }
+        }
         const y = yOf(v.m);
         const yTop = sn(Math.min(y, floorY));
         const yBot = sn(Math.max(y, floorY));
@@ -3984,7 +5617,8 @@
       // 否则一条空轨道看起来像「文件没读进来」
       let anyVal = false;
       for (let i = 0; i < n; i++) {
-        if (vals[i] && vals[i].m > 0) { anyVal = true; break; }
+        // 拷贝数轨道整段缺失时 m 全是负数，用 >0 判断会误报「无信号」
+        if (vals[i] && (diverging ? vals[i].m !== 0 : vals[i].m > 0)) { anyVal = true; break; }
       }
       if (!anyVal) {
         ctx.fillStyle = C.muted;
@@ -4003,9 +5637,10 @@
   }
 
   /* -------------------------------------------------- BAM 比对视图（reads） */
-  // CIGAR 里的 D/N 会把一条 read 断成几段，前端按段画
+  // 完整遍历 CIGAR：M/=/X 和 D/N 消耗参考坐标，I/S/H/P 不消耗。
   function cigarSegments(cigar, p0) {
-    const segs = [];
+    const blocks = [];
+    const gaps = [];
     let ref = p0;
     let cur = null;
     const re = /(\d+)([MIDNSHP=X])/g;
@@ -4015,28 +5650,85 @@
       const op = m[2];
       if (op === 'M' || op === '=' || op === 'X') {
         if (cur && cur[1] === ref) cur[1] = ref + ln;
-        else { cur = [ref, ref + ln]; segs.push(cur); }
+        else { cur = [ref, ref + ln]; blocks.push(cur); }
         ref += ln;
       } else if (op === 'D' || op === 'N') {
+        gaps.push({ start: ref, end: ref + ln, op });
         ref += ln;
         cur = null;
       }
     }
-    return segs.length ? segs : [[p0, p0 + 1]];
+    return { blocks, gaps };
   }
 
-  // 贪心装箱：每条 read 放进第一个「上一行右端已经在它左边」的行，
-  // 和 IGV 的 packing 一个思路；后端按坐标顺序返回，所以一趟就能排好
-  function packReads(reads) {
-    const lanes = [];
-    const items = [];
-    for (const r of reads) {
-      let li = 0;
-      for (; li < lanes.length; li++) if (lanes[li] <= r.p) break;
-      if (li === lanes.length) lanes.push(r.e); else lanes[li] = r.e;
-      items.push({ r, lane: li });
+  // 按最早结束的 lane 复用，坐标有序时为 O(N log depth)，不逐行扫描。
+  function packReads(reads, mode = 'expanded') {
+    if (mode === 'collapsed' || mode === 'full') {
+      const items = reads.map((r, i) => ({ r, lane: mode === 'collapsed' ? 0 : i, segments: cigarSegments(r.c, r.p) }));
+      const lanes = mode === 'collapsed' ? (reads.length ? [items] : []) : items.map(item => [item]);
+      return { rows: lanes.length, items, lanes };
     }
-    return { rows: lanes.length, items };
+    let ordered = reads;
+    for (let i = 1; i < reads.length; i++) {
+      if (reads[i].p < reads[i - 1].p) {
+        ordered = reads.slice().sort((a, b) => a.p - b.p);
+        break;
+      }
+    }
+    const heap = [];
+    const items = [];
+    let rows = 0;
+    const before = (a, b) => a.end < b.end || (a.end === b.end && a.lane < b.lane);
+    for (const r of ordered) {
+      let slot;
+      if (heap.length && heap[0].end <= r.p) {
+        slot = heap[0];
+        slot.end = r.e;
+        let i = 0;
+        while (2 * i + 1 < heap.length) {
+          let child = 2 * i + 1;
+          if (child + 1 < heap.length && before(heap[child + 1], heap[child])) child++;
+          if (!before(heap[child], slot)) break;
+          heap[i] = heap[child];
+          i = child;
+        }
+        heap[i] = slot;
+      } else {
+        slot = { end: r.e, lane: rows++ };
+        let i = heap.length;
+        heap.push(slot);
+        while (i > 0) {
+          const parent = (i - 1) >> 1;
+          if (!before(slot, heap[parent])) break;
+          heap[i] = heap[parent];
+          i = parent;
+        }
+        heap[i] = slot;
+      }
+      items.push({ r, lane: slot.lane, segments: cigarSegments(r.c, r.p) });
+    }
+    const lanes = Array.from({ length: rows }, () => []);
+    for (const item of items) lanes[item.lane].push(item);
+    return { rows, items, lanes };
+  }
+
+  function scrollAlignmentTrack(e) {
+    const track = e.target.closest('.track[data-align]');
+    if (!track || e.ctrlKey || e.metaKey || S.genomeView) return false;
+    // Consume vertical wheel input even at either end: never zoom or scroll
+    // the page unexpectedly while browsing the alignment stack.
+    if (!e.deltaY) return false;
+    const pane = eventPane(e);
+    const P = S.panels[pane.idx];
+    const d = P && P.alignData && P.alignData[track.dataset.align];
+    e.preventDefault();
+    e.stopPropagation();
+    if (!d || !d.alignScroll || !d.reads) return true;
+    const scroll = d.alignScroll;
+    const delta = e.deltaY * (e.deltaMode === 1 ? scroll.rowH : e.deltaMode === 2 ? scroll.height : 1);
+    scroll.offset = Math.max(0, Math.min(scroll.max, scroll.offset + delta));
+    scheduleRender();
+    return true;
   }
 
   const BASE_COLOR = { A: '#3a9e5f', C: '#3b7dd8', G: '#d08a2e', T: '#c94f4f', N: '#8a8a8a' };
@@ -4045,9 +5737,11 @@
     const P = S.panels[S.act];
     if (!P.alignData) P.alignData = {};
     for (const t of S.bw.list) {
-      if (!alignActive(t)) continue;
       const el = document.querySelector(`.track[data-align="${CSS.escape(t.id)}"]`);
-      if (!el || el.hidden) continue;
+      if (!el) continue;
+      // 同 drawBwTracks：关掉的比对视图整行隐藏，别留一条空白
+      if (!alignActive(t)) { el.hidden = true; continue; }
+      el.hidden = false;
       const canvas = paneCanvas(el);
       if (!canvas) continue;
       const sub = el.querySelector('.sub');
@@ -4060,40 +5754,56 @@
         ctx.fillText(txt, 12, h / 2);
         if (sub) sub.textContent = '';
       };
+      if ((P.view.end - P.view.start) > alignmentVisibility(t)) {
+        hint(T('放大查看比对记录（Zoom in to see alignments）'));
+        continue;
+      }
       if (!d || !d.reads) { hint(d && d.reason ? T(d.reason) : T('读取中…')); continue; }
       if (!d.reads.length) { hint(T(d.reason) || T('该区域没有比对记录')); continue; }
 
-      // 行数多时压缩行高，而不是丢掉 read：高深度区域压成密堆积，
-      // 看起来才和 IGV 一致（丢掉超出的行会让轨道顶部突然「截断」）
+      // Retain all lanes at readable height and render only the scrolled viewport.
       const reads = d.reads;
-      const packed = packReads(reads);
+      const display = bwCfg(t.id).alignDisplay || 'squished';
+      if (!d.readLayout || d.readLayout.reads !== reads || d.readLayout.length !== reads.length || d.readLayout.mode !== display) {
+        d.readLayout = { reads, length: reads.length, mode: display, packed: packReads(reads, display) };
+      }
+      const packed = d.readLayout.packed;
       const rows = Math.max(1, packed.rows);
       const maxH = Math.max(120, Math.min(380, Math.round(window.innerHeight * 0.35)));
-      // 轨道高度：优先按 13px/行；太高就压到半屏，但至少保证每行 2.2px 能放下所有行
-      const needH = rows * ALIGN_ROW_H + 8;
-      const fitH = Math.min(rows * 2.2 + 8, 700);
-      const H = Math.min(needH, Math.max(maxH, fitH));
+      const rowH = display === 'squished' ? 5 : ALIGN_ROW_H;
+      const H = Math.min(rows * rowH + 8, maxH);
       const { ctx, w, h } = fitCanvas(canvas, H);
       const dpr = S.dpr || 1;
       const sn = (v) => Math.round(v * dpr) / dpr;
-      const rowH = Math.max(2.2, (h - 8) / rows);
-      const boxH = Math.max(1.6, rowH - (rowH >= 6 ? 2 : 0.6));
+      const boxH = rowH - 2;
+      const maxScroll = Math.max(0, rows * rowH - (h - 8));
+      if (!d.alignScroll || d.alignScroll.layout !== d.readLayout) {
+        d.alignScroll = { layout: d.readLayout, offset: 0 };
+      }
+      const scroll = d.alignScroll;
+      scroll.offset = Math.max(0, Math.min(maxScroll, scroll.offset));
+      scroll.max = maxScroll;
+      scroll.height = h - 8;
+      scroll.rowH = rowH;
+      const firstRow = Math.floor(scroll.offset / rowH);
+      const endRow = Math.min(rows, Math.ceil((scroll.offset + h - 8) / rowH));
       const minPx = 1 / dpr;
       // 按链着色（IGV 的 Color by → strand）；默认全灰，和 IGV 默认一致
       const byStrand = !!bwCfg(t.id).strandColor;
 
       ctx.save();
       ctx.beginPath();
-      ctx.rect(0, 0, w, h);
+      ctx.rect(0, 4, w, h - 8);
       ctx.clip();
-      for (const it of packed.items) {
+      for (let lane = firstRow; lane < endRow; lane++) {
+        for (const it of packed.lanes[lane]) {
         const r = it.r;
-        const y = sn(4 + it.lane * rowH);
+        const y = 4 + it.lane * rowH - scroll.offset;
         const neg = (r.f & 16) !== 0;
         let fill = C.read;
         if (byStrand) fill = neg ? '#5b7fd4' : '#cf6b6b';
         ctx.fillStyle = fill;
-        const segs = cigarSegments(r.c, r.p);
+        const segs = it.segments.blocks;
         for (let si = 0; si < segs.length; si++) {
           const x0 = sn(px(segs[si][0]));
           const x1 = sn(px(segs[si][1]));
@@ -4133,32 +5843,35 @@
           }
           ctx.fillStyle = fill;
         }
-        // 缺口（D/N）：中间拉一条细线，读起来才像 IGV
-        const re = /(\d+)([DN])/g;
-        let m;
-        let ref = r.p;
-        while ((m = re.exec(r.c))) {
-          const ln = +m[1];
-          if (m[2] === 'D') {
-            const xa = sn(px(ref));
-            const xb = sn(px(ref + ln));
-            if (xb > -4 && xa < w + 4) {
-              ctx.fillStyle = C.text;
-              ctx.fillRect(xa, y + boxH / 2 - 0.5, Math.max(minPx, xb - xa), 1.5);
-              ctx.fillStyle = fill;
-            }
-          }
-          ref += ln;
+        // D 用较粗的深色线，N 用细线；坐标来自完整 CIGAR 的参考游标。
+        for (const gap of it.segments.gaps) {
+          const xa = sn(px(gap.start));
+          const xb = sn(px(gap.end));
+          if (xb < -4 || xa > w + 4) continue;
+          const lineH = Math.min(boxH, gap.op === 'D' ? 1.5 : 0.75);
+          ctx.fillStyle = gap.op === 'D' ? C.text : '#96b8c8';
+          ctx.fillRect(xa, y + (boxH - lineH) / 2, Math.max(minPx, xb - xa), lineH);
+        }
+        ctx.fillStyle = fill;
         }
       }
       ctx.restore();
+      if (maxScroll > 0) {
+        const thumbH = Math.max(18, (h - 8) * (h - 8) / (rows * rowH));
+        const thumbY = 4 + scroll.offset / maxScroll * (h - 8 - thumbH);
+        ctx.fillStyle = C.muted;
+        ctx.globalAlpha = 0.6;
+        ctx.fillRect(w - 5, thumbY, 3, thumbH);
+        ctx.globalAlpha = 1;
+      }
 
       if (sub) {
         const shown = reads.length;
         const bits = [T(`${shown}${shown !== d.total ? ` / ${d.total}` : ''} 条 read`)];
         if (d.sampled) {
-          bits.push(T(`已抽样 ${Math.max(1, Math.round((shown / d.total) * 100))}%`));
+          bits.push(T(`仅返回 ${d.reads.length} / ${d.total} 条（达到上限）`));
         }
+        if (maxScroll > 0) bits.push(T(`行 ${firstRow + 1}–${endRow} / ${rows} · 滚轮上下浏览`));
         if (d.hasSeq === false) bits.push(T('无碱基序列'));
         sub.textContent = bits.join(' · ');
       }
@@ -4190,6 +5903,13 @@
 
   /* ------------------------------------------------------------------ status */
   function updateStatus() {
+    if (S.genomeView && S.asm) {
+      const total = genomeTotalLen();
+      $('#stLocus').textContent = `${S.asm.id}  ${T('全基因组')}`;
+      $('#stWindow').textContent = `${(total / 1e9).toFixed(2)} Gb`;
+      $('#stScale').textContent = T(`${primaryChroms().length} 条染色体`);
+      return;
+    }
     const { chrom, start, end } = S.view;
     if (!chrom) return;
     const w = trackWidth();
@@ -4325,6 +6045,7 @@
     if (el.dataset.track) k = 's:' + el.dataset.track;
     else if (el.dataset.bw) k = 'bw:' + el.dataset.bw;
     else if (el.dataset.align) k = 'al:' + el.dataset.align;
+    else if (el.dataset.junc) k = 'junc:' + el.dataset.junc;
     else if (el.dataset.loaded) k = 'ld:' + el.dataset.loaded;
     else if (el.dataset.motif) k = 'motif:' + el.dataset.motif;
     if (k) el.dataset.tkey = k;
@@ -4377,6 +6098,16 @@
     for (const k of S.trackOrder) {
       const el = byKey.get(k);
       if (el) view.insertBefore(el, tail);
+    }
+    // 保存的旧顺序也必须保持同一 BAM 的 coverage → junction → alignment。
+    for (const t of S.bw.list.filter(isBam)) {
+      const el = byKey.get('bw:' + t.id);
+      const je = byKey.get('junc:' + t.id);
+      const ae = byKey.get('al:' + t.id);
+      if (el && je) {
+        el.after(je);
+        if (ae) je.after(ae);
+      }
     }
   }
 
@@ -4482,210 +6213,10 @@
     return terms.join(', ');
   }
 
-  /* ---- GTF gene search -------------------------------------------------
-     A second search box that only appears once at least one GTF/GFF
-     annotation track has been imported.  It searches gene names inside the
-     user's own annotation (via /api/loaded/search) instead of the bundled
-     RefSeq index used by the main locus box. */
-  let gtfRefresh = null;   // set by setupGtfSearch(); called when tracks change
-
-  function setupGtfSearch() {
-    const wrap = $('#gtfWrap');
-    const input = $('#gtfInput');
-    const sel = $('#gtfTrackSel');
-    const box = $('#gtfSuggest');
-    if (!wrap || !input || !sel || !box) return;
-
-    const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g,
-      (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-
-    let timer = 0;
-    let hits = [];
-    let selIdx = -1;
-
-    function geneTracks() {
-      return S.loaded.list.filter((t) => t.kind === 'gene');
-    }
-
-    function hide() {
-      box.hidden = true;
-      hits = [];
-      selIdx = -1;
-    }
-
-    // 搜到某个导入基因时，把它所在轨道自动勾上——否则恢复会话时轨道是关的，
-    // 跳过去只能看到 RefSeq，用户会以为「搜到了但没显示」。
-    function ensureTrackOn(tid) {
-      if (!tid || S.loaded.on[tid] !== false) return;
-      S.loaded.on[tid] = true;
-      renderLoadedList();
-      ensureLoadedTrackEls();
-      scheduleRender();
-    }
-
-    function show(list) {
-      if (!list.length) { hide(); return; }
-      selIdx = -1;
-      box.innerHTML = list.map((h, i) =>
-        `<div class="sg" data-i="${i}"><span class="k">GTF</span>` +
-        `<span class="n">${esc(h.name)}</span>` +
-        `<span class="p">${h.trackName ? esc(h.trackName) + ' · ' : ''}` +
-        `${esc(h.chrom)}:${fmt(h.start + 1)} · ${esc(h.strand)}</span></div>`
-      ).join('');
-      box.hidden = false;
-      [...box.children].forEach((el) => { el.onclick = () => go(list[+el.dataset.i]); });
-    }
-
-    function go(hit) {
-      hide();
-      const raw = input.value;
-      // 正在输入多个基因（已有分隔符 / 末尾刚敲了逗号）：补全这一段并继续输入
-      const multi = splitTerms(raw).length > 1 || /[,;，；+]\s*$/.test(raw);
-      input.value = commitTerm(raw, hit.name);
-      if (multi) { input.value += ', '; input.focus(); return; }
-      input.blur();
-      ensureTrackOn(hit.track);
-      const pad = Math.max(3000, Math.round((hit.end - hit.start) * 0.35));
-      navigate(hit.chrom, Math.max(0, hit.start - pad), hit.end + pad);
-      // selection mirrors a canvas click on the same imported gene
-      const provisional = { name: hit.name, chrom: hit.chrom, start: hit.start,
-                            end: hit.end, strand: hit.strand, tx: [] };
-      S.sel = provisional;
-      S.selTrack = hit.track;
-      renderInfo();
-      scheduleRender();
-      // search hits only carry gene bounds — pull the full model (transcripts)
-      api('loaded/genes', { track: hit.track, chrom: hit.chrom, s: hit.start, e: hit.end })
-        .then((r) => {
-          if (S.sel !== provisional) return;   // user moved on
-          const g = (r.genes || []).find((x) => x.name === hit.name
-            && x.start === hit.start && x.end === hit.end);
-          if (g) {
-            S.sel = Object.assign({}, g, { chrom: hit.chrom });
-            renderInfo();
-            scheduleRender();
-          }
-        }).catch(() => {});
-    }
-
-    // 解析单个词：位置串直接给区间；基因名走导入注释，精确同名优先
-    async function resolveGtfTerm(t) {
-      const loc = parseLocus(t, S.asm.chroms);
-      if (loc) return { chrom: loc.chrom, start: loc.start, end: loc.end };
-      try {
-        const r = await api('loaded/search', { db: S.asm.id, q: t, track: sel.value || 'all' });
-        const list = r.hits || [];
-        const hit = list.find((h) => h.name.toUpperCase() === t.toUpperCase()) || list[0];
-        if (!hit) return null;
-        const pad = Math.max(3000, Math.round((hit.end - hit.start) * 0.35));
-        return { chrom: hit.chrom, start: Math.max(0, hit.start - pad),
-                 end: hit.end + pad, hit };
-      } catch { return null; }
-    }
-
-    // 回车提交：单词 → 跳转；多词 → 自动分屏（与 RefSeq 搜索框一致）
-    async function submitGtf() {
-      const text = input.value.trim();
-      if (!text) return;
-      const terms = splitTerms(text);
-      if (!terms.length) return;
-
-      if (terms.length === 1) {
-        const loc = parseLocus(text, S.asm.chroms);
-        if (loc) { hide(); input.blur(); navigate(loc.chrom, loc.start, loc.end); return; }
-        const v = await resolveGtfTerm(text);
-        if (!v) { toast(T(`未在导入注释中找到「${text}」`)); return; }
-        if (v.hit) { go(v.hit); return; }
-        hide(); input.blur(); navigate(v.chrom, v.start, v.end);
-        return;
-      }
-
-      const targets = [];
-      const missing = [];
-      for (const t of terms.slice(0, 5)) {
-        const v = await resolveGtfTerm(t);
-        if (v) targets.push(v); else missing.push(t);
-      }
-      if (!targets.length) {
-        toast(T(`未在导入注释中找到：${missing.join(' / ')}`));
-        return;
-      }
-
-      hide();
-      input.blur();
-      if (targets.length === 1) {
-        navigate(targets[0].chrom, targets[0].start, targets[0].end);
-        if (missing.length) toast(T(`未找到：${missing.join(' / ')}`));
-        return;
-      }
-      // 多屏：与主搜索框的多位置逻辑完全一致
-      for (const v of targets) if (v.hit) ensureTrackOn(v.hit.track);
-      if (S.panels.length !== targets.length) setPanelCount(targets.length);
-      for (let i = 0; i < targets.length; i++) {
-        const v = targets[i];
-        await navigatePanel(i, v.chrom, v.start, v.end, { force: true });
-      }
-      setActivePanel(0);
-      syncPaneHeads();
-      scheduleRender();
-      toast(missing.length
-        ? T(`${targets.length} 屏（未找到：${missing.join(' / ')}）`)
-        : T(`${terms.slice(0, targets.length).join(' / ')} → ${targets.length} 屏`));
-    }
-
-    input.addEventListener('input', () => {
-      clearTimeout(timer);
-      // 只对「最后一段」做联想，前面的已输入项不参与搜索
-      const q = lastTerm(input.value);
-      if (!q) { hide(); return; }
-      timer = setTimeout(async () => {
-        try {
-          const r = await api('loaded/search', { db: S.asm.id, q, track: sel.value || 'all' });
-          hits = r.hits || [];
-          show(hits);
-        } catch { /* ignore */ }
-      }, 130);
-    });
-
-    input.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        // 输入了多个基因/位置时，回车一律按「多屏」处理，避免被联想候选截胡
-        if (splitTerms(input.value.trim()).length > 1) { hide(); submitGtf(); }
-        else if (selIdx >= 0 && hits[selIdx]) go(hits[selIdx]);
-        else if (hits.length) go(hits[0]);
-        else submitGtf();
-      } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-        if (!hits.length) return;
-        e.preventDefault();
-        selIdx = clamp(selIdx + (e.key === 'ArrowDown' ? 1 : -1), 0, hits.length - 1);
-        [...box.children].forEach((el, i) => el.classList.toggle('sel', i === selIdx));
-      } else if (e.key === 'Escape') {
-        hide();
-        input.blur();
-      }
-    });
-
-    input.addEventListener('blur', () => setTimeout(hide, 160));
-    sel.addEventListener('change', () => {
-      if (input.value.trim()) input.dispatchEvent(new Event('input'));
-    });
-    document.addEventListener('click', (e) => {
-      if (!e.target.closest('#gtfWrap')) hide();
-    });
-
-    // show/hide the box and repopulate the track picker
-    gtfRefresh = function () {
-      const tracks = geneTracks();
-      wrap.hidden = tracks.length === 0;
-      if (!tracks.length) { hide(); return; }
-      const cur = sel.value;
-      sel.innerHTML = T('<option value="all">全部轨道</option>') +
-        tracks.map((t) => `<option value="${esc(t.id)}">${esc(t.name)}</option>`).join('');
-      sel.value = (cur && (cur === 'all' || tracks.some((t) => t.id === cur))) ? cur : 'all';
-    };
-    gtfRefresh();
-  }
+  /* ---- search scope ----------------------------------------------------
+     导入 GTF/GFF 后不再新增第二个搜索框：搜索框左侧出现一个下拉，用来切换
+     搜索范围（内置注释 / 全部导入 / 指定轨道）。选择状态不落盘，重启回默认。 */
+  let gtfRefresh = null;   // 重新填充范围下拉；轨道变化时调用
 
   function bindUI() {
     bindLabelResize();
@@ -4708,17 +6239,24 @@
     $('#view').addEventListener('contextmenu', (e) => {
       const trk = e.target.closest('.track');
       if (!trk) return;
-      if (trk.dataset.bw) {
+      if (trk.dataset.align) {
+        e.preventDefault();
+        openTrackPop(trk.querySelector('.track-label'), 'align', trk.dataset.align);
+      } else if (trk.dataset.junc) {
+        e.preventDefault();
+        openTrackPop(trk.querySelector('.track-label'), 'junc', trk.dataset.junc);
+      } else if (trk.dataset.bw) {
         e.preventDefault();
         openTrackPop(trk.querySelector('.track-label'), 'bw', trk.dataset.bw);
       } else if (trk.dataset.track === 'genes' || trk.dataset.track === 'gc') {
         e.preventDefault();
-        openTrackPop(trk.querySelector('.track-label'), trk.dataset.track);
+        const detail = trk.dataset.track === 'genes' ? geneDetailsForEvent(e) : null;
+        openTrackPop(trk.querySelector('.track-label'), trk.dataset.track, undefined, detail);
       } else if (trk.dataset.loaded) {
         const t = S.loaded.list.find((x) => x.id === trk.dataset.loaded);
         if (t && t.kind === 'gene') {
           e.preventDefault();
-          openTrackPop(trk.querySelector('.track-label'), 'lgenes', t.id);
+          openTrackPop(trk.querySelector('.track-label'), 'lgenes', t.id, geneDetailsForEvent(e, t));
         }
       }
     });
@@ -4817,7 +6355,7 @@
     }
 
     /* ---- 侧栏：轨道开关折叠 / 染色体 chip 展开（P0-2） ---- */
-    for (const [btnId, bodyId] of [['#tracksToggle', '#tracksBody'], ['#chromChip', '#chromList']]) {
+    for (const [btnId, bodyId] of [['#tracksToggle', '#tracksBody']]) {
       const btn = $(btnId), body = $(bodyId);
       if (!btn || !body) continue;
       btn.onclick = (e) => {
@@ -4881,12 +6419,37 @@
     });
 
     const input = $('#locus');
+    // 搜索范围下拉（自绘菜单，不是原生 <select>，见 style.css 的 .scope-item）
+    // 'refseq' 走内置 RefSeq 索引；其它值走 /api/loaded/search
+    const scopeBtn = $('#scopeBtn');
+    const scopeMenu = $('#scopeMenu');
+    const scopeLabel = $('#scopeLabel');
+    let scopeVal = 'refseq';
+    const scopeLoaded = () => scopeVal !== 'refseq';
+    const scopeTrack = () => scopeVal === 'refseq' ? 'all' : scopeVal;
+    const geneTracks = () => S.loaded.list.filter((t) => t.kind === 'gene');
+    const escHtml = (s) => String(s == null ? '' : s).replace(/[&<>"']/g,
+      (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+    // 搜到导入注释里的基因时自动勾上它所在轨道，否则跳过去只看到 RefSeq
+    function ensureLoadedTrackOn(tid) {
+      if (!tid || S.loaded.on[tid] !== false) return;
+      S.loaded.on[tid] = true;
+      renderLoadedList();
+      ensureLoadedTrackEls();
+      scheduleRender();
+    }
     let sugTimer = 0;
+    let sugHideTimer = 0;
     let sugHits = [];
     let sugSel = -1;
 
     input.addEventListener('input', () => {
       clearTimeout(sugTimer);
+      clearTimeout(sugHideTimer);
+      // 旧候选立刻作废：否则切换范围后马上回车，会跳到上一次范围的结果
+      sugHits = [];
+      sugSel = -1;
       const raw = input.value;
       if (!raw.trim()) { hideSuggest(); return; }
       // 只对「最后一段」做联想，前面的已输入项不参与搜索。
@@ -4895,7 +6458,9 @@
       if (!q) { hideSuggest(); return; }
       sugTimer = setTimeout(async () => {
         try {
-          const r = await api('search', { db: S.asm.id, q });
+          const r = scopeLoaded()
+            ? await api('loaded/search', { db: S.asm.id, q, track: scopeTrack() })
+            : await api('search', { db: S.asm.id, q });
           sugHits = r.hits || [];
           showSuggest(sugHits, q);
         } catch { /* ignore */ }
@@ -4934,6 +6499,11 @@
           return T(`<div class="sg" data-i="${i}"><span class="k">位置</span>
             <span class="n">${h.label}</span></div>`);
         }
+        if (h.type === 'loaded-gene') {
+          return T(`<div class="sg" data-i="${i}"><span class="k">GTF</span>
+            <span class="n">${escHtml(h.name)}</span>
+            <span class="p">${escHtml(h.trackName || '')}${h.trackName ? ' · ' : ''}${escHtml(h.chrom)}:${fmt(h.start + 1)} · ${escHtml(h.strand)}</span></div>`);
+        }
         return T(`<div class="sg" data-i="${i}"><span class="k">基因</span>
           <span class="n">${h.name}</span>
           <span class="p">${h.chrom}:${fmt(h.start + 1)} · ${h.strand}</span></div>`);
@@ -4951,6 +6521,7 @@
     }
 
     function goHit(hit) {
+      if (!hit) { hideSuggest(); return; }
       hideSuggest();
       const name = hit.type === 'locus' ? (hit.label || hit.chrom) : hit.name;
       const raw = input.value;
@@ -4965,6 +6536,24 @@
       input.blur();
       if (hit.type === 'locus') {
         navigate(hit.chrom, hit.start, hit.end);
+      } else if (hit.type === 'loaded-gene') {
+        const pad = Math.max(3000, Math.round((hit.end - hit.start) * 0.35));
+        navigate(hit.chrom, Math.max(0, hit.start - pad), hit.end + pad);
+        ensureLoadedTrackOn(hit.track);
+        const provisional = { name: hit.name, chrom: hit.chrom, start: hit.start,
+                              end: hit.end, strand: hit.strand, tx: [] };
+        S.sel = provisional;
+        S.selTrack = hit.track;
+        renderInfo();
+        scheduleRender();
+        // 搜索命中只带基因边界，再取一次完整模型（转录本/外显子）填详情面板
+        api('loaded/genes', { track: hit.track, chrom: hit.chrom, s: hit.start, e: hit.end })
+          .then((r) => {
+            if (S.sel !== provisional) return;   // 用户已经切走了
+            const g = (r.genes || []).find((x) => x.name === hit.name);
+            if (g) { S.sel = g; renderInfo(); scheduleRender(); }
+          })
+          .catch(() => { /* 保留临时模型即可 */ });
       } else {
         const pad = Math.max(3000, Math.round((hit.end - hit.start) * 0.35));
         navigate(hit.chrom, hit.start - pad, hit.end + pad);
@@ -4979,9 +6568,11 @@
       const loc = parseLocus(t, S.asm.chroms);
       if (loc) return loc;
       try {
-        const r = await api('search', { db: S.asm.id, q: t });
+        const r = scopeLoaded()
+          ? await api('loaded/search', { db: S.asm.id, q: t, track: scopeTrack() })
+          : await api('search', { db: S.asm.id, q: t });
         const hits = r.hits || [];
-        const hit = hits.find((h) => h.type === 'gene') || hits[0];
+        const hit = hits.find((h) => h.type === 'gene' || h.type === 'loaded-gene') || hits[0];
         if (!hit) return null;
         if (hit.type === 'locus') return { chrom: hit.chrom, start: hit.start, end: hit.end };
         const pad = Math.max(3000, Math.round((hit.end - hit.start) * 0.35));
@@ -5021,16 +6612,132 @@
       }
 
       try {
-        const r = await api('search', { db: S.asm.id, q: text });
+        const r = scopeLoaded()
+          ? await api('loaded/search', { db: S.asm.id, q: text, track: scopeTrack() })
+          : await api('search', { db: S.asm.id, q: text });
         if (r.hits && r.hits.length) return goHit(r.hits[0]);
       } catch { /* ignore */ }
       toast(T(`未找到「${text}」`));
     }
 
-    input.addEventListener('blur', () => setTimeout(hideSuggest, 160));
+    input.addEventListener('blur', () => {
+      clearTimeout(sugHideTimer);
+      sugHideTimer = setTimeout(hideSuggest, 160);
+    });
 
-    // 导入 GTF/GFF 注释后出现的第二个搜索框（搜索用户自己的注释）
-    setupGtfSearch();
+    // 搜索范围下拉：没有导入注释时禁用，只保留「内置」一项
+    gtfRefresh = function () {
+      if (!scopeBtn) return;
+      const tracks = geneTracks();
+      const items = [{ v: 'refseq', label: T('内置') }];
+      if (tracks.length) {
+        items.push({ v: 'all', label: T('全部导入') });
+        for (const t of tracks) items.push({ v: t.id, label: t.name });
+      }
+      if (!items.some((it) => it.v === scopeVal)) scopeVal = 'refseq';
+      scopeMenu.innerHTML = items.map((it) =>
+        `<div class="scope-item${it.v === scopeVal ? ' cur' : ''}" role="option"` +
+        ` aria-selected="${it.v === scopeVal}" data-v="${escHtml(it.v)}">` +
+        `<span class="nm">${escHtml(it.label)}</span>` +
+        `${it.v === scopeVal ? '<span class="ck">✓</span>' : ''}</div>`).join('');
+      const cur = items.find((it) => it.v === scopeVal) || items[0];
+      scopeLabel.textContent = cur.label;
+      scopeBtn.disabled = tracks.length === 0;
+      scopeBtn.title = tracks.length
+        ? T('搜索范围：内置注释，或某个导入的 GTF / GFF 注释')
+        : T('搜索范围：内置注释（导入 GTF / GFF 后可选导入注释）');
+    };
+    gtfRefresh();
+
+    // 自绘菜单开合。原生 <select> 的弹层改不了高亮色、弹出还慢，所以自己画
+    const scopeOpen = () => scopeMenu && !scopeMenu.hidden;
+    function closeScope() {
+      if (!scopeOpen()) return;
+      scopeMenu.hidden = true;
+      scopeBtn.classList.remove('on');
+      scopeBtn.setAttribute('aria-expanded', 'false');
+    }
+    function openScope() {
+      if (!scopeBtn || scopeBtn.disabled) return;
+      hideSuggest();
+      scopeMenu.hidden = false;
+      scopeBtn.classList.add('on');
+      scopeBtn.setAttribute('aria-expanded', 'true');
+      const cur = scopeMenu.querySelector('.scope-item.cur');
+      if (cur && cur.scrollIntoView) cur.scrollIntoView({ block: 'nearest' });
+    }
+    if (scopeBtn && scopeMenu) {
+      scopeBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (scopeOpen()) closeScope(); else openScope();
+      });
+      // 键盘也能用：上下键移动、回车确认、Esc 关掉
+      scopeBtn.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') { closeScope(); input.focus(); }
+        else if ((e.key === 'ArrowDown' || e.key === 'ArrowUp') && !scopeOpen()) {
+          e.preventDefault(); openScope();
+        }
+      });
+      scopeMenu.addEventListener('click', (e) => {
+        const el = e.target.closest('.scope-item');
+        if (!el) return;
+        e.stopPropagation();
+        closeScope();
+        const v = el.dataset.v;
+        if (v === scopeVal) { input.focus(); return; }
+        scopeVal = v;
+        gtfRefresh();
+        // 切换范围后先丢掉上一种范围的候选，再按新范围重新联想
+        hideSuggest();
+        clearTimeout(sugHideTimer);   // 别让输入框失焦时的延迟关闭把新候选吞掉
+        if (input.value.trim()) input.dispatchEvent(new Event('input'));
+        input.focus();
+      });
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('#scopeWrap')) closeScope();
+      });
+    }
+
+    // 染色体下拉（同 IGV 的染色体选择器）：选某条 = 整条染色体，选「全部」= 全基因组视野
+    const chromSel = $('#chromSel');
+    const chromMenu = $('#chromMenu');
+    if (chromSel && chromMenu) {
+      const chromOpen = () => !chromMenu.hidden;
+      function closeChrom() {
+        if (!chromOpen()) return;
+        chromMenu.hidden = true;
+        chromSel.classList.remove('on');
+        chromSel.setAttribute('aria-expanded', 'false');
+      }
+      function openChrom() {
+        renderChromMenu();
+        hideSuggest();
+        closeScope();
+        chromMenu.hidden = false;
+        chromSel.classList.add('on');
+        chromSel.setAttribute('aria-expanded', 'true');
+        const cur = chromMenu.querySelector('.scope-item.cur');
+        if (cur && cur.scrollIntoView) cur.scrollIntoView({ block: 'nearest' });
+      }
+      chromSel.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (chromOpen()) closeChrom(); else openChrom();
+      });
+      chromSel.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeChrom();
+        else if (e.key === 'ArrowDown' && !chromOpen()) { e.preventDefault(); openChrom(); }
+      });
+      chromMenu.addEventListener('click', (e) => {
+        const el = e.target.closest('.scope-item');
+        if (!el) return;
+        e.stopPropagation();
+        closeChrom();
+        pickChrom(el.dataset.chrom);
+      });
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('.chrom-wrap')) closeChrom();
+      });
+    }
 
     // ---- view interactions
     const view = $('#view');
@@ -5041,6 +6748,7 @@
       if (e.target.closest('.track-label') || e.target.closest('.ph-in')) return;
       const p = eventPane(e);            // 点哪一屏就操作哪一屏
       if (!p.rect) return;
+      if (S.genomeView) return;   // 全基因组视野里没有可平移的单一视口
       // 操作目标跟着指针走；视觉上的「选中」交给 click 决定，这样同一屏再点一次就能取消
       S.act = p.idx;
       drag = { idx: p.idx, x: e.clientX, start: S.view.start, end: S.view.end,
@@ -5091,7 +6799,8 @@
     };
 
     view.addEventListener('wheel', (e) => {
-      if (!S.asm) return;
+      if (scrollAlignmentTrack(e)) return;
+      if (!S.asm || S.genomeView) return;
       e.preventDefault();
       const idx = eventPane(e).idx;
       withPanel(idx, () => zoomAt(e.deltaY > 0 ? 1.25 : 0.8, fracAt(e)));
@@ -5115,6 +6824,13 @@
       const name = track.dataset.track;
       let acted = false;                    // 这一下点击已经做了别的动作（命中基因/跳转）就不再切换选中
       const end = () => { if (!acted) togglePane(pp.idx); };
+      if (name === 'genome') {
+        // 全基因组视野：点哪条染色体就进哪条（同 IGV）
+        const slot = genomeHit(x);
+        if (slot) pickChrom(slot.name);
+        acted = true;
+        return end();
+      }
       if (name === 'ideogram') {
         // 分屏后每屏是自己那条染色体：按「点到的那一屏」的染色体长度换算坐标
         const P = S.panels[pp.idx] || S.panels[S.act];
@@ -5197,9 +6913,19 @@
       const x = e.clientX - rect.left;
       if (x < 0 || x > rect.width) { tip.hidden = true; return; }
       const my = e.clientY - rect.top;
+      // 全基因组视野：悬停显示染色体名 + 长度
+      if (S.genomeView) {
+        const slot = genomeHit(x);
+        if (!slot) { tip.hidden = true; return; }
+        tip.textContent = `${slot.name} · ${(slot.len / 1e6).toFixed(1)} Mb`;
+        tip.hidden = false;
+        tip.style.left = Math.min(window.innerWidth - tip.offsetWidth - 8, e.clientX + 12) + 'px';
+        tip.style.top = (e.clientY + 16) + 'px';
+        return;
+      }
       // 只在被悬停的那块面板的上下文里做命中计算（不改活动面板）
       const info = withPanel(pp.idx, () => {
-        const bp = Math.round(bpAt(x));
+        const bp = Math.floor(bpAt(x));
         let extra = '';
         if (track.dataset.track === 'genes') {
           const hit = geneAt(x, my);
@@ -5236,6 +6962,16 @@
             const b0 = Math.round(d.start + Math.floor((bpAt(x) - d.start) / binBp) * binBp);
             extra = `  ${track.dataset.bw} = ${formatVal(v.m)}`
               + T(`  (峰值 ${formatVal(v.x)})  [${fmt(b0 + 1)}–${fmt(Math.round(b0 + binBp))}]`);
+          }
+        }
+        if (track.dataset.track === 'genes') {
+          const text = geneFeatureHoverText(geneDetailsAt(x, my));
+          if (text) extra = '\n' + text;
+        } else if (track.dataset.loaded) {
+          const annotation = S.loaded.list.find(t => t.id === track.dataset.loaded && t.kind === 'gene');
+          if (annotation) {
+            const text = geneFeatureHoverText(geneDetailsAt(x, my, annotation, pp.idx));
+            if (text) extra = '\n' + text;
           }
         }
         return { bp, extra, chrom: S.view.chrom };
@@ -5463,8 +7199,14 @@
       xhr.onload = () => {
         let data = {};
         try { data = JSON.parse(xhr.responseText); } catch { /* ignore */ }
-        if (xhr.status >= 200 && xhr.status < 300 && data.ok) resolve(data.track);
-        else reject(new Error(data.error || `HTTP ${xhr.status}`));
+        if (xhr.status >= 200 && xhr.status < 300 && data.ok) {
+          // 一个 SEG 里可能装了多个样本 → 后端返回 tracks 数组
+          // reused：同一个文件之前已导入过，后端复用了原轨道（不再生成 xxx_2 副本）
+          resolve({
+            tracks: data.tracks && data.tracks.length ? data.tracks : (data.track ? [data.track] : []),
+            reused: !!data.reused,
+          });
+        } else reject(new Error(data.error || `HTTP ${xhr.status}`));
       };
       xhr.onerror = () => reject(new Error(T('网络错误')));
       xhr.send(file);
@@ -5476,28 +7218,54 @@
     if (!files.length) return;
     let ok = 0;
     const fails = [];
+    const imported = [];
     for (let i = 0; i < files.length; i++) {
       const f = files[i];
       const label = files.length > 1 ? `(${i + 1}/${files.length}) ${f.name}` : f.name;
       impShow(label);
       try {
-        const track = await uploadOne(f, {
+        const res = await uploadOne(f, {
           upload: (frac) => impUpload(frac, T(`上传中 ${Math.round(frac * 100)}% · ${fmtBytes(f.size)}`)),
           processing: () => impProcessing(T('已上传，正在解析 / 建立索引…（大文件可能需要 10–30 秒）')),
         });
+        const tracks = res.tracks;
         ok++;
-        const extra = track && track.genes ? T(` · ${fmt(track.genes)} 个基因`)
-          : track && track.features ? T(` · ${fmt(track.features)} 个区间`) : '';
-        impDone(T(`已导入 ${track ? track.name : f.name}${extra}`));
+        for (const t of tracks) if (t.id) imported.push(t.id);
+        const first = tracks[0] || {};
+        let extra = '';
+        if (first.heatmap && first.samples > 1) {
+          // 多样本 SEG：一条轨道，画成热图
+          extra = T(` · ${first.samples} 个样本`) + T(` · ${fmt(first.segments)} 个区间`);
+        } else if (first.genes) extra = T(` · ${fmt(first.genes)} 个基因`);
+        else if (first.segments) extra = T(` · ${fmt(first.segments)} 个区间`);
+        else if (first.features) extra = T(` · ${fmt(first.features)} 个区间`);
+        // 同一个文件拖两次：复用原轨道，别在列表里堆两行同名轨道
+        impDone(res.reused
+          ? T(`${first.name || f.name} 之前已导入，已定位到原轨道`)
+          : T(`已导入 ${first.name || f.name}${extra}`));
       } catch (e) {
         fails.push(`${f.name}: ${e.message}`);
         impError(`${f.name}：${e.message}`);
       }
     }
     await loadBwTracks();
+    // 刚导入的轨道直接勾上：否则列表里已经排到第 6 条以后时它默认是关的，
+    // 用户会以为「导入没成功」
+    let touched = false;
+    for (const id of imported) {
+      if (S.bw.on[id] !== undefined) {
+        S.bw.on[id] = true;
+        rememberBwOn(id, true);
+        touched = true;
+      }
+    }
+    if (touched) { renderBwList(); ensureBwTrackEls(); ensureAll(true); }
     await loadLoadedTracks();
-    if (fails.length) toast(T(`导入 ${ok} 个，失败：${fails[0]}`));
-    else if (files.length > 1) toast(T(`已导入 ${ok} 个文件`));
+    // 失败要说清楚是哪个文件：一次导入多个时只报第一个，用户根本不知道另一个为什么没出来
+    if (fails.length) {
+      const extra = fails.length > 2 ? `（共 ${fails.length} 个）` : '';
+      toast(T(`导入 ${ok} 个，失败：${fails.slice(0, 2).join('；')}${extra}`));
+    } else if (files.length > 1) toast(T(`已导入 ${ok} 个文件`));
   }
 
   async function loadLoadedTracks(opts) {
@@ -5509,13 +7277,14 @@
     S.loaded.data = {};
     S.loaded._pending = {};
     for (const t of S.loaded.list) {
-      // 启动时不自动展开上次导入的基因/序列轨道，刚导入的照常显示
-      if (S.loaded.on[t.id] === undefined) S.loaded.on[t.id] = !fresh;
+      // 导入的注释 / 序列轨道默认打开：重开软件时全关着，用户会以为导入丢了
+      if (S.loaded.on[t.id] === undefined) S.loaded.on[t.id] = true;
     }
     const sec = $('#loadedSec');
     if (sec) sec.hidden = S.loaded.list.length === 0;
     renderLoadedList();
     ensureLoadedTrackEls();
+    if (S.asm && S.asm.custom) refreshCustomChroms();
     // show/hide the GTF gene search box + refresh its track picker
     if (gtfRefresh) gtfRefresh();
     scheduleRender();
@@ -5877,6 +7646,9 @@
     const rowsEnd = [];
     const placed = [];
     const genes = ((d && d.genes) || []).slice().sort((a, b) => a.start - b.start);
+    const collapsed = geneCollapsed(t.id);
+    // 折叠模式（默认）：第 0 行画全部基因，被展开的基因从第 1 行往下排
+    if (collapsed) rowsEnd.push(Infinity);
     let visible = 0;
     for (const g of genes) {
       if (rowsEnd.length > maxRows) break;
@@ -5896,7 +7668,7 @@
         : txl;
 
       let tgl = null;
-      if (multi) {
+      if (multi && (!collapsed || expanded)) {
         const TGL = 12, GAP = 4;
         if (Math.max(0, x2) + GAP + TGL <= w - 2) tgl = { x: Math.max(0, x2) + GAP, w: TGL, h: TGL, left: false };
         else tgl = { x: Math.max(2, x1 - GAP - TGL), w: TGL, h: TGL, left: true };
@@ -5914,6 +7686,11 @@
       const lw = showLabel ? Math.min(170, textWidth(lwText, GENE_FONT) + 12) : 0;
       const tglReserve = tgl && !tgl.left ? tgl.w + 8 : 0;
       const need = Math.max(x2, x1 + 3) + lw + tglReserve;
+      // 折叠模式：没展开的基因统一放第 0 行（同 RefSeq 的 collapsed）
+      if (collapsed && !expanded) {
+        placed.push({ g, x1, x2, r: 0, span: 1, tgl, expanded: false, txl, rows, labels: [] });
+        continue;
+      }
       const minGap = tgl && tgl.left ? 18 : 6;
       // never negative: a gene crossing the left edge has x1 < 0 and an empty
       // row (rowsEnd 0) must always be placeable, otherwise this loops forever
@@ -6250,6 +8027,74 @@
     ctx.textAlign = 'left';
     if (transOn) drawAminoAcids(ctx, seq, d.start, w, cellW, BASE_H - 1, flip, transTableFor(t.id));
     if (sub) sub.textContent = flip ? T(`互补链 · ${seq.length} bp`) : `FASTA · ${seq.length} bp`;
+  }
+
+  /* 从本地绝对路径挂载：不做上传、不复制文件。
+     BAM 旁边的 .bai / .csi 由服务端自动接管（add_local 里找同目录索引），
+     所以用户只要给一个 .bam 路径就能走「按需随机读取」的快路径。 */
+  function promptLocalPath() {
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.38);display:flex;'
+      + 'align-items:center;justify-content:center;z-index:9999';
+    const box = document.createElement('div');
+    box.style.cssText = 'background:var(--panel);border:1px solid var(--border);border-radius:10px;'
+      + 'padding:14px 16px;width:min(620px,92vw);display:flex;flex-direction:column;gap:10px;'
+      + 'box-shadow:0 12px 40px rgba(0,0,0,.35)';
+    const head = document.createElement('div');
+    head.style.cssText = 'font:600 13px system-ui;color:var(--text)';
+    head.textContent = T('从本地路径挂载');
+    const tip = document.createElement('div');
+    tip.style.cssText = 'font:11.5px/1.5 system-ui;color:var(--muted)';
+    tip.textContent = T('填文件的绝对路径（.bam / .bw / .seg / .gtf …）。不会复制文件；BAM 同目录下的 .bai 会自动用上。');
+    const inp = document.createElement('input');
+    inp.placeholder = 'C:////data////sample.bam';
+    inp.style.cssText = 'width:100%;box-sizing:border-box;padding:7px 9px;font:12px ui-monospace;'
+      + 'border:1px solid var(--border);border-radius:6px;background:var(--canvas-bg);color:var(--text)';
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;gap:8px;justify-content:flex-end';
+    const mk = (label, primary) => {
+      const b = document.createElement('button');
+      b.textContent = label;
+      b.style.cssText = 'padding:6px 14px;border-radius:6px;font:12.5px system-ui;cursor:pointer;'
+        + (primary
+          ? 'border:1px solid var(--accent);background:var(--accent);color:#fff'
+          : 'border:1px solid var(--border);background:transparent;color:var(--text-dim)');
+      return b;
+    };
+    const cancel = mk(T('取消'), false);
+    const ok = mk(T('挂载'), true);
+    const err = document.createElement('div');
+    err.style.cssText = 'font:11.5px system-ui;color:#c0392b;min-height:14px';
+    const close = () => wrap.remove();
+    cancel.onclick = close;
+    wrap.onclick = (e) => { if (e.target === wrap) close(); };
+    inp.onkeydown = (e) => { if (e.key === 'Enter') ok.click(); if (e.key === 'Escape') close(); };
+    const go = async () => {
+      const path = inp.value.trim();
+      if (!path) { err.textContent = T('请输入文件路径'); return; }
+      ok.disabled = true; ok.textContent = T('挂载中…'); err.textContent = '';
+      try {
+        const r = await fetch(`api/load_local?db=${encodeURIComponent(S.asm.id)}&path=${encodeURIComponent(path)}`,
+          { method: 'POST' });
+        const j = await r.json();
+        if (j.error) throw new Error(j.error);
+        close();
+        await loadBwTracks();
+        await loadLoadedTracks();
+        await ensureAll(true);
+        const t0 = (j.tracks && j.tracks[0]) || j.track || {};
+        toast(T(`已挂载 ${t0.name || path}`));
+      } catch (e) {
+        err.textContent = T('挂载失败：') + (e.message || e);
+        ok.disabled = false; ok.textContent = T('挂载');
+      }
+    };
+    ok.onclick = go;
+    row.append(cancel, ok);
+    box.append(head, tip, inp, err, row);
+    wrap.appendChild(box);
+    document.body.appendChild(wrap);
+    setTimeout(() => inp.focus(), 30);
   }
 
   /* ---------------------------------------------------- 导入入口（绑定） */

@@ -84,15 +84,15 @@ To see transcript structure:
 
 1. With the matching assembly selected, click **Import** in the top toolbar
    and choose a local file, or drag the file onto the window. Accepted formats
-   include bigWig, bedGraph, BAM, GTF/GFF, BED/peak files, and FASTA; see
+   include bigWig, bedGraph, SEG, BAM, GTF/GFF, BED/peak files, and FASTA; see
    :doc:`data-import` for format-specific requirements.
 2. Wait until the import progress panel reports completion. Signal files
    appear under **Signal tracks**; annotations and FASTA appear under
    **Imported**. Confirm that the new track's checkbox is on.
 3. Navigate to a region covered by the file. A track with no data at ``TP53``
-   is not necessarily an import failure. For imported GTF/GFF genes, use the
-   second **GTF** search box and its track selector to search your annotation
-   rather than the bundled RefSeq index.
+   is not necessarily an import failure. To search your own annotation instead
+   of the bundled RefSeq index, open the scope dropdown at the left edge of the
+   search box and choose **All imported** or a specific GTF/GFF track.
 4. For a signal or gene track, click its **gear** (or right-click its canvas
    track label) for settings. Signal settings include colour, automatic/fixed
    range, log scale, and grouping. Gene settings include transcript expansion
@@ -100,8 +100,8 @@ To see transcript structure:
 
 Use real files generated for your chosen reference assembly. The import
 examples in :doc:`data-import` use ``Scr_R1_IP.bw`` (signal) and
-``chr1_output.bam`` (alignments) on hg38. To inspect the BAM example, search
-``MTHFR`` or ``CLCN6`` on chromosome 1, not ``TP53``. The annotation example
+``SRR22507537.chr1.bam`` (alignments) on hg38. To inspect the BAM example,
+search ``MTHFR`` or ``CLCN6`` on chromosome 1, not ``TP53``. The annotation example
 ``representative_transcripts.gtf`` instead requires the yeast **sacCer3**
 assembly. These filenames identify the example inputs; use your own local
 files unless you have those datasets.

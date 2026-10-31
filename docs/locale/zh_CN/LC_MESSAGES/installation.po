@@ -1,348 +1,179 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) 2026, junjunlab
-# This file is distributed under the same license as the Orbit package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
-#
-#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Orbit 1.0\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-29 15:37+0800\n"
-"PO-Revision-Date: 2026-10-29 20:00+0800\n"
-"Last-Translator: junjunlab\n"
+"Project-Id-Version: Orbit\n"
 "Language: zh_CN\n"
-"Language-Team: zh_CN <LL@li.org>\n"
-"Plural-Forms: nplurals=1; plural=0;\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.18.0\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
 
-#: ../../installation.rst:2
+msgid ""
+msgstr "Project-Id-Version: Orbit\nLanguage: zh_CN\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=1; plural=0;\n"
+
+msgid ""
+msgstr "Project-Id-Version: Orbit 1.0\nReport-Msgid-Bugs-To: \nPOT-Creation-Date: 2026-10-29 15:37+0800\nPO-Revision-Date: 2026-10-29 20:00+0800\nLast-Translator: junjunlab\nLanguage: zh_CN\nLanguage-Team: zh_CN <LL@li.org>\nPlural-Forms: nplurals=1; plural=0;\nMIME-Version: 1.0\nContent-Type: text/plain; charset=utf-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: Babel 2.18.0\n"
+
 msgid "Installation"
 msgstr "安装"
 
-#: ../../installation.rst:4
-msgid ""
-"Pick the package for your platform from the `Releases page "
-"<https://github.com/junjunlab/Orbit/releases>`_."
+msgid "Pick the package for your platform from the `Releases page <https://github.com/junjunlab/Orbit/releases>`_."
 msgstr "在 `发布页面 <https://github.com/junjunlab/Orbit/releases>`_ 中选择适合你平台的安装包。"
 
-#: ../../installation.rst:11
 msgid "Platform"
 msgstr "平台"
 
-#: ../../installation.rst:12
 msgid "File"
 msgstr "文件"
 
-#: ../../installation.rst:13
 msgid "Size"
 msgstr "大小"
 
-#: ../../installation.rst:14
 msgid "Windows 10/11 x64"
 msgstr "Windows 10/11 x64"
 
-#: ../../installation.rst:15
-msgid "``Orbit-1.0.1-Windows-x64-Setup.exe``"
-msgstr "``Orbit-1.0.1-Windows-x64-Setup.exe``"
+msgid "``Orbit-1.0.2-Windows-x64-Setup.exe``"
+msgstr "``Orbit-1.0.2-Windows-x64-Setup.exe``"
 
-#: ../../installation.rst:16
 msgid "~150 MB"
 msgstr "约 150 MB"
 
-#: ../../installation.rst:17
 msgid "macOS, Apple Silicon"
 msgstr "macOS，Apple Silicon"
 
-#: ../../installation.rst:18
-msgid "``Orbit-1.0.1-macOS-arm64.dmg``"
-msgstr "``Orbit-1.0.1-macOS-arm64.dmg``"
+msgid "``Orbit-1.0.2-macOS-arm64.dmg``"
+msgstr "``Orbit-1.0.2-macOS-arm64.dmg``"
 
-#: ../../installation.rst:19
 msgid "~244 MB"
 msgstr "约 244 MB"
 
-#: ../../installation.rst:20
 msgid "macOS, Intel"
 msgstr "macOS，Intel"
 
-#: ../../installation.rst:21
-msgid "``Orbit-1.0.1-macOS-x86_64.dmg``"
-msgstr "``Orbit-1.0.1-macOS-x86_64.dmg``"
+msgid "``Orbit-1.0.2-macOS-x86_64.dmg``"
+msgstr "``Orbit-1.0.2-macOS-x86_64.dmg``"
 
-#: ../../installation.rst:22
 msgid "~253 MB"
 msgstr "约 253 MB"
 
-#: ../../installation.rst:25
 msgid "Windows"
 msgstr "Windows"
 
-#: ../../installation.rst:27
-msgid ""
-"Run the installer. It is a **per-user** installation: no administrator "
-"rights are required and nothing is written outside your profile."
+msgid "Run the installer. It is a **per-user** installation: no administrator rights are required and nothing is written outside your profile."
 msgstr "运行安装程序。这是**按用户**安装：不需要管理员权限，也不会向用户目录之外写入任何内容。"
 
-#: ../../installation.rst:30
 msgid "Program files: ``%LOCALAPPDATA%\\Programs\\Orbit``"
 msgstr "程序文件：``%LOCALAPPDATA%\\Programs\\Orbit``"
 
-#: ../../installation.rst:31
 msgid "Settings and logs: ``%LOCALAPPDATA%\\Orbit``"
 msgstr "设置与日志：``%LOCALAPPDATA%\\Orbit``"
 
-#: ../../installation.rst:33
-msgid ""
-"The installer offers a desktop shortcut (off by default) and can launch "
-"Orbit when it finishes."
+msgid "The installer offers a desktop shortcut (off by default) and can launch Orbit when it finishes."
 msgstr "安装程序可选择创建桌面快捷方式（默认关闭），并在结束时可直接启动 Orbit。"
 
-#: ../../installation.rst:38
-msgid ""
-"The executable is not code-signed, so Windows SmartScreen may show "
-"*\"Windows protected your PC\"*. Choose **More info → Run anyway**."
-msgstr ""
-"可执行文件未做代码签名，Windows SmartScreen 可能弹出 *\"Windows 已保护你的电脑\"*。请选择 **更多信息 → "
-"仍要运行**。"
+msgid "The executable is not code-signed, so Windows SmartScreen may show *\"Windows protected your PC\"*. Choose **More info → Run anyway**."
+msgstr "可执行文件未做代码签名，Windows SmartScreen 可能弹出 *\"Windows 已保护你的电脑\"*。请选择 **更多信息 → 仍要运行**。"
 
-#: ../../installation.rst:42
 msgid "macOS"
 msgstr "macOS"
 
-#: ../../installation.rst:44
 msgid "Open the ``.dmg`` and drag **Orbit** into *Applications*."
 msgstr "打开 ``.dmg``，把 **Orbit** 拖入 *应用程序*。"
 
-#: ../../installation.rst:46
-msgid ""
-"The build is ad-hoc signed but **not notarized**, so the first launch is "
-"blocked by Gatekeeper. Either:"
+msgid "The build is ad-hoc signed but **not notarized**, so the first launch is blocked by Gatekeeper. Either:"
 msgstr "该构建只做了临时签名（ad-hoc），**未经过公证**，因此首次启动会被 Gatekeeper 拦截。可以任选一种方式："
 
-#: ../../installation.rst:49
-msgid ""
-"right-click (or Control-click) the app and choose **Open**, then confirm,"
-" or"
+msgid "right-click (or Control-click) the app and choose **Open**, then confirm, or"
 msgstr "右键（或按住 Control 点击）应用图标，选择 **打开**，然后确认；或者"
 
-#: ../../installation.rst:50
 msgid "run once in Terminal::"
 msgstr "在终端中执行一次::"
 
-#: ../../installation.rst:54
-msgid ""
-"If macOS reports the app is *damaged and can't be opened*, the quarantine"
-" attribute is the cause — the ``xattr`` command above fixes it."
+msgid "If macOS reports the app is *damaged and can't be opened*, the quarantine attribute is the cause — the ``xattr`` command above fixes it."
 msgstr "如果 macOS 提示应用 *已损坏，无法打开*，那是隔离属性（quarantine）导致的 — 上面那条 ``xattr`` 命令即可解决。"
 
-#: ../../installation.rst:58
 msgid "Command line"
 msgstr "命令行"
 
-#: ../../installation.rst:60
-msgid ""
-"The frozen build accepts the same options as the Python module, which is "
-"handy for scripts and for running several instances side by side."
+msgid "The frozen build accepts the same options as the Python module, which is handy for scripts and for running several instances side by side."
 msgstr "打包后的程序接受与 Python 模块相同的选项，便于写脚本，也便于同时运行多个实例。"
 
-#: ../../installation.rst:67
 msgid "Option"
 msgstr "选项"
 
-#: ../../installation.rst:68
 msgid "Meaning"
 msgstr "含义"
 
-#: ../../installation.rst:69
 msgid "``--data PATH``"
 msgstr "``--data PATH``"
 
-#: ../../installation.rst:70
 msgid "Use another data directory instead of the bundled one"
 msgstr "改用其他数据目录，而不是随包附带的那一份"
 
-#: ../../installation.rst:71
 msgid "``--port N``"
 msgstr "``--port N``"
 
-#: ../../installation.rst:72
 msgid "Listen on a different port (default ``8765``)"
 msgstr "监听其他端口（默认 ``8765``）"
 
-#: ../../installation.rst:73
 msgid "``--host HOST``"
 msgstr "``--host HOST``"
 
-#: ../../installation.rst:74
 msgid "Bind address (default ``127.0.0.1``)"
 msgstr "绑定地址（默认 ``127.0.0.1``）"
 
-#: ../../installation.rst:75
 msgid "``--browser``"
 msgstr "``--browser``"
 
-#: ../../installation.rst:76
 msgid "Open the system browser instead of the native window"
 msgstr "改用系统浏览器打开，而不是原生窗口"
 
-#: ../../installation.rst:77
 msgid "``--no-browser``"
 msgstr "``--no-browser``"
 
-#: ../../installation.rst:78
 msgid "Headless: serve the API only"
 msgstr "无界面模式：只提供 API 服务"
 
-#: ../../installation.rst:79
 msgid "``--debug``"
 msgstr "``--debug``"
 
-#: ../../installation.rst:80
 msgid "Verbose logging, plus JavaScript console output from the window"
 msgstr "输出详细日志，并把窗口中的 JavaScript 控制台信息一并打印"
 
-#: ../../installation.rst:82
-msgid "Example — two instances, separate state, different ports::"
-msgstr "示例 — 两个实例、各自独立的状态、不同端口::"
+msgid "For a second instance, use a different port. To isolate imported data too, prepare a separate compatible data folder and pass it with ``--data``::"
+msgstr "第二个实例应使用不同端口。如需同时隔离导入数据，请准备独立且结构兼容的数据目录，并通过 ``--data`` 指定："
 
-#: ../../installation.rst:87
-msgid ""
-"``ORBIT_HOME`` moves the settings and cache directory, so instances do "
-"not share preferences."
-msgstr "``ORBIT_HOME`` 用于改变设置与缓存目录，这样多个实例不会共用偏好。"
+msgid "Changing the port alone does not isolate data. Do not rely on an unsupported ``ORBIT_HOME`` setting to separate research files."
+msgstr "只更换端口不会隔离数据。不要依赖未支持的 ``ORBIT_HOME`` 设置来隔离科研文件。"
 
-#: ../../installation.rst:91
 msgid "Where things are stored"
 msgstr "文件存放位置"
 
-#: ../../installation.rst:97
 msgid "What"
 msgstr "内容"
 
-#: ../../installation.rst:98
 msgid "Location"
 msgstr "位置"
 
-#: ../../installation.rst:99
 msgid "Preferences, session, Qt cache"
 msgstr "偏好设置、会话、Qt 缓存"
 
-#: ../../installation.rst:100
-msgid ""
-"``%LOCALAPPDATA%\\Orbit`` (Windows), ``~/Library/Application "
-"Support/Orbit`` (macOS)"
-msgstr ""
-"``%LOCALAPPDATA%\\Orbit`` (Windows)、``~/Library/Application "
-"Support/Orbit`` (macOS)"
+msgid "``%LOCALAPPDATA%\\Orbit`` (Windows), ``~/Library/Application Support/Orbit`` (macOS)"
+msgstr "``%LOCALAPPDATA%\\Orbit`` (Windows)、``~/Library/Application Support/Orbit`` (macOS)"
 
-#: ../../installation.rst:101
 msgid "Application log"
 msgstr "应用日志"
 
-#: ../../installation.rst:102
 msgid "``orbit.log`` in the directory above"
 msgstr "位于上述目录中的 ``orbit.log``"
 
-#: ../../installation.rst:103
 msgid "Annotation and assemblies"
 msgstr "注释与装配"
 
-#: ../../installation.rst:104
 msgid "``data/`` next to the executable"
 msgstr "可执行文件旁边的 ``data/``"
 
-#: ../../installation.rst:107
 msgid "Uninstalling"
 msgstr "卸载"
 
-#: ../../installation.rst:109
-msgid ""
-"Use *Add or remove programs* on Windows, or move the app to the Bin on "
-"macOS. User data in ``%LOCALAPPDATA%\\Orbit`` is left in place; delete it"
-" manually if you want a clean slate."
-msgstr ""
-"Windows 上使用 *添加或删除程序*，macOS 上把应用移到废纸篓即可。``%LOCALAPPDATA%\\Orbit`` "
-"中的用户数据会被保留；若想彻底清理，请手动删除。"
-
-msgid "Frontend export"
-msgstr "前端导出"
-
-msgid "``composePlot`` / ``composeVector`` generate the downloadable files"
-msgstr "``composePlot`` / ``composeVector`` 生成可下载的导出文件"
-
-msgid "Bundled newer build"
-msgstr "内置较新版本"
-
-msgid "Bundled older build"
-msgstr "内置较旧版本"
-
-msgid "UCSC ncbiRefSeq / sgdGene"
-msgstr "UCSC ncbiRefSeq / sgdGene"
-
-msgid "Response time depends on the network and reference index."
-msgstr "响应时间取决于网络状况和参考索引。"
-
-msgid ""
-"The range cache is in memory and per session, not a persistent offline "
-"genome."
-msgstr "区间缓存位于内存中，仅在本次会话有效，不是持久保存的离线基因组。"
-
-msgid "Local 2bit takes priority over the remote source."
-msgstr "本地 2bit 优先于远程序列源。"
-
-msgid ""
-"For a second instance, use a different port. To isolate imported data "
-"too, prepare a separate compatible data folder and pass it with "
-"``--data``:"
-msgstr "第二个实例应使用不同端口。如需同时隔离导入数据，请准备独立且结构兼容的数据目录，并通过 ``--data`` 指定："
-
-msgid ""
-"Changing the port alone does not isolate data. Do not rely on an "
-"unsupported ``ORBIT_HOME`` setting to separate research files."
-msgstr "只更换端口不会隔离数据。不要依赖未支持的 ``ORBIT_HOME`` 设置来隔离科研文件。"
-
-msgid ""
-"User data may remain in ``%LOCALAPPDATA%/Orbit`` or the application data "
-"folder. Back up imported research files before uninstalling. Do not "
-"delete an entire user-data folder merely to reset colours or another "
-"display preference."
-msgstr ""
-"用户数据可能仍保存在 ``%LOCALAPPDATA%/Orbit`` "
-"或应用数据目录中。卸载前请备份导入的科研文件，不要仅为了重置颜色等显示偏好而删除整个用户数据目录。"
-
-msgid ""
-"The backend uses the standard library ThreadingHTTPServer, bound to "
-"localhost by default. It serves the frontend and JSON APIs; the frontend "
-"composes exports."
-msgstr "后端采用标准库 ThreadingHTTPServer，默认绑定本机地址。它提供前端页面与 JSON API；导出由前端合成。"
-
-msgid ""
-"Set ``ORBIT_OFFLINE=1`` before launching to disable remote 2bit fallback."
-" A local matching 2bit supplies built-in reference operations offline. "
-"Imported FASTA remains an independent sequence track; see "
-":doc:`sequence`::"
-msgstr ""
-"启动前设置 ``ORBIT_OFFLINE=1`` 可禁用远程 2bit 回退。匹配的本地 2bit 支持内置参考序列操作离线工作。导入 "
-"FASTA 仍是独立序列轨道；详见 :doc:`sequence` 。"
-
-msgid ""
-"For a second instance, use a different port. To isolate imported data "
-"too, prepare a separate compatible data folder and pass it with "
-"``--data``::"
-msgstr "第二个实例应使用不同端口。如需同时隔离导入数据，请准备独立且结构兼容的数据目录，并通过 ``--data`` 指定："
-
-msgid ""
-"Use *Add or remove programs* on Windows, or move the app to the Bin on "
-"macOS. User data may remain in ``%LOCALAPPDATA%/Orbit`` or the "
-"application data folder. Back up imported research files before "
-"uninstalling. Do not delete an entire user-data folder merely to reset "
-"colours or another display preference."
-msgstr ""
-"Windows 可通过“添加或删除程序”卸载，macOS 可将应用移到废纸篓。用户数据可能仍保存在 "
-"``%LOCALAPPDATA%/Orbit`` "
-"或应用数据目录中。卸载前请备份导入的科研文件，不要仅为了重置颜色等显示偏好而删除整个用户数据目录。"
-
+msgid "Use *Add or remove programs* on Windows, or move the app to the Bin on macOS. User data may remain in ``%LOCALAPPDATA%/Orbit`` or the application data folder. Back up imported research files before uninstalling. Do not delete an entire user-data folder merely to reset colours or another display preference."
+msgstr "Windows 可通过“添加或删除程序”卸载，macOS 可将应用移到废纸篓。用户数据可能仍保存在 ``%LOCALAPPDATA%/Orbit`` 或应用数据目录中。卸载前请备份导入的科研文件，不要仅为了重置颜色等显示偏好而删除整个用户数据目录。"

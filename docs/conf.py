@@ -12,7 +12,7 @@ author = "junjunlab"
 copyright = "2026, junjunlab"
 
 version = "1.0"
-release = "1.0.1"
+release = "1.0.2"
 
 # The Chinese site is a separate Read the Docs project (a "translation") pointing at
 # this same repository. Read the Docs exports READTHEDOCS_LANGUAGE for every build,

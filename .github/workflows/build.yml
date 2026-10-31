@@ -116,10 +116,25 @@ jobs:
           test -n "$(ls dist/*.exe 2>/dev/null)" || { echo '::error::Windows installer missing'; exit 1; }
           test -n "$(ls dist/*.dmg 2>/dev/null)" || { echo '::error::macOS dmg missing'; exit 1; }
 
+      # Release 正文用仓库里的英文说明（docs/release-notes/<tag>.md），
+      # 没有对应文件时才退回自动生成，避免每次发版都要手写正文。
+      - name: Prepare release notes
+        run: |
+          mkdir -p .release
+          f="docs/release-notes/${GITHUB_REF_NAME}.md"
+          if [ -f "$f" ]; then
+            cp "$f" .release/notes.md
+            echo "using $f"
+          else
+            echo "Orbit ${GITHUB_REF_NAME}" > .release/notes.md
+            echo "no $f, falling back to generated notes"
+          fi
+
       - name: Publish release
         uses: softprops/action-gh-release@v2
         with:
           draft: false
+          body_path: .release/notes.md
           generate_release_notes: true
           files: |
             dist/*.exe

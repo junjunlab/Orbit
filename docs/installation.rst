@@ -12,13 +12,13 @@ Pick the package for your platform from the `Releases page
      - File
      - Size
    * - Windows 10/11 x64
-     - ``Orbit-1.0.1-Windows-x64-Setup.exe``
+     - ``Orbit-1.0.2-Windows-x64-Setup.exe``
      - ~150 MB
    * - macOS, Apple Silicon
-     - ``Orbit-1.0.1-macOS-arm64.dmg``
+     - ``Orbit-1.0.2-macOS-arm64.dmg``
      - ~244 MB
    * - macOS, Intel
-     - ``Orbit-1.0.1-macOS-x86_64.dmg``
+     - ``Orbit-1.0.2-macOS-x86_64.dmg``
      - ~253 MB
 
 Windows

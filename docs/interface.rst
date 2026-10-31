@@ -20,9 +20,11 @@ and export:
   such as ``TP53`` or ``chr17:7,668,402-7,687,550``, and press :kbd:`Enter`.
   Multiple resolvable terms, for example ``TP53, BRCA1``, create separate
   panels (up to five). This searches the bundled annotation, not motif patterns.
-* **GTF search** — appears after a GTF/GFF annotation is imported. It searches
-  imported gene names; its selector limits the search to all imported gene
-  tracks or a specific one.
+* **Search scope** — the dropdown at the left edge of the same search box picks
+  what the box searches: **Built-in** for the bundled RefSeq index, **All
+  imported** for every imported GTF/GFF, or one named annotation track. It stays
+  disabled until an annotation has been imported; there is no second search box.
+  Switching scope re-runs the suggestion list for whatever is already typed.
 * **Import** — opens the local file chooser; drag-and-drop is an alternative.
   Wait for the import progress panel to finish before inspecting the track.
 * **Split** — choose **1 panel** through **5 panels** for independent loci.
@@ -88,9 +90,10 @@ Track types
    * - Signal
      - bigWig/bedGraph values or BAM coverage as bars. The track gear controls
        range and colour; grouping shares a scale, not a canvas overlay.
-   * - BAM alignments
-     - Stacked reads below coverage, with a separate Align checkbox. The main
-       BAM checkbox must also be on for the read row to appear.
+   * - BAM rows
+     - One BAM becomes three rows — Coverage, Junctions, Alignments — each
+       labelled with the file name. Every row has its own sidebar checkbox; the
+       parent BAM switch hides all three. See :doc:`data-import`.
    * - GC content
      - Windowed GC percentage on a fixed 30%-70% axis. Off initially; requires
        an available reference sequence source.
@@ -148,8 +151,9 @@ this model to select it is distinct from clicking its expansion button.
 Signal track settings
 ---------------------
 
-For a bigWig, bedGraph, or BAM coverage row, click its gear or right-click its
-canvas label. Changes are applied to the view as you edit them.
+For a bigWig, bedGraph, SEG, or BAM coverage row, click its gear or right-click
+its canvas label. A multi-sample SEG heatmap also exposes its gain / loss
+colours and amplitude there. Changes are applied to the view as you edit them.
 
 .. list-table::
    :header-rows: 1
@@ -171,6 +175,19 @@ canvas label. Changes are applied to the view as you edit them.
    * - Colour alignments by strand
      - Available for BAM; changes the read row from the default grey to
        strand-specific colours.
+   * - Experiment type
+     - BAM only. ``Auto-detect`` (default) reads the first alignments and picks
+       standard / RNA-seq / third generation, which sets the visibility window
+       to 30 / 300 / 1000 kb. Override it when the guess is wrong.
+   * - Maximum window (kb)
+     - BAM only. A positive number replaces the experiment default for this
+       track; empty keeps the default.
+   * - Heatmap colours (gain / loss)
+     - Multi-sample SEG heatmap only: the two ends of the colour ramp. The
+       midpoint stays the panel background, so zero reads as neutral.
+   * - Amplitude ±
+     - SEG heatmap only: colours saturate at this log2 ratio. Empty means the
+       95th percentile of the visible window, clamped to 0.1–3.
    * - Remove this track
      - Removes an imported copy, or hides a bundled signal track.
    * - Reset / Done
@@ -190,8 +207,9 @@ rows; it is a direct button, not an appearance menu. There is no global
 label-density option. The current build resets track presentation preferences on a
 new page load, so do not rely on refresh, language switching, or reopening the
 application to preserve track order, colours, or expanded transcripts.
-Previously imported files can remain in the sidebar while their checkboxes
-start off; check them again to display them.
+Imported files are not opened on launch and do not appear in the sidebar until
+you import them again in that session; the copies stay on disk. See
+:ref:`imports-are-session-scoped`.
 
 Split-panel operation
 ~~~~~~~~~~~~~~~~~~~~~

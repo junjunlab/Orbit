@@ -1,0 +1,14 @@
+const fs=require('fs');const {connect}=require('C:/Users/JunJun/Desktop/agent_devop_pkgs/igv/igv_0.3/tools/cdp');
+const sleep=(ms)=>new Promise(r=>setTimeout(r,ms));
+(async()=>{const cdp=await connect();await cdp.send('Page.enable');await cdp.send('Runtime.enable');
+await cdp.send('Emulation.setDeviceMetricsOverride',{width:1300,height:900,deviceScaleFactor:1,mobile:false});
+const ev=async(e)=>{const r=await cdp.send('Runtime.evaluate',{expression:e,returnByValue:true,awaitPromise:true});return r.result&&r.result.result?r.result.result.value:undefined;};
+await cdp.send('Page.navigate',{url:'http://127.0.0.1:8799/?db=hg38&locus=1:58,650,000-58,680,000'});
+for(let i=0;i<150&&!(await ev('!!window.__igv'));i++)await sleep(150);
+await sleep(3000);
+const tid=await ev(`(()=>{const t=(window.__igv.S.bw.list||[]).find(x=>x.format==='bam');return t?t.id:null;})()`);
+await ev(`(()=>{const S=window.__igv.S;S.bw.on['${tid}']=true;window.__igv.loadBwTracks();})()`);
+await sleep(4000);
+console.log('junc行:',await ev(`(()=>{const el=document.querySelector('.track[data-junc="${tid}"]');return el?('hidden='+el.hidden+' sub='+(el.querySelector('.sub')||{}).textContent):'no row';})()`));
+const s=await cdp.send('Page.captureScreenshot',{format:'png'});fs.writeFileSync('C:/Users/JunJun/Desktop/agent_devop_pkgs/igv/igv_0.4/tools/_junc.png',Buffer.from(s.result.data,'base64'));
+cdp.close();})().catch(e=>{console.error(e);process.exit(1);});

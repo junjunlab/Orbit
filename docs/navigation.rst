@@ -71,6 +71,62 @@ an expand-all shortcut. Do not rely on expansion surviving a new app launch.
    The actual gene-track settings: expansion controls and colours for strands,
    CDS and UTR. The setting affects the chosen track, not every annotation file.
 
+Feature details at the pointer
+------------------------------
+
+Right-click a gene model in **RefSeq** or in an imported GTF/GFF3 track. The
+popover names what is exactly under the pointer:
+
+.. figure:: examples/gene-feature-details.png
+   :align: center
+   :width: 52%
+
+   Right-clicking the first exon of ``MTHFR`` (minus strand). The pointer is on
+   exon 12 of 12 — numbering follows the transcript, so the leftmost exon is the
+   last one on a minus-strand gene. The 3′ UTR fragment and the intron count are
+   listed below it.
+
+The fields are:
+
+* **Gene name** and **Gene ID**. The ID is shown only when the annotation stores
+  one; the bundled RefSeq index keeps names, so it reads *not provided* there.
+* **Transcript ID** and **strand**. A position covered by several transcripts
+  lists one block per transcript instead of picking one.
+* **Exon**, **CDS fragment**, **5′/3′ UTR fragment** or **intron**, each as
+  *n of m*, with its 1-based inclusive interval and its length.
+* **Total introns** for that transcript.
+
+Intervals are 1-based and inclusive, matching the search box; the underlying
+model is 0-based half-open. CDS and UTR fragments are derived from the exon
+list plus the CDS start/end of the transcript, so their numbering is the
+fragment number in this model, not the feature number in the original file.
+
+Every intron, not only the one under the pointer
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The list of introns is collapsed by default. Opening it shows all of them in
+transcript order with coordinates and lengths, so you can read a splice
+structure without hunting for each gap:
+
+.. figure:: examples/gene-intron-list.png
+   :align: center
+   :width: 52%
+
+   All 11 introns of ``NM_001330358``, numbered from the 5′ end of the
+   transcript. The entry under the pointer is bold.
+
+Hovering an intron without clicking shows the same information in a tooltip:
+
+.. figure:: examples/gene-intron-hover.png
+   :align: center
+   :width: 90%
+
+   ``Intron 11 of 11 · chr1:11,790,899–11,791,206 · 308 bp``. One line per
+   transcript when several share the position.
+
+The popover can be dragged by its title bar and stays inside the window; its
+content scrolls when the intron list is long.
+
 Compare several genes in panels
 -----------------------------------
 

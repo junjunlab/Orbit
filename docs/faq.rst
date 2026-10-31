@@ -55,11 +55,14 @@ For large signal data use indexed bigWig rather than genome-wide bedGraph.
 My BAM looks empty or incomplete
 ------------------------------------
 
-Choose the correct assembly and a chromosome containing actual reads. Turn on
-the parent BAM signal checkbox and its subordinate alignment checkbox. At high
-density the view may be sampled; the current import cap is 6,000,000 accepted
-reads. Check the file's truncation/sampling messages rather than treating the
-plot as all reads. A .bai file is not consumed by the current BAM loader.
+Choose the correct assembly and a chromosome that actually has reads — a
+``chr1`` BAM shows nothing on ``chr2``. Check the parent BAM switch and the
+Alignments switch under it. Coverage, junctions and alignments are hidden beyond
+the visibility window (30 kb standard, 300 kb RNA-seq, 1000 kb third generation),
+so a whole-chromosome view is expected to be empty; the row says so. Nothing is
+sampled or truncated: every read in the window is returned, and rows that do not
+fit are scrolled. If the file has no usable ``.bai``, the first load builds one —
+watch the progress message instead of assuming the import failed.
 
 Why do two panels have different coordinate scales?
 -------------------------------------------------------
@@ -72,8 +75,9 @@ close it. The program supports up to five panels. See :doc:`navigation`.
 Will tracks and preferences return next launch?
 ---------------------------------------------------
 
-Imports are session-scoped by default. ``IGV_RESTORE_LOADED=1`` enables backend
-restoration of stored imports, but a restored row can still be unchecked.
+Imports are session-scoped: a launch opens nothing, and the imported files
+reappear in the sidebar only after you import them again in that session. ``IGV_RESTORE_LOADED=1`` enables backend restoration of
+stored imports, but a restored row can still be unchecked.
 The frontend deliberately starts fresh for many preferences; language is
 stored separately. Do not rely on an old expanded-gene set returning next time.
 Keep the original research files. Removing a track can remove the imported copy.

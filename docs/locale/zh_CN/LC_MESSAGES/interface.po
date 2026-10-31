@@ -1,557 +1,305 @@
-# Chinese (Simplified, China) translations for Orbit.
-# Copyright (C) 2026 ORGANIZATION
-# This file is distributed under the same license as the Orbit project.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
-#
 msgid ""
 msgstr ""
-"Project-Id-Version: Orbit 1.0\n"
-"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-10-29 20:54+0800\n"
-"PO-Revision-Date: 2026-10-29 20:50+0800\n"
-"Last-Translator: junjunlab\n"
+"Project-Id-Version: Orbit\n"
 "Language: zh_CN\n"
-"Language-Team: zh_CN <LL@li.org>\n"
-"Plural-Forms: nplurals=1; plural=0;\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.18.0\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
 
-#: ../../interface.rst:2
+msgid ""
+msgstr "Project-Id-Version: Orbit\nLanguage: zh_CN\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=1; plural=0;\n"
+
+msgid ""
+msgstr "Project-Id-Version: Orbit 1.0\nReport-Msgid-Bugs-To: EMAIL@ADDRESS\nPOT-Creation-Date: 2026-10-29 20:54+0800\nPO-Revision-Date: 2026-10-29 20:50+0800\nLast-Translator: junjunlab\nLanguage: zh_CN\nLanguage-Team: zh_CN <LL@li.org>\nPlural-Forms: nplurals=1; plural=0;\nMIME-Version: 1.0\nContent-Type: text/plain; charset=utf-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: Babel 2.18.0\n"
+
 msgid "The interface"
 msgstr "界面"
 
-#: ../../interface.rst:4
-msgid ""
-"Orbit has a top toolbar, a left sidebar, and a scrollable genome-view "
-"area. Within the view, each track has a label cell and one canvas per "
-"locus panel. The status bar at the bottom reports the active locus, "
-"window size, scale, assembly, and data-request timing."
-msgstr ""
-"Orbit "
-"顶部有工具栏，左侧有侧栏，中央是可滚动的基因组视图区域。在视图中，每条轨道都有标签单元格，每个位点面板都有一个画布。底部状态栏报告活动位点、窗口大小、刻度、装配和数据请求耗时。"
+msgid "Orbit has a top toolbar, a left sidebar, and a scrollable genome-view area. Within the view, each track has a label cell and one canvas per locus panel. The status bar at the bottom reports the active locus, window size, scale, assembly, and data-request timing."
+msgstr "Orbit 顶部有工具栏，左侧有侧栏，中央是可滚动的基因组视图区域。在视图中，每条轨道都有标签单元格，每个位点面板都有一个画布。底部状态栏报告活动位点、窗口大小、刻度、装配和数据请求耗时。"
 
-#: ../../interface.rst:10
 msgid "Toolbar"
 msgstr "工具栏"
 
-#: ../../interface.rst:12
-msgid ""
-"The controls run from assembly selection and search to data import, "
-"comparison, and export:"
+msgid "The controls run from assembly selection and search to data import, comparison, and export:"
 msgstr "控件从装配选择和搜索，到数据导入、比较与导出："
 
-#: ../../interface.rst:15
-msgid ""
-"**Assembly selector** — click the assembly name beside the Orbit logo and"
-" choose a genome. Select **hg38** before following the human-gene "
-"examples. Switching assembly opens a default region and updates the "
-"annotation and sequence source; it does not translate old coordinates or "
-"imported files."
-msgstr ""
-" 装配选择器  —— 点击 Orbit 标志旁的装配名称并选择基因组。按照人类基因示例操作前请选择  hg38 "
-"。切换装配会打开默认区域并更新注释和序列源；不会转换旧坐标或导入文件。"
+msgid "**Assembly selector** — click the assembly name beside the Orbit logo and choose a genome. Select **hg38** before following the human-gene examples. Switching assembly opens a default region and updates the annotation and sequence source; it does not translate old coordinates or imported files."
+msgstr " 装配选择器  —— 点击 Orbit 标志旁的装配名称并选择基因组。按照人类基因示例操作前请选择  hg38 。切换装配会打开默认区域并更新注释和序列源；不会转换旧坐标或导入文件。"
 
-#: ../../interface.rst:19
-msgid ""
-"**Search box** — enter a gene symbol or a chromosome-qualified "
-"coordinate, such as ``TP53`` or ``chr17:7,668,402-7,687,550``, and press "
-":kbd:`Enter`. Multiple resolvable terms, for example ``TP53, BRCA1``, "
-"create separate panels (up to five). This searches the bundled "
-"annotation, not motif patterns."
-msgstr ""
-" 搜索框  —— 输入基因符号或带染色体的坐标，例如 ``TP53`` 或 ``chr17:7,668,402-7,687,550``，然后按  "
-":kbd:`Enter` 。多个可解析的词（如 ``TP53, BRCA1``）会创建独立面板（最多五个）。这里搜索的是内置注释，而不是基序模式。"
+msgid "**Search box** — enter a gene symbol or a chromosome-qualified coordinate, such as ``TP53`` or ``chr17:7,668,402-7,687,550``, and press :kbd:`Enter`. Multiple resolvable terms, for example ``TP53, BRCA1``, create separate panels (up to five). This searches the bundled annotation, not motif patterns."
+msgstr " 搜索框  —— 输入基因符号或带染色体的坐标，例如 ``TP53`` 或 ``chr17:7,668,402-7,687,550``，然后按  :kbd:`Enter` 。多个可解析的词（如 ``TP53, BRCA1``）会创建独立面板（最多五个）。这里搜索的是内置注释，而不是基序模式。"
 
-#: ../../interface.rst:23
-msgid ""
-"**GTF search** — appears after a GTF/GFF annotation is imported. It "
-"searches imported gene names; its selector limits the search to all "
-"imported gene tracks or a specific one."
-msgstr " GTF 搜索  —— 导入 GTF/GFF 注释后出现。它搜索导入的基因名称；其选择器可将搜索范围限制为所有导入基因轨道或某一条轨道。"
+msgid "**Search scope** — the dropdown at the left edge of the same search box picks what the box searches: **Built-in** for the bundled RefSeq index, **All imported** for every imported GTF/GFF, or one named annotation track. It stays disabled until an annotation has been imported; there is no second search box. Switching scope re-runs the suggestion list for whatever is already typed."
+msgstr "**搜索范围** —— 同一个搜索框左端有一个下拉，用来决定搜索对象：**内置** 查随包附带的 RefSeq 索引，**全部导入** 查所有已导入的 GTF/GFF，也可以指定某一个注释轨道。没有导入注释前该下拉不可用；不再有第二个搜索框。切换范围会按输入框里已有的内容重新联想。"
 
-#: ../../interface.rst:26
-msgid ""
-"**Import** — opens the local file chooser; drag-and-drop is an "
-"alternative. Wait for the import progress panel to finish before "
-"inspecting the track."
+msgid "**Import** — opens the local file chooser; drag-and-drop is an alternative. Wait for the import progress panel to finish before inspecting the track."
 msgstr " 导入  —— 打开本地文件选择器，也可以拖放文件。等待导入进度面板完成后再查看轨道。"
 
-#: ../../interface.rst:28
 msgid "**Split** — choose **1 panel** through **5 panels** for independent loci."
 msgstr " 分屏  —— 为独立位点选择  1 个面板  到  5 个面板 。"
 
-#: ../../interface.rst:29
-msgid ""
-"**Export** — opens **Include track labels**, **PNG**, **SVG**, and "
-"**PDF**. It is the download-arrow button next to Split, not a keyboard "
-"save command."
+msgid "**Export** — opens **Include track labels**, **PNG**, **SVG**, and **PDF**. It is the download-arrow button next to Split, not a keyboard save command."
 msgstr " 导出  —— 打开  包含轨道标签 、 PNG 、 SVG  和  PDF  选项。它是分屏旁的下载箭头按钮，不是键盘保存命令。"
 
-#: ../../interface.rst:31
-msgid ""
-"**Motif** — opens a separate dialog for nucleotide, IUPAC, or regular "
-"expression patterns. Hits are added as plus/minus tracks; reference "
-"sequence is required and motif hits are hidden when the window exceeds 1 "
-"Mb."
-msgstr ""
-" 基序  —— 打开用于核苷酸、IUPAC 或正则表达式模式的独立对话框。命中会作为正链/负链轨道添加；需要参考序列，且窗口超过 1 Mb "
-"时会隐藏基序命中。"
+msgid "**Motif** — opens a separate dialog for nucleotide, IUPAC, or regular expression patterns. Hits are added as plus/minus tracks; reference sequence is required and motif hits are hidden when the window exceeds 1 Mb."
+msgstr " 基序  —— 打开用于核苷酸、IUPAC 或正则表达式模式的独立对话框。命中会作为正链/负链轨道添加；需要参考序列，且窗口超过 1 Mb 时会隐藏基序命中。"
 
-#: ../../interface.rst:34
-msgid ""
-"**Whole chromosome** — fits the current chromosome in the active panel. "
-"**- / +** zoom out/in around that panel's centre."
+msgid "**Whole chromosome** — fits the current chromosome in the active panel. **- / +** zoom out/in around that panel's centre."
 msgstr " 整条染色体  —— 使当前染色体适合活动面板。 - / +  围绕该面板中心缩小/放大。"
 
-#: ../../interface.rst:36
-msgid ""
-"**Theme** — the sun icon switches light/dark appearance. The language "
-"button at the far right switches Chinese/English and reloads the page."
+msgid "**Theme** — the sun icon switches light/dark appearance. The language button at the far right switches Chinese/English and reloads the page."
 msgstr " 主题  —— 太阳图标切换浅色/深色外观。最右侧的语言按钮切换中英文并重新加载页面。"
 
-#: ../../interface.rst:39
 msgid "Orbit toolbar, sidebar, track labels, and genome-view canvases."
 msgstr "Orbit 工具栏、侧栏、轨道标签和基因组视图画布。"
 
-#: ../../interface.rst:44
-msgid ""
-"Interface overview at ``ACTB`` on hg38: choose the assembly before "
-"searching. The sidebar manages track visibility and selected-gene "
-"details; the main label cells contain settings buttons beside the plotted"
-" data."
+msgid "Interface overview at ``ACTB`` on hg38: choose the assembly before searching. The sidebar manages track visibility and selected-gene details; the main label cells contain settings buttons beside the plotted data."
 msgstr "hg38 上 ``ACTB`` 的界面概览：请先选择装配再搜索。侧栏管理轨道可见性和选定基因详情；主标签单元格在绘图数据旁包含设置按钮。"
 
-#: ../../interface.rst:49
 msgid "Track labels"
 msgstr "轨道标签"
 
-#: ../../interface.rst:51
 msgid "Distinguish the **sidebar list** from the **label cell beside a canvas**:"
 msgstr "区分  侧栏列表  与  画布旁的标签单元格 ："
 
-#: ../../interface.rst:53
-msgid ""
-"Expand **Tracks** in the sidebar to reveal the built-in visibility "
-"checkboxes; this section is initially collapsed. Imported annotations and"
-" sequence tracks have their checkboxes under **Imported**, and "
-"quantitative tracks under **Signal tracks**."
-msgstr ""
-"展开侧栏中的  Tracks  以显示内置可见性复选框；该部分初始折叠。导入的注释和序列轨道复选框位于  已导入  下，定量轨道复选框位于  "
-"信号轨道  下。"
+msgid "Expand **Tracks** in the sidebar to reveal the built-in visibility checkboxes; this section is initially collapsed. Imported annotations and sequence tracks have their checkboxes under **Imported**, and quantitative tracks under **Signal tracks**."
+msgstr "展开侧栏中的  Tracks  以显示内置可见性复选框；该部分初始折叠。导入的注释和序列轨道复选框位于  已导入  下，定量轨道复选框位于  信号轨道  下。"
 
-#: ../../interface.rst:57
-msgid ""
-"Click a name in an imported/signal sidebar list to select a track, not to"
-" open its settings. Hold :kbd:`Ctrl` while clicking names to select "
-"several. Right-click selected signal tracks for shared-axis or shared-"
-"colour actions; imported-track batch actions include deletion."
-msgstr ""
-"点击导入/信号侧栏列表中的名称是选择轨道，而不是打开设置。按住  :kbd:`Ctrl`  "
-"并点击名称可选择多个轨道。右键点击选中的信号轨道可执行共享坐标轴或共享颜色操作；导入轨道的批量操作包括删除。"
+msgid "Click a name in an imported/signal sidebar list to select a track, not to open its settings. Hold :kbd:`Ctrl` while clicking names to select several. Right-click selected signal tracks for shared-axis or shared-colour actions; imported-track batch actions include deletion."
+msgstr "点击导入/信号侧栏列表中的名称是选择轨道，而不是打开设置。按住  :kbd:`Ctrl`  并点击名称可选择多个轨道。右键点击选中的信号轨道可执行共享坐标轴或共享颜色操作；导入轨道的批量操作包括删除。"
 
-#: ../../interface.rst:61
-msgid ""
-"Click a **gear** in a canvas track label to open that track's settings. "
-"Right-clicking a RefSeq, GC, signal, or imported gene-track label also "
-"opens its settings. There is no universal rename/reload menu."
-msgstr ""
-"点击画布轨道标签中的  齿轮  打开该轨道的设置。右键点击 "
-"RefSeq、GC、信号或导入的基因轨道标签也会打开设置。没有通用的重命名/重新加载菜单。"
+msgid "Click a **gear** in a canvas track label to open that track's settings. Right-clicking a RefSeq, GC, signal, or imported gene-track label also opens its settings. There is no universal rename/reload menu."
+msgstr "点击画布轨道标签中的  齿轮  打开该轨道的设置。右键点击 RefSeq、GC、信号或导入的基因轨道标签也会打开设置。没有通用的重命名/重新加载菜单。"
 
-#: ../../interface.rst:64
-msgid ""
-"Drag a canvas track label vertically to reorder rows. Drag the boundary "
-"between label cells and canvases horizontally to change the label-column "
-"width; double-click that boundary to reset the width."
+msgid "Drag a canvas track label vertically to reorder rows. Drag the boundary between label cells and canvases horizontally to change the label-column width; double-click that boundary to reset the width."
 msgstr "垂直拖动画布轨道标签可重新排列行。水平拖动标签单元格与画布之间的边界可调整标签列宽度；双击该边界可重置宽度。"
 
-#: ../../interface.rst:67
-msgid ""
-"A remove action deletes an imported copy from Orbit's loaded-data area. "
-"Unchecking a track only hides it; use that when the data must be kept."
+msgid "A remove action deletes an imported copy from Orbit's loaded-data area. Unchecking a track only hides it; use that when the data must be kept."
 msgstr "移除操作会从 Orbit 的已加载数据区域删除导入副本。取消勾选轨道只会隐藏它；若要保留数据，请使用此方式。"
 
-#: ../../interface.rst:71
 msgid "Track types"
 msgstr "轨道类型"
 
-#: ../../interface.rst:77
 msgid "Track"
 msgstr "轨道"
 
-#: ../../interface.rst:78
 msgid "What it draws and how to use it"
 msgstr "绘制内容及使用方法"
 
-#: ../../interface.rst:79
 msgid "Ideogram"
 msgstr "染色体示意图"
 
-#: ../../interface.rst:80
-msgid ""
-"Cytobands for the current chromosome and a red marker for the window. "
-"Click within the ideogram to move the window along that chromosome."
+msgid "Cytobands for the current chromosome and a red marker for the window. Click within the ideogram to move the window along that chromosome."
 msgstr "当前染色体的细胞遗传带及窗口红色标记。点击示意图内的任意位置可沿该染色体移动窗口。"
 
-#: ../../interface.rst:82
 msgid "Ruler"
 msgstr "标尺"
 
-#: ../../interface.rst:83
-msgid ""
-"Coordinates and ticks that change scale with zoom. Search coordinates are"
-" 1-based with an inclusive end."
+msgid "Coordinates and ticks that change scale with zoom. Search coordinates are 1-based with an inclusive end."
 msgstr "随缩放改变刻度的坐标和刻度线。搜索坐标从 1 开始且包含终点。"
 
-#: ../../interface.rst:85
 msgid "RefSeq / imported genes"
 msgstr "RefSeq / 导入基因"
 
-#: ../../interface.rst:86
-msgid ""
-"Merged gene models or individual transcript rows. Click a model or its "
-"text label for details; use the small plus/minus control to expand it."
+msgid "Merged gene models or individual transcript rows. Click a model or its text label for details; use the small plus/minus control to expand it."
 msgstr "合并的基因模型或独立的转录本行。点击模型或文本标签查看详情；使用小型加号/减号控件展开。"
 
-#: ../../interface.rst:88
 msgid "Signal"
 msgstr "信号"
 
-#: ../../interface.rst:89
-msgid ""
-"bigWig/bedGraph values or BAM coverage as bars. The track gear controls "
-"range and colour; grouping shares a scale, not a canvas overlay."
+msgid "bigWig/bedGraph values or BAM coverage as bars. The track gear controls range and colour; grouping shares a scale, not a canvas overlay."
 msgstr "bigWig/bedGraph 数值或 BAM 覆盖度以柱状显示。轨道齿轮控制范围和颜色；分组共享刻度，而不是叠加到同一画布。"
 
-#: ../../interface.rst:91
-msgid "BAM alignments"
-msgstr "BAM 比对"
+msgid "BAM rows"
+msgstr "BAM 轨道"
 
-#: ../../interface.rst:92
-msgid ""
-"Stacked reads below coverage, with a separate Align checkbox. The main "
-"BAM checkbox must also be on for the read row to appear."
-msgstr "覆盖度下方堆叠显示 reads，并有独立的比对复选框。要显示 reads 行，主 BAM 复选框也必须开启。"
+msgid "One BAM becomes three rows — Coverage, Junctions, Alignments — each labelled with the file name. Every row has its own sidebar checkbox; the parent BAM switch hides all three. See :doc:`data-import`."
+msgstr "一份 BAM 变成三行——Coverage、Junctions、Alignments，标签都带文件名。每行在侧栏有独立复选框；BAM 主开关一次隐藏三行。见 :doc:`data-import`。"
 
-#: ../../interface.rst:94
 msgid "GC content"
 msgstr "GC 含量"
 
-#: ../../interface.rst:95
-#, python-format
-msgid ""
-"Windowed GC percentage on a fixed 30%-70% axis. Off initially; requires "
-"an available reference sequence source."
+msgid "Windowed GC percentage on a fixed 30%-70% axis. Off initially; requires an available reference sequence source."
 msgstr "固定 30%-70% 坐标轴上的窗口 GC 百分比。初始关闭；需要可用的参考序列源。"
 
-#: ../../interface.rst:97
 msgid "Sequence"
 msgstr "序列"
 
-#: ../../interface.rst:98
-msgid ""
-"Reference bases at about 1.2 bp/px or closer. Off initially; the strand "
-"arrow shows the complementary strand, and Aa opens translation controls."
+msgid "Reference bases at about 1.2 bp/px or closer. Off initially; the strand arrow shows the complementary strand, and Aa opens translation controls."
 msgstr "约在 1.2 bp/px 或更近时显示参考碱基。初始关闭；链箭头显示互补链，Aa 按钮打开翻译控件。"
 
-#: ../../interface.rst:100
 msgid "Whole-genome overview"
 msgstr "全基因组概览"
 
-#: ../../interface.rst:101
-msgid ""
-"Initially a compact strip. Expand it to see chromosome rows and click a "
-"row to navigate; each split panel has its own overview."
+msgid "Initially a compact strip. Expand it to see chromosome rows and click a row to navigate; each split panel has its own overview."
 msgstr "初始为紧凑条带。展开后可查看染色体行并点击行进行导航；每个分屏面板都有自己的概览。"
 
-#: ../../interface.rst:105
 msgid "Gene track settings"
 msgstr "基因轨道设置"
 
-#: ../../interface.rst:107
-msgid ""
-"Open the gear in **RefSeq** or an imported GTF/GFF track-label cell. "
-"These are the actual options in the gene settings popover:"
+msgid "Open the gear in **RefSeq** or an imported GTF/GFF track-label cell. These are the actual options in the gene settings popover:"
 msgstr "打开  RefSeq  或导入的 GTF/GFF 轨道标签单元格中的齿轮。这些是基因设置弹出框中的实际选项："
 
-#: ../../interface.rst:114 ../../interface.rst:158
 msgid "Setting"
 msgstr "设置项"
 
-#: ../../interface.rst:115 ../../interface.rst:159
 msgid "Effect"
 msgstr "作用"
 
-#: ../../interface.rst:116
 msgid "Expand all"
 msgstr "全部展开"
 
-#: ../../interface.rst:117
-msgid ""
-"Show each transcript on its own row. Genes newly revealed by panning or "
-"zooming also remain expanded while this option is on."
+msgid "Show each transcript on its own row. Genes newly revealed by panning or zooming also remain expanded while this option is on."
 msgstr "每个转录本单独显示一行。启用此选项后，通过平移或缩放新显示的基因也会保持展开。"
 
-#: ../../interface.rst:119
 msgid "Collapse all"
 msgstr "全部折叠"
 
-#: ../../interface.rst:120
 msgid "Draw a merged model for each gene and clear individual expansion choices."
 msgstr "为每个基因绘制合并模型，并清除单独的展开选择。"
 
-#: ../../interface.rst:121
 msgid "Plus-strand / Minus-strand colour"
 msgstr "正链 / 负链颜色"
 
-#: ../../interface.rst:122
 msgid "Choose colours independently with a palette or the custom colour picker."
 msgstr "使用调色板或自定义颜色选择器分别选择颜色。"
 
-#: ../../interface.rst:123
 msgid "CDS / UTR colour"
 msgstr "CDS / UTR 颜色"
 
-#: ../../interface.rst:124
 msgid "Set the coding and untranslated feature colours."
 msgstr "设置编码区和非翻译特征的颜色。"
 
-#: ../../interface.rst:125 ../../interface.rst:176
 msgid "Reset / Done"
 msgstr "重置 / 完成"
 
-#: ../../interface.rst:126
 msgid "Reset this track's colour/expansion choices, or close the popover."
 msgstr "重置该轨道的颜色/展开选择，或关闭弹出框。"
 
-#: ../../interface.rst:128
-msgid ""
-"Imported gene tracks follow the RefSeq colours unless a colour is set on "
-"that imported track itself. An imported track's overrides do not recolour"
-" other tracks. There are no label-mode or row-height controls in this "
-"popover."
+msgid "Imported gene tracks follow the RefSeq colours unless a colour is set on that imported track itself. An imported track's overrides do not recolour other tracks. There are no label-mode or row-height controls in this popover."
 msgstr "导入的基因轨道沿用 RefSeq 颜色，除非在该导入轨道自身上设置颜色。导入轨道的覆盖设置不会重新着色其他轨道。此弹出框没有标签模式或行高控件。"
 
-#: ../../interface.rst:132
-msgid ""
-"For just one gene, click the small **+** near the end of its model (or "
-"**-** when expanded). When space is tight the button can appear on the "
-"left. Click the gene model or name to populate **Selection / details** "
-"with its locus, strand, length, transcript count, and a "
-"transcript/exon/CDS table. Multi-transcript genes also have a Show / Hide"
-" control in those details. Clicking this model to select it is distinct "
-"from clicking its expansion button."
-msgstr ""
-"仅展开一个基因时，点击其模型末端附近的小  + （展开后为  - ）。空间不足时按钮可能出现在左侧。点击基因模型或名称，会在  选择 / 详情  "
-"中填入其位点、链、长度、转录本数量以及转录本/外显子/CDS 表。多转录本基因的详情中还提供显示 / "
-"隐藏控件。点击模型进行选择与点击展开按钮是不同的操作。"
+msgid "For just one gene, click the small **+** near the end of its model (or **-** when expanded). When space is tight the button can appear on the left. Click the gene model or name to populate **Selection / details** with its locus, strand, length, transcript count, and a transcript/exon/CDS table. Multi-transcript genes also have a Show / Hide control in those details. Clicking this model to select it is distinct from clicking its expansion button."
+msgstr "仅展开一个基因时，点击其模型末端附近的小  + （展开后为  - ）。空间不足时按钮可能出现在左侧。点击基因模型或名称，会在  选择 / 详情  中填入其位点、链、长度、转录本数量以及转录本/外显子/CDS 表。多转录本基因的详情中还提供显示 / 隐藏控件。点击模型进行选择与点击展开按钮是不同的操作。"
 
-#: ../../interface.rst:139
 msgid "An annotation track with transcripts expanded into separate rows."
 msgstr "转录本展开为独立行的注释轨道。"
 
-#: ../../interface.rst:144
-msgid ""
-"Expanded ``EGFR`` transcripts on hg38 allow exon/CDS structure to be "
-"compared row by row. Expand all / Collapse all act on one annotation "
-"track; the small per-gene button affects only that gene."
+msgid "Expanded ``EGFR`` transcripts on hg38 allow exon/CDS structure to be compared row by row. Expand all / Collapse all act on one annotation track; the small per-gene button affects only that gene."
 msgstr "hg38 上展开的 ``EGFR`` 转录本可以逐行比较外显子/CDS 结构。全部展开 / 全部折叠作用于一条注释轨道；单个基因按钮只影响该基因。"
 
-#: ../../interface.rst:149
 msgid "Signal track settings"
 msgstr "信号轨道设置"
 
-#: ../../interface.rst:151
-msgid ""
-"For a bigWig, bedGraph, or BAM coverage row, click its gear or right-"
-"click its canvas label. Changes are applied to the view as you edit them."
-msgstr "对于 bigWig、bedGraph 或 BAM 覆盖度行，点击其齿轮或右键点击画布标签。编辑设置时会立即应用到视图。"
+msgid "For a bigWig, bedGraph, SEG, or BAM coverage row, click its gear or right-click its canvas label. A multi-sample SEG heatmap also exposes its gain / loss colours and amplitude there. Changes are applied to the view as you edit them."
+msgstr "对于 bigWig、bedGraph、SEG 或 BAM 覆盖度行，点击其齿轮或右键点击画布标签。多样本 SEG 热图还能在这里设置增益 / 缺失颜色和振幅。编辑设置时会立即应用到视图。"
 
-#: ../../interface.rst:160
 msgid "Colour"
 msgstr "颜色"
 
-#: ../../interface.rst:161
 msgid "Pick a palette colour or a custom colour for the signal bars."
 msgstr "选择调色板颜色或自定义颜色设置信号柱。"
 
-#: ../../interface.rst:162
 msgid "Data range"
 msgstr "数据范围"
 
-#: ../../interface.rst:163
-msgid ""
-"Auto follows the visible window; Fixed enables Min / max inputs and keeps"
-" that range while navigating."
+msgid "Auto follows the visible window; Fixed enables Min / max inputs and keeps that range while navigating."
 msgstr "自动模式跟随可见窗口；固定模式启用最小值/最大值输入框，并在导航时保持该范围。"
 
-#: ../../interface.rst:165
 msgid "Log scale (log10)"
 msgstr "对数刻度（log10）"
 
-#: ../../interface.rst:166
-msgid ""
-"Uses a positive logarithmic scale for signals spanning orders of "
-"magnitude."
+msgid "Uses a positive logarithmic scale for signals spanning orders of magnitude."
 msgstr "对跨越多个数量级的信号使用正值对数刻度。"
 
-#: ../../interface.rst:168
 msgid "Track group"
 msgstr "轨道组"
 
-#: ../../interface.rst:169
-msgid ""
-"Assign a group or create a new one. Enable group autoscale to use a "
-"common range across its members, which remain in separate rows."
+msgid "Assign a group or create a new one. Enable group autoscale to use a common range across its members, which remain in separate rows."
 msgstr "分配一个组或创建新组。启用组自动缩放可让组成员使用共同范围，但它们仍显示在独立行中。"
 
-#: ../../interface.rst:171
 msgid "Colour alignments by strand"
 msgstr "按链为比对着色"
 
-#: ../../interface.rst:172
-msgid ""
-"Available for BAM; changes the read row from the default grey to strand-"
-"specific colours."
+msgid "Available for BAM; changes the read row from the default grey to strand-specific colours."
 msgstr "BAM 可用；将 reads 行从默认灰色改为按链区分的颜色。"
 
-#: ../../interface.rst:174
+msgid "Experiment type"
+msgstr "实验类型"
+
+msgid "BAM only. ``Auto-detect`` (default) reads the first alignments and picks standard / RNA-seq / third generation, which sets the visibility window to 30 / 300 / 1000 kb. Override it when the guess is wrong."
+msgstr "仅 BAM。``Auto-detect`` （默认）根据最先读到的比对判断普通 / RNA-seq / 三代测序，从而把可见窗口定为 30 / 300 / 1000 kb。判断不准时手动改。"
+
+msgid "Maximum window (kb)"
+msgstr "最大窗口（kb）"
+
+msgid "BAM only. A positive number replaces the experiment default for this track; empty keeps the default."
+msgstr "仅 BAM。填正数则用它替代实验类型给出的默认值；留空则沿用默认。"
+
+msgid "Heatmap colours (gain / loss)"
+msgstr "热图颜色（增益 / 缺失）"
+
+msgid "Multi-sample SEG heatmap only: the two ends of the colour ramp. The midpoint stays the panel background, so zero reads as neutral."
+msgstr "仅多样本 SEG 热图：色阶两端的颜色。中间仍用面板底色，所以 0 看起来是中性的。"
+
+msgid "Amplitude ±"
+msgstr "振幅 ±"
+
+msgid "SEG heatmap only: colours saturate at this log2 ratio. Empty means the 95th percentile of the visible window, clamped to 0.1–3."
+msgstr "仅 SEG 热图：颜色在这个 log2 比值处饱和。留空表示取可见窗口的 95 分位，并限制在 0.1–3。"
+
 msgid "Remove this track"
 msgstr "移除此轨道"
 
-#: ../../interface.rst:175
 msgid "Removes an imported copy, or hides a bundled signal track."
 msgstr "删除导入副本，或隐藏内置信号轨道。"
 
-#: ../../interface.rst:177
 msgid "Reset this signal track's settings, or close the popover."
 msgstr "重置信号轨道设置，或关闭弹出框。"
 
-#: ../../interface.rst:179
-msgid ""
-"To share a range quickly, select several signal-track names in the "
-"sidebar with :kbd:`Ctrl` + click, then right-click a selected name and "
-"choose **Group autoscale**. The same batch menu provides shared colours. "
-"The settings do not offer line/area drawing modes or sample overlays."
-msgstr ""
-"要快速共享范围，请在侧栏中按住  :kbd:`Ctrl`  并点击选择多个信号轨道名称，然后右键点击选中名称并选择  组自动缩放 "
-"。相同的批量菜单还提供共享颜色。设置不提供折线/面积绘制模式或样本叠加。"
+msgid "To share a range quickly, select several signal-track names in the sidebar with :kbd:`Ctrl` + click, then right-click a selected name and choose **Group autoscale**. The same batch menu provides shared colours. The settings do not offer line/area drawing modes or sample overlays."
+msgstr "要快速共享范围，请在侧栏中按住  :kbd:`Ctrl`  并点击选择多个信号轨道名称，然后右键点击选中名称并选择  组自动缩放 。相同的批量菜单还提供共享颜色。设置不提供折线/面积绘制模式或样本叠加。"
 
-#: ../../interface.rst:185
 msgid "Display options"
 msgstr "显示选项"
 
-#: ../../interface.rst:187
-msgid ""
-"The sun button switches light/dark theme for the current view. The whole-"
-"genome overview's small triangle expands or collapses its chromosome "
-"rows; it is a direct button, not an appearance menu. There is no global "
-"label-density option. The current build resets track presentation "
-"preferences on a new page load, so do not rely on refresh, language "
-"switching, or reopening the application to preserve track order, colours,"
-" or expanded transcripts. Previously imported files can remain in the "
-"sidebar while their checkboxes start off; check them again to display "
-"them."
-msgstr "太阳按钮切换当前视图的浅色/深色主题。全基因组概览的小三角展开或折叠染色体行；它是直接按钮，而不是外观菜单。没有全局标签密度选项。当前版本在重新加载页面时会重置轨道显示偏好，因此不要依赖刷新、切换语言或重新打开应用来保留轨道顺序、颜色或展开的转录本。以前导入的文件可能仍显示在侧栏中，但其复选框默认关闭；请重新勾选以显示它们。"
+msgid "The sun button switches light/dark theme for the current view. The whole-genome overview's small triangle expands or collapses its chromosome rows; it is a direct button, not an appearance menu. There is no global label-density option. The current build resets track presentation preferences on a new page load, so do not rely on refresh, language switching, or reopening the application to preserve track order, colours, or expanded transcripts. Imported files are not opened on launch and do not appear in the sidebar until you import them again in that session; the copies stay on disk. See :ref:`imports-are-session-scoped`."
+msgstr "太阳按钮切换当前视图的明暗主题。全基因组总览的小三角展开或收起染色体行，它是直接按钮，不是外观菜单。没有全局标签密度选项。当前版本在重新加载页面时会重置轨道的呈现偏好，所以不要指望刷新、切换语言或重开程序能保住轨道顺序、颜色或展开的转录本。导入的文件启动时不会打开，也不会出现在侧栏，直到本次会话重新导入；副本仍留在磁盘上。见 :ref:`imports-are-session-scoped`。"
 
-#: ../../interface.rst:197
 msgid "Split-panel operation"
 msgstr "分屏操作"
 
-#: ../../interface.rst:199
-msgid ""
-"Click **Split** and select 2-5 panels, or enter several genes in the main"
-" search. Panels share one assembly and one track list, but have "
-"independent loci and zoom levels."
+msgid "Click **Split** and select 2-5 panels, or enter several genes in the main search. Panels share one assembly and one track list, but have independent loci and zoom levels."
 msgstr "点击  分屏  并选择 2-5 个面板，或在主搜索框中输入多个基因。面板共享一个装配和一套轨道列表，但位点和缩放级别彼此独立。"
 
-#: ../../interface.rst:202
-msgid ""
-"Click a panel's **Locus** cell to make it active. Its highlight "
-"identifies the target of the main search, arrow keys, and toolbar zoom. "
-"Clicking the same cell again can remove the highlight without changing "
-"that target."
+msgid "Click a panel's **Locus** cell to make it active. Its highlight identifies the target of the main search, arrow keys, and toolbar zoom. Clicking the same cell again can remove the highlight without changing that target."
 msgstr "点击面板的  位点  单元格使其处于活动状态。高亮显示主搜索、方向键和工具栏缩放的目标。再次点击同一单元格可以取消高亮，但不会改变该目标。"
 
-#: ../../interface.rst:205
-msgid ""
-"Enter a gene or chromosome-qualified coordinate directly in a panel's "
-"Locus field and press :kbd:`Enter` to change just that panel. Dragging a "
-"canvas pans that panel; mouse-wheel and double-click zoom target the "
-"panel under the pointer."
-msgstr ""
-"在面板的位点字段中直接输入基因或带染色体的坐标，然后按  :kbd:`Enter` "
-"，只更改该面板。拖动画布可平移该面板；鼠标滚轮和双击缩放作用于指针所在的面板。"
+msgid "Enter a gene or chromosome-qualified coordinate directly in a panel's Locus field and press :kbd:`Enter` to change just that panel. Dragging a canvas pans that panel; mouse-wheel and double-click zoom target the panel under the pointer."
+msgstr "在面板的位点字段中直接输入基因或带染色体的坐标，然后按  :kbd:`Enter` ，只更改该面板。拖动画布可平移该面板；鼠标滚轮和双击缩放作用于指针所在的面板。"
 
-#: ../../interface.rst:209
-msgid ""
-"Close a panel using its **x**, or choose **1 panel** in Split. Lowering "
-"the count removes panels from the right."
+msgid "Close a panel using its **x**, or choose **1 panel** in Split. Lowering the count removes panels from the right."
 msgstr "使用  x  关闭面板，或在分屏中选择  1 个面板 。减少数量会从右侧移除面板。"
 
-#: ../../interface.rst:212
 msgid "Four side-by-side locus panels with separate position fields."
 msgstr "带有独立位置字段的四个并排位点面板。"
 
-#: ../../interface.rst:217
-msgid ""
-"Four-panel comparison of ``ACTB``, ``EGFR``, ``TP53``, and ``MYC`` on "
-"hg38. Each position field changes one locus; the active cell controls "
-"where main-search and keyboard actions are sent."
-msgstr ""
-"hg38 上 ``ACTB``、``EGFR``、``TP53`` 和 ``MYC`` "
-"的四面板比较。每个位置字段只更改一个位点；活动单元格决定主搜索和键盘操作的目标。"
+msgid "Four-panel comparison of ``ACTB``, ``EGFR``, ``TP53``, and ``MYC`` on hg38. Each position field changes one locus; the active cell controls where main-search and keyboard actions are sent."
+msgstr "hg38 上 ``ACTB``、``EGFR``、``TP53`` 和 ``MYC`` 的四面板比较。每个位置字段只更改一个位点；活动单元格决定主搜索和键盘操作的目标。"
 
-#: ../../interface.rst:222
 msgid "Export workflow"
 msgstr "导出流程"
 
-#: ../../interface.rst:224
-msgid ""
-"After arranging tracks and panels, click **Export** beside Split, set "
-"**Include track labels**, and choose **PNG**, **SVG**, or **PDF**. The "
-"output contains visible track rows and all current panels, not the "
-"toolbar/sidebar. The filename includes the assembly, the active locus, "
-"and a ``_splitN`` suffix for multiple panels. PNG is 2x raster; SVG is "
-"vector; PDF is vector with an embedded CJK font when available, with a "
-"reported raster fallback otherwise. See :doc:`data-export` for the "
-"complete workflow."
-msgstr ""
-"排列好轨道和面板后，点击分屏旁的  导出 ，勾选  包含轨道标签 ，然后选择  PNG 、 SVG  或  PDF "
-"。输出包含可见轨道行和当前所有面板，不包含工具栏/侧栏。文件名包括装配、活动位点以及多面板时的 ``_splitN`` 后缀。PNG 为 2 "
-"倍光栅；SVG 为矢量；有可用 CJK 字体时 PDF 为嵌入字体的矢量，否则会报告光栅回退。完整流程见  :doc:`data-export` "
-"。"
+msgid "After arranging tracks and panels, click **Export** beside Split, set **Include track labels**, and choose **PNG**, **SVG**, or **PDF**. The output contains visible track rows and all current panels, not the toolbar/sidebar. The filename includes the assembly, the active locus, and a ``_splitN`` suffix for multiple panels. PNG is 2x raster; SVG is vector; PDF is vector with an embedded CJK font when available, with a reported raster fallback otherwise. See :doc:`data-export` for the complete workflow."
+msgstr "排列好轨道和面板后，点击分屏旁的  导出 ，勾选  包含轨道标签 ，然后选择  PNG 、 SVG  或  PDF 。输出包含可见轨道行和当前所有面板，不包含工具栏/侧栏。文件名包括装配、活动位点以及多面板时的 ``_splitN`` 后缀。PNG 为 2 倍光栅；SVG 为矢量；有可用 CJK 字体时 PDF 为嵌入字体的矢量，否则会报告光栅回退。完整流程见  :doc:`data-export` 。"
 
-#: ../../interface.rst:233
 msgid "Keyboard and mouse reference"
 msgstr "键盘和鼠标参考"
 
-#: ../../interface.rst:235
-#, python-format
-msgid ""
-"Outside text inputs, :kbd:`←` / :kbd:`→` pan the active panel by 35% of "
-"its window, :kbd:`+` / :kbd:`=` zoom in twofold, and :kbd:`-` / :kbd:`_` "
-"zoom out twofold. :kbd:`/` focuses and selects the main search text. "
-":kbd:`Esc` dismisses settings/context popovers and clears gene selection "
-"outside inputs. In search fields, :kbd:`↑` / :kbd:`↓` select suggestions "
-"and :kbd:`Enter` submits; :kbd:`Esc` dismisses suggestions. Navigation "
-"keys are not handled while the Motif dialog is open."
-msgstr ""
-"在文本输入框外， :kbd:`←`  /  :kbd:`→`  让活动面板按其窗口宽度的 35% 平移， :kbd:`+`  /  "
-":kbd:`=`  放大两倍， :kbd:`-`  /  :kbd:`_`  缩小两倍。 :kbd:`/`  聚焦并选中主搜索文本。 "
-":kbd:`Esc`  关闭设置/上下文弹出框，并在输入框外清除基因选择。在搜索框中， :kbd:`↑`  /  :kbd:`↓`  选择建议， "
-":kbd:`Enter`  提交； :kbd:`Esc`  关闭建议。Motif 对话框打开时不会处理导航键。"
+msgid "Outside text inputs, :kbd:`←` / :kbd:`→` pan the active panel by 35% of its window, :kbd:`+` / :kbd:`=` zoom in twofold, and :kbd:`-` / :kbd:`_` zoom out twofold. :kbd:`/` focuses and selects the main search text. :kbd:`Esc` dismisses settings/context popovers and clears gene selection outside inputs. In search fields, :kbd:`↑` / :kbd:`↓` select suggestions and :kbd:`Enter` submits; :kbd:`Esc` dismisses suggestions. Navigation keys are not handled while the Motif dialog is open."
+msgstr "在文本输入框外， :kbd:`←`  /  :kbd:`→`  让活动面板按其窗口宽度的 35% 平移， :kbd:`+`  /  :kbd:`=`  放大两倍， :kbd:`-`  /  :kbd:`_`  缩小两倍。 :kbd:`/`  聚焦并选中主搜索文本。 :kbd:`Esc`  关闭设置/上下文弹出框，并在输入框外清除基因选择。在搜索框中， :kbd:`↑`  /  :kbd:`↓`  选择建议， :kbd:`Enter`  提交； :kbd:`Esc`  关闭建议。Motif 对话框打开时不会处理导航键。"
 
-#: ../../interface.rst:243
-msgid ""
-"Horizontal canvas dragging pans, rather than selecting a genomic "
-"interval. The mouse wheel zooms around the pointer and double-clicking "
-"zooms in. There are no application bindings for :kbd:`Ctrl+F`, "
-":kbd:`Ctrl+S`, a Shift-arrow fine-pan step, or :kbd:`Home`; use search, "
-"Export, and Whole chromosome in the toolbar for those tasks."
-msgstr ""
-"水平拖动画布会平移，而不是选择基因组区间。鼠标滚轮围绕指针缩放，双击放大。应用没有  :kbd:`Ctrl+F` 、 :kbd:`Ctrl+S` "
-"、Shift 加方向键微调平移或  :kbd:`Home`  的绑定；这些任务请使用工具栏中的搜索、导出和整条染色体。"
-
+msgid "Horizontal canvas dragging pans, rather than selecting a genomic interval. The mouse wheel zooms around the pointer and double-clicking zooms in. There are no application bindings for :kbd:`Ctrl+F`, :kbd:`Ctrl+S`, a Shift-arrow fine-pan step, or :kbd:`Home`; use search, Export, and Whole chromosome in the toolbar for those tasks."
+msgstr "水平拖动画布会平移，而不是选择基因组区间。鼠标滚轮围绕指针缩放，双击放大。应用没有  :kbd:`Ctrl+F` 、 :kbd:`Ctrl+S` 、Shift 加方向键微调平移或  :kbd:`Home`  的绑定；这些任务请使用工具栏中的搜索、导出和整条染色体。"

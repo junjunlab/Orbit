@@ -12,6 +12,9 @@
   /* Find motif 轨道的正/负链配色 */
   --motif-pos: #1f6fb2;
   --motif-neg: #c0392b;
+  /* 拷贝数（SEG）轨道：增益 / 缺失。IGV 的约定是增益红、缺失蓝 */
+  --cnv-gain: #c0392b;
+  --cnv-loss: #2a6fb0;
   --text: #1f2933;
   --text-dim: #4b5563;
   --muted: #6b7480;   /* P1-1：浅色下次级文字达 AA（4.58:1）；深色主题保持 #8b949e */
@@ -28,6 +31,9 @@
   --read: #c9c9c9;       /* BAM 比对视图的 read 灰块 */
   --read-edge: #b0b0b0;
   --shadow: 0 14px 36px rgba(31, 41, 51, .13);
+  /* 下拉菜单里「光标所在项」的底色：深灰 + 白字，替换掉浏览器原生的蓝色高亮 */
+  --pick-hover: #3f444c;
+  --pick-hover-fg: #ffffff;
   --radius: 10px;
   --mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
   /* 字号阶梯：辅助 / 正文 / 区块标题 / 页面标题（P1-2） */
@@ -47,6 +53,8 @@ body[data-theme="dark"] {
   --view-line: #ff5d6c;
   --motif-pos: #63a4e0;
   --motif-neg: #e8776b;
+  --cnv-gain: #d9614f;
+  --cnv-loss: #5b9bd8;
   --text: #e8ebef;
   --text-dim: #b3bac2;
   --muted: #8b949e;
@@ -63,6 +71,9 @@ body[data-theme="dark"] {
   --read: #565c63;
   --read-edge: #6a7078;
   --shadow: 0 18px 48px rgba(0, 0, 0, .55);
+  /* 深色主题下再深就看不见了，用略亮的灰，白字仍然清晰 */
+  --pick-hover: #4d545e;
+  --pick-hover-fg: #ffffff;
 }
 
 * { box-sizing: border-box; }
@@ -172,6 +183,66 @@ button { font-family: inherit; color: inherit; }
   color: var(--text); font-size: 13px; min-width: 0;
 }
 .locus-box input::placeholder { color: var(--muted); }
+/* 搜索范围下拉：与搜索框同高、无边框，靠右侧分隔线区分。
+   这里用自绘菜单，不用原生 <select>：原生弹层的高亮色由浏览器/系统决定（蓝色），
+   CSS 改不了，而且弹层是独立窗口，点开总慢半拍。 */
+.scope-wrap { position: relative; flex: none; align-self: stretch; display: flex; align-items: center; }
+.scope-sel {
+  display: flex; align-items: center; height: 100%;
+  max-width: 120px;
+  border: 0; outline: 0; background: transparent;
+  color: var(--muted);
+  font: 12px/1 system-ui, -apple-system, "Segoe UI", sans-serif;
+  padding: 0 15px 0 2px; margin-right: 2px;
+  border-right: 1px solid var(--border);
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23888' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 3px center;
+  background-size: 9px 6px;
+}
+.scope-sel > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.scope-sel:hover, .scope-sel:focus-visible, .scope-sel.on { color: var(--text); }
+.scope-sel:disabled { opacity: .55; cursor: default; }
+.scope-menu {
+  position: absolute; top: calc(100% + 8px); left: -26px;
+  min-width: 190px; max-width: 460px; max-height: 340px; overflow-y: auto;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  padding: 4px;
+  z-index: 60;
+}
+.scope-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 10px; border-radius: 6px; cursor: pointer;
+  font-size: 12.5px; color: var(--text);
+  white-space: nowrap;
+}
+.scope-item .nm { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.scope-item .ck { flex: none; font-size: 11px; color: var(--accent); }
+/* 光标移到哪一项，哪一项就变深灰 —— 覆盖掉浏览器默认的蓝色高亮 */
+.scope-item:hover { background: var(--pick-hover); color: var(--pick-hover-fg); }
+.scope-item:hover .ck { color: var(--pick-hover-fg); }
+/* 当前选中的那一项：浅底 + 加粗 + 右侧勾，和光标所在的深灰区分开 */
+.scope-item.cur { background: var(--accent-soft); font-weight: 600; }
+.scope-item.cur:hover { background: var(--pick-hover); color: var(--pick-hover-fg); }
+/* 染色体下拉里右侧的长度（chr1 … 249.0 Mb） */
+.scope-item .len {
+  flex: none; margin-left: auto; padding-left: 10px;
+  font-family: var(--mono); font-size: 10.5px; color: var(--muted);
+}
+.scope-item:hover .len { color: var(--pick-hover-fg); }
+/* 染色体下拉：塞在搜索框最左侧，和搜索框同高，用一条竖线跟搜索区隔开 */
+.chrom-wrap { margin-right: 2px; }
+.chrom-sel {
+  max-width: 92px; padding: 0 15px 0 0;
+  font-family: var(--mono); font-size: 12px; color: var(--text);
+  border-right: 1px solid var(--border);
+}
+.chrom-sel > span { max-width: 66px; }
+.chrom-menu { left: 0; min-width: 176px; max-height: 420px; }
 .locus-box kbd {
   font: 10px/1 var(--mono); color: var(--muted);
   border: 1px solid var(--border); border-radius: 4px; padding: 3px 5px;
@@ -284,16 +355,6 @@ main {
 .sec-toggle[aria-expanded="true"] .chev { transform: rotate(90deg); }
 .sec-body { margin-top: 8px; }
 
-/* 染色体：默认一行 chip，点开才展开 25 条全表 */
-.chrom-chip {
-  display: flex; align-items: center; gap: 6px; width: 100%;
-  padding: 5px 8px; border: 1px solid var(--border); border-radius: 6px;
-  background: var(--bg-elev); color: var(--text-dim); cursor: pointer;
-  font-family: var(--mono); font-size: 11.5px; text-align: left;
-}
-.chrom-chip:hover { border-color: var(--accent); color: var(--text); }
-.chrom-chip .chev { margin-left: auto; color: var(--muted); font-size: 9px; }
-.chrom-chip[aria-expanded="true"] .chev { transform: rotate(180deg); }
 .side-title {
   font-size: var(--fs-1); letter-spacing: .08em; text-transform: uppercase;
   color: var(--muted); margin-bottom: 8px; font-weight: 600;
@@ -313,27 +374,25 @@ main {
   width: 9px; height: 9px; border-radius: 2px; flex: none;
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .12);
 }
-.bw-trk .nm { font-family: var(--mono); font-size: 11px; letter-spacing: -.2px; }
+/* 侧栏只有 ~110px 放名字，长文件名会截成 "SRR22507537.ch…"，
+   两份同前缀的 BAM 在侧栏里看起来一模一样。允许折两行，
+   第二行就是 chr1 / chr2 这类真正区分样本的部分。 */
+.bw-trk .nm {
+  font-family: var(--mono); font-size: 11px; letter-spacing: -.2px;
+  white-space: normal; overflow-wrap: anywhere; line-height: 1.25;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
 .bw-trk.off-asm { opacity: .42; cursor: not-allowed; }
 .bw-trk.off-asm .nm { text-decoration: line-through; text-decoration-thickness: 1px; }
-#bwList { display: flex; flex-direction: column; gap: 1px; max-height: 176px; overflow-y: auto; }
+/* 每份 BAM 会多出 Junctions / Alignments 两行，176px 只够一份文件；
+   跟着窗口高度放宽，导入两三份 BAM 时不用一直滚。 */
+#bwList { display: flex; flex-direction: column; gap: 1px; max-height: clamp(176px, 34vh, 340px); overflow-y: auto; }
 
 /* BAM 的第二行（比对视图）：缩进 + 弱化，表明它是上面那条 BAM 的子轨道 */
 .align-trk { padding-left: 20px; }
 .align-trk .nm { color: var(--text-dim); }
 .align-trk .sw { border-radius: 2px; }
 
-.chrom-list { display: flex; flex-direction: column; gap: 1px; max-height: 190px; overflow-y: auto; }
-/* .chrom-list 的 display:flex 会盖掉 [hidden] 的 display:none，必须显式补回来 */
-.chrom-list[hidden] { display: none; }
-.chrom-item {
-  display: flex; justify-content: space-between; gap: 8px;
-  padding: 4px 6px; border-radius: 5px; cursor: pointer;
-  font-family: var(--mono); font-size: 11.5px; color: var(--text-dim);
-}
-.chrom-item:hover { background: var(--accent-soft); color: var(--text); }
-.chrom-item.active { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
-.chrom-item span:last-child { color: var(--muted); font-size: 10.5px; }
 
 .info { overflow-y: auto; font-size: 12px; }
 .info p.muted { color: var(--muted); font-size: 11.5px; margin: 2px 0; }
@@ -385,6 +444,11 @@ main {
   overflow: hidden;
   cursor: grab;   /* 整列都可以直接按住上下拖动换行 */
 }
+.track[data-bam] .bw-label .nm {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  padding-right: 12px;
+}
 .track-label .sub { font-size: var(--fs-1); color: var(--muted); margin-top: 2px; }
 .bw-label .nm {
   display: block; font-family: var(--mono); font-size: 10.5px; line-height: 1.25;
@@ -392,6 +456,28 @@ main {
 }
 .track-body { position: relative; overflow: hidden; }
 .track-body canvas { display: block; width: 100%; }
+.track.seg-track { grid-template-columns: var(--label-w, 116px) var(--seg-name-w, 142px) minmax(0, 1fr); }
+.seg-sample-labels {
+  display: flex; flex-direction: column; align-items: stretch;
+  padding-top: 3px; background: var(--panel); border-right: 1px solid var(--border);
+  overflow: hidden; font: 10px/14px var(--mono); color: var(--text-dim);
+}
+.seg-sample-labels .seg-sample-name { height: 14px; padding: 0 5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.seg-sample-labels .seg-summary-name { height: 44px; padding: 4px 5px; color: var(--muted); font-family: system-ui, sans-serif; }
+.seg-track.seg-col .seg-sample-labels { display: none; }
+.seg-track.seg-none .seg-sample-labels { display: none; }
+/* 用户在侧栏 / 轨道设置里关掉样本名列：收成两列，画布吃满宽度 */
+.track.seg-track.seg-nonames { grid-template-columns: var(--label-w, 116px) minmax(0, 1fr); }
+.seg-track.seg-nonames .seg-sample-labels { display: none; }
+/* 侧栏里那个「Aa」小按钮：亮 = 显示样本名列 */
+.bw-trk .seg-nm-tg {
+  margin-left: 2px; flex: none; width: 20px; height: 16px; padding: 0;
+  border: 1px solid var(--border); border-radius: 4px; background: transparent;
+  color: var(--muted); font: 9.5px/1 var(--mono); cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.bw-trk .seg-nm-tg:hover { color: var(--text); border-color: var(--muted); }
+.bw-trk .seg-nm-tg.on { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
 /* P1-5：基因 / 序列轨道右缘 12 px 渐隐，暗示「右边还有内容」，避免名字被硬切。
    只作用于这两条（标尺的 locus pill 就在右缘，不能被淡出）。 */
 .track[data-track="genes"] .track-body::after,
@@ -511,7 +597,7 @@ body.trk-reordering, body.trk-reordering * { cursor: grabbing !important; user-s
   border-radius: 6px;
   box-shadow: var(--shadow);
   padding: 4px 8px; font-size: 11px; font-family: var(--mono);
-  color: var(--text); white-space: nowrap;
+  color: var(--text); white-space: pre-wrap; max-width: min(620px, 90vw); max-height: 40vh; overflow: hidden;
 }
 .toast {
   position: fixed; left: 50%; bottom: 46px; transform: translateX(-50%);
@@ -615,8 +701,12 @@ body.trk-reordering, body.trk-reordering * { cursor: grabbing !important; user-s
   background: var(--panel); border: 1px solid var(--border);
   border-radius: 10px; box-shadow: 0 14px 34px rgba(15, 23, 42, .20);
   padding: 12px 13px 11px; font-size: 12px; color: var(--text);
+  /* 基因位置详情会带上「全部内含子」清单，条目多时整块比窗口还高，
+     底部（重置/完成）会被切在窗口外，所以这里限高并允许内部滚动。 */
+  max-height: calc(100vh - 16px); overflow-y: auto; overscroll-behavior: contain;
 }
 .tpop h5 {
+  cursor: move; user-select: none; touch-action: none;
   margin: 0 0 10px; font-size: 13px; font-weight: 600;
   letter-spacing: 0; color: var(--text);
   padding-bottom: 7px; border-bottom: 1px solid var(--border-soft);
@@ -694,6 +784,29 @@ body[data-theme="dark"] .tpop .btn.danger:hover { color: #ffb0a3; border-color: 
 .tpop input[type="color"]::-webkit-color-swatch-wrapper { padding: 1px; }
 .tpop input[type="color"]::-webkit-color-swatch { border: 0; border-radius: 3px; }
 
+/* SEG 热图：勾选要显示的样本 */
+.tpop .smp-head { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+.tpop .smp-head > .lbl { flex: 1; color: var(--text-dim); font-size: 11.5px; }
+.tpop .smp-head .btn { padding: 2px 7px; font-size: 10.5px; }
+.tpop .smp-head .cnt {
+  font-family: var(--mono); font-size: 10.5px; color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.tpop .smp-list {
+  max-height: 202px; overflow-y: auto; overscroll-behavior: contain;
+  border: 1px solid var(--border-soft); border-radius: 6px;
+  background: var(--bg-elev); padding: 3px 4px; margin-bottom: 2px;
+}
+.tpop .smp {
+  display: flex; align-items: center; gap: 6px;
+  padding: 2px 3px; border-radius: 4px; cursor: pointer;
+  font-family: var(--mono); font-size: 10.5px; color: var(--text);
+}
+.tpop .smp:hover { background: var(--accent-soft); }
+.tpop .smp input { accent-color: var(--accent); margin: 0; flex: none; width: 12px; height: 12px; }
+.tpop .smp > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tpop .smp.off > span { color: var(--muted-2); }
+
 /* ---- bigWig multi-select + context menu ---- */
 .bw-trk { transition: background .12s, box-shadow .12s; }
 .bw-trk .nm { cursor: pointer; user-select: none; }
@@ -704,6 +817,12 @@ body[data-theme="dark"] .tpop .btn.danger:hover { color: #ffb0a3; border-color: 
   box-shadow: inset 2px 0 0 var(--accent);
 }
 .bw-trk.sel .nm { color: var(--text); font-weight: 600; }
+/* 侧栏悬停 → 高亮画布上对应的轨道名，弥补侧栏不再显示完整文件名 */
+.track-label.hi {
+  background: var(--accent-soft);
+  box-shadow: inset 2px 0 0 var(--accent);
+  color: var(--text);
+}
 
 .chip-custom {
   display: inline-flex; align-items: center; gap: 4px;

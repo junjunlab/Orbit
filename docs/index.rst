@@ -22,8 +22,14 @@ What you get
 * A native Qt window (no browser tab, no local server to babysit)
 * 18 assemblies across 9 species, annotation bundled
 * Gene models with transcript expansion, cytobands, GC and sequence tracks
+* Right-click a gene model for the transcript, exon/CDS/UTR fragment and every
+  intron under the pointer, with coordinates and lengths
+* BAM and SAM as three labelled rows — coverage, splice junctions, alignments —
+  with the four IGV display modes, wheel scrolling through every read, and a
+  visibility window chosen from the experiment type
 * bigWig and bedGraph signal tracks, multi-sample overlays
-* Import your own bigWig, bedGraph, BAM, GTF or FASTA at runtime
+* Copy-number SEG files: one track per sample, or a cohort heatmap
+* Import your own bigWig, bedGraph, SEG, BAM, GTF or FASTA at runtime
 * Split view, deep links, PNG / SVG / PDF export
 
 .. note::

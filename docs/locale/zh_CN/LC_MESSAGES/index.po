@@ -1,106 +1,77 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) 2026, junjunlab
-# This file is distributed under the same license as the Orbit package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
-#
 msgid ""
 msgstr ""
-"Project-Id-Version: Orbit 1.0\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-29 20:35+0800\n"
-"PO-Revision-Date: 2026-10-29 20:50+0800\n"
-"Last-Translator: junjunlab\n"
+"Project-Id-Version: Orbit\n"
 "Language: zh_CN\n"
-"Language-Team: zh_CN <LL@li.org>\n"
-"Plural-Forms: nplurals=1; plural=0;\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.18.0\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
 
-#: ../../index.rst:36
+msgid ""
+msgstr "Project-Id-Version: Orbit\nLanguage: zh_CN\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=1; plural=0;\n"
+
+msgid ""
+msgstr "Project-Id-Version: Orbit 1.0\nReport-Msgid-Bugs-To: \nPOT-Creation-Date: 2026-10-29 20:35+0800\nPO-Revision-Date: 2026-10-29 20:50+0800\nLast-Translator: junjunlab\nLanguage: zh_CN\nLanguage-Team: zh_CN <LL@li.org>\nPlural-Forms: nplurals=1; plural=0;\nMIME-Version: 1.0\nContent-Type: text/plain; charset=utf-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: Babel 2.18.0\n"
+
 msgid "Getting started"
 msgstr "快速开始"
 
-#: ../../index.rst:43
 msgid "Using Orbit"
 msgstr "使用 Orbit"
 
-#: ../../index.rst:54
 msgid "Under the hood"
 msgstr "实现原理"
 
-#: ../../index.rst:2
 msgid "Orbit"
 msgstr "Orbit"
 
-#: ../../index.rst:4
-msgid ""
-"Orbit is a desktop genome browser for people who need to look at a locus *now*. It opens as a "
-"native window, needs no Java and no separately managed server. Annotations work offline; sequence"
-" requires a local source or access to the configured remote reference. In-memory remote caches "
-"are not a persistent offline genome download."
-msgstr ""
-"Orbit 是一款桌面基因组浏览器，适合需要 *立即* 查看某个位点的用户。它以原生窗口打开，不需要 "
-"Java，也不需要单独管理的服务器。注释可离线使用；序列需要本地来源或访问已配置的远程参考。内存中的远程缓存不是持久化的离线基因组下载。"
+msgid "Orbit is a desktop genome browser for people who need to look at a locus *now*. It opens as a native window, needs no Java and no separately managed server. Annotations work offline; sequence requires a local source or access to the configured remote reference. In-memory remote caches are not a persistent offline genome download."
+msgstr "Orbit 是一款桌面基因组浏览器，适合需要 *立即* 查看某个位点的用户。它以原生窗口打开，不需要 Java，也不需要单独管理的服务器。注释可离线使用；序列需要本地来源或访问已配置的远程参考。内存中的远程缓存不是持久化的离线基因组下载。"
 
-#: ../../index.rst:10
-msgid ""
-"RefSeq annotations are compiled into a binary index at build time, and sequence is read from UCSC"
-" 2bit files — from disk or over HTTP Range — so a whole chromosome of genes loads in milliseconds"
-" and the installer stays around 70 MB of annotation instead of carrying a 3 GB genome."
-msgstr ""
-"RefSeq 注释在构建期就被编译成二进制索引，序列则直接从 UCSC 的 2bit 文件读取——本地磁盘或 HTTP Range 均可——所以一整条染色体的基因能在毫秒级加载，安装包只背约 "
-"70 MB 注释，而不是 3 GB 基因组。"
+msgid "RefSeq annotations are compiled into a binary index at build time, and sequence is read from UCSC 2bit files — from disk or over HTTP Range — so a whole chromosome of genes loads in milliseconds and the installer stays around 70 MB of annotation instead of carrying a 3 GB genome."
+msgstr "RefSeq 注释在构建期就被编译成二进制索引，序列则直接从 UCSC 的 2bit 文件读取——本地磁盘或 HTTP Range 均可——所以一整条染色体的基因能在毫秒级加载，安装包只背约 70 MB 注释，而不是 3 GB 基因组。"
 
-#: ../../index.rst:15
 msgid "The Orbit window showing three loci side by side with signal tracks"
 msgstr "Orbit 窗口：并排显示三个位点及信号轨道"
 
-#: ../../index.rst:20
 msgid "What you get"
 msgstr "功能一览"
 
-#: ../../index.rst:22
 msgid "A native Qt window (no browser tab, no local server to babysit)"
 msgstr "原生 Qt 窗口（不占浏览器标签页，无需照看本地服务）"
 
-#: ../../index.rst:23
 msgid "18 assemblies across 9 species, annotation bundled"
 msgstr "9 个物种共 18 个装配，注释随包内置"
 
-#: ../../index.rst:24
 msgid "Gene models with transcript expansion, cytobands, GC and sequence tracks"
 msgstr "基因模型可展开转录本，另有细胞遗传带、GC 与序列轨道"
 
-#: ../../index.rst:25
+msgid "Right-click a gene model for the transcript, exon/CDS/UTR fragment and every intron under the pointer, with coordinates and lengths"
+msgstr "右键基因结构即可看到指针处的转录本、外显子 / CDS / UTR 片段以及全部内含子的区间与长度"
+
+msgid "BAM and SAM as three labelled rows — coverage, splice junctions, alignments — with the four IGV display modes, wheel scrolling through every read, and a visibility window chosen from the experiment type"
+msgstr "BAM 与 SAM 显示为三条带文件名的轨道——覆盖度、剪接位点、比对——支持 IGV 的四种显示方式、滚轮翻看全部 reads，并按实验类型决定可见窗口"
+
 msgid "bigWig and bedGraph signal tracks, multi-sample overlays"
 msgstr "bigWig / bedGraph 信号轨道，支持多样本叠加"
 
-#: ../../index.rst:26
-msgid "Import your own bigWig, bedGraph, BAM, GTF or FASTA at runtime"
-msgstr "运行时可导入自己的 bigWig、bedGraph、BAM、GTF 或 FASTA"
+msgid "Copy-number SEG files: one track per sample, or a cohort heatmap"
+msgstr "拷贝数 SEG 文件：单样本一条轨道，多样本一张热图"
 
-#: ../../index.rst:27
+msgid "Import your own bigWig, bedGraph, SEG, BAM, GTF or FASTA at runtime"
+msgstr "运行时导入自己的 bigWig、bedGraph、SEG、BAM、GTF 或 FASTA"
+
 msgid "Split view, deep links, PNG / SVG / PDF export"
 msgstr "分屏视图、深链接，导出 PNG / SVG / PDF"
 
-#: ../../index.rst:31
-msgid ""
-"This documentation is available in English and Chinese. Use the language selector at the top of "
-"the left sidebar to switch between ``English`` and ``简体中文``. The Chinese translation lives at "
-"``/zh-cn/latest/`` on the same site."
+msgid "This documentation is available in English and Chinese. Use the language selector at the top of the left sidebar to switch between ``English`` and ``简体中文``. The Chinese translation lives at ``/zh-cn/latest/`` on the same site."
 msgstr "本文档提供英文和中文两个版本。用页面左侧栏顶部的语言选择器在 ``English`` 与 ``简体中文`` 之间切换，中文版位于同一站点的 ``/zh-cn/latest/`` 。"
 
-#: ../../index.rst:63
 msgid "Indices"
 msgstr "索引"
 
-#: ../../index.rst:65
 msgid ":ref:`genindex`"
 msgstr ":ref:`genindex`"
 
-#: ../../index.rst:66
 msgid ":ref:`search`"
 msgstr ":ref:`search`"
-

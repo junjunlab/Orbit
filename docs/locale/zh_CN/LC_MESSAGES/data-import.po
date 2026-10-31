@@ -1,280 +1,53 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) 2026, junjunlab
-# This file is distributed under the same license as the Orbit package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
-#
 msgid ""
 msgstr ""
-"Project-Id-Version: Orbit 1.0\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-29 20:35+0800\n"
-"PO-Revision-Date: 2026-10-29 20:50+0800\n"
-"Last-Translator: junjunlab\n"
+"Project-Id-Version: Orbit\n"
 "Language: zh_CN\n"
-"Language-Team: zh_CN <LL@li.org>\n"
-"Plural-Forms: nplurals=1; plural=0;\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.18.0\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
 
-#: ../../data-import.rst:2
+msgid ""
+msgstr "Project-Id-Version: Orbit\nLanguage: zh_CN\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=1; plural=0;\n"
+
+msgid ""
+msgstr "Project-Id-Version: Orbit 1.0\nReport-Msgid-Bugs-To: \nPOT-Creation-Date: 2026-10-29 20:35+0800\nPO-Revision-Date: 2026-10-29 20:50+0800\nLast-Translator: junjunlab\nLanguage: zh_CN\nLanguage-Team: zh_CN <LL@li.org>\nPlural-Forms: nplurals=1; plural=0;\nMIME-Version: 1.0\nContent-Type: text/plain; charset=utf-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: Babel 2.18.0\n"
+
 msgid "Importing data"
 msgstr "导入数据"
 
-#: ../../data-import.rst:4
-msgid ""
-"Orbit reads the common genomics formats directly. Drag a file onto the "
-"window, or press the **Import** button in the toolbar. The format is "
-"chosen by extension."
+msgid "Orbit reads the common genomics formats directly. Drag a file onto the window, or press the **Import** button in the toolbar. The format is chosen by extension."
 msgstr "Orbit 直接读取常见的基因组格式。把文件拖进窗口，或点工具栏的  导入  。格式按扩展名判断。"
 
-#: ../../data-import.rst:9
 msgid "Supported formats"
 msgstr "支持的格式"
 
-#: ../../data-import.rst:15
 msgid "Format"
 msgstr "格式"
 
-#: ../../data-import.rst:16
 msgid "Extension"
 msgstr "扩展名"
 
-#: ../../data-import.rst:17
 msgid "Notes"
 msgstr "说明"
 
-#: ../../data-import.rst:18 ../../data-import.rst:35
 msgid "bigWig"
 msgstr "bigWig"
 
-#: ../../data-import.rst:19
 msgid "``.bw`` ``.bigWig``"
 msgstr "``.bw`` ``.bigWig``"
 
-#: ../../data-import.rst:20
 msgid "Random access, no indexing step. Best choice for signal."
 msgstr "随机访问，无需建索引。信号轨道的首选。"
 
-#: ../../data-import.rst:21 ../../data-import.rst:57
 msgid "bedGraph"
 msgstr "bedGraph"
 
-#: ../../data-import.rst:22
 msgid "``.bedGraph`` ``.bdg``"
 msgstr "``.bedGraph`` ``.bdg``"
 
-#: ../../data-import.rst:23
 msgid "Loaded into memory; fine up to a few hundred MB."
 msgstr "整份读进内存；几百 MB 以内没问题。"
-
-#: ../../data-import.rst:24 ../../data-import.rst:77
-msgid "BAM"
-msgstr "BAM"
-
-#: ../../data-import.rst:25
-msgid "``.bam``"
-msgstr "``.bam``"
-
-#: ../../data-import.rst:26
-msgid "BAM is scanned into an in-memory index during import; .bai is not used."
-msgstr "导入时会扫描 BAM 并建立内存索引；不会使用 .bai。"
-
-#: ../../data-import.rst:27 ../../data-import.rst:102
-msgid "GTF / GFF3"
-msgstr "GTF / GFF3"
-
-#: ../../data-import.rst:28
-msgid "``.gtf`` ``.gff`` ``.gff3``"
-msgstr "``.gtf`` ``.gff`` ``.gff3``"
-
-#: ../../data-import.rst:29
-msgid "Becomes a gene track; UTR and CDS features are kept."
-msgstr "变成一个基因轨道；UTR 和 CDS 特征都会保留。"
-
-#: ../../data-import.rst:30 ../../data-import.rst:135
-msgid "FASTA"
-msgstr "FASTA"
-
-#: ../../data-import.rst:31
-msgid "``.fa`` ``.fasta``"
-msgstr "``.fa`` ``.fasta``"
-
-#: ../../data-import.rst:32
-msgid "Adds an independent sequence track for matching genomic coordinates."
-msgstr "为匹配的基因组坐标添加独立的序列轨道。"
-
-#: ../../data-import.rst:37
-msgid ""
-"The recommended format. Orbit parses the index itself, so there is no "
-"``bigWigToBedGraph`` step and no conversion. Multi-sample overlays work "
-"best when the files share a coordinate system."
-msgstr "推荐格式。Orbit 自己解析索引，不需要 ``bigWigToBedGraph`` 转换。多样本叠加时，文件之间共用坐标系效果最好。"
-
-#: ../../data-import.rst:45
-msgid ""
-"The track appears immediately with autoscale on. Open its label to pin "
-"the range if you want several samples to share one scale."
-msgstr "轨道会立刻出现，默认自动缩放。想让多个样本共用同一量程，就打开轨道标签把范围固定下来。"
-
-#: ../../data-import.rst:52
-msgid ""
-"A local ``.bw`` signal track imported onto hg38. The signal is added to "
-"the signal panel with autoscale on, and its label (``Scr_R1_IP``) appears"
-" in the left sidebar. Its filename alone does not establish the "
-"experimental assay."
-msgstr ""
-"导入到 hg38 的本地 ``.bw`` 信号轨道。信号会加入信号面板并自动缩放，左侧栏显示其标签（ ``Scr_R1_IP`` "
-"）。仅凭文件名不能确定实验类型。"
-
-#: ../../data-import.rst:59
-msgid ""
-"Plain text, four columns (``chrom  start  end  value``). Convenient for "
-"small, hand-made tracks; a genome-wide file will cost memory, so prefer "
-"bigWig above a few hundred megabytes. Orbit renders bedGraph exactly like"
-" bigWig — same signal panel, same autoscale, same colour controls."
-msgstr ""
-"纯文本，四列（ ``chrom  start  end  value`` ）。适合小型手工轨道；全基因组级别会吃内存，超过几百 MB 建议改用 "
-"bigWig。Orbit 渲染 bedGraph 与 bigWig 完全一致——同一信号面板、同样的自动缩放与配色控件。"
-
-#: ../../data-import.rst:72
-msgid ""
-"A four-column ``.bedGraph`` file on hg38, rendered identically to a "
-"bigWig signal track. Both go through the same drawing path, so you can "
-"mix ``.bw`` and ``.bedGraph`` in one view."
-msgstr ""
-"hg38 上的四列 ``.bedGraph`` 文件，渲染效果与 bigWig 信号轨道完全一致。两者走同一条绘制路径，因此可以在同一视图里混用 "
-"``.bw`` 与 ``.bedGraph`` 。"
-
-#: ../../data-import.rst:79
-msgid ""
-"Orbit scans the BAM during import and builds an in-memory interval index;"
-" ``.bai`` is not required or consumed by this implementation. Initial "
-"import costs time and memory. The current loader caps accepted reads at "
-"6,000,000; check the truncation notice for larger files. Coverage and "
-"displayed reads are then queried for the visible window, and dense "
-"alignments may be sampled."
-msgstr ""
-"Orbit 会在导入时扫描 BAM 并建立内存区间索引；当前实现不要求也不会使用 ``.bai`` 。初始导入会消耗时间和内存。当前加载器最多接受"
-" 6,000,000 条 reads；对于更大的文件，请查看截断提示。随后会查询可见窗口中的覆盖度和显示 reads，高密度比对可能会抽样。"
-
-#: ../../data-import.rst:89
-msgid ""
-"The sidebar has a parent signal switch and a subordinate alignment "
-"switch: turn the parent on to see coverage, then enable the alignment "
-"switch for reads. Turning the parent off hides both; reads are not "
-"independent of the parent."
-msgstr ""
-"侧栏有一个父级信号开关和一个从属的比对开关：打开父级开关可查看覆盖度，再启用比对开关查看 reads。关闭父级开关会同时隐藏两者；reads "
-"不能脱离父级单独显示。"
-
-#: ../../data-import.rst:97
-msgid ""
-"A BAM imported onto hg38, shown at ``chr1:11.79–11.81 Mb``. The blue "
-"track is read coverage; the striped block below it is the stacked "
-"alignments. The bundled RefSeq track (``MTHFR``, ``CLCN6``) sits above "
-"for context."
-msgstr ""
-"导入到 hg38 的 BAM，显示在 ``chr1:11.79–11.81 Mb`` 。蓝色轨道是 reads "
-"覆盖度；其下方的条纹块是堆叠的比对记录。上方是内置的 RefSeq 轨道（ ``MTHFR`` 、 ``CLCN6`` ）作为参照。"
-
-#: ../../data-import.rst:104
-msgid ""
-"Choose the matching assembly: **hg38** for GRCh38 or **sacCer3** for the "
-"yeast example below."
-msgstr "选择匹配的装配：GRCh38 选择  hg38  ，下方酵母示例选择  sacCer3  。"
-
-#: ../../data-import.rst:106
-msgid "Click Import, select the GTF/GFF3, and wait for parsing to finish."
-msgstr "点击导入，选择 GTF/GFF3，并等待解析完成。"
-
-#: ../../data-import.rst:107
-msgid ""
-"Enable its annotation row. Use the dedicated imported-annotation search "
-"controls when a gene exists only in your imported file, not in RefSeq."
-msgstr "启用其注释行。当基因仅存在于导入文件而不在 RefSeq 中时，请使用专用的导入注释搜索控件。"
-
-#: ../../data-import.rst:109
-msgid ""
-"Click its small **+** to expand a gene, or the track's gear for **Expand "
-"all**. The procedure and a before/after illustration are in "
-":doc:`navigation`."
-msgstr "点击基因旁的小  +  展开基因，或点击轨道齿轮并选择  全部展开  。具体步骤和前后对比图见  :doc:`navigation`  。"
-
-#: ../../data-import.rst:112
-msgid ""
-"Imported annotations become a normal gene track: expandable transcripts, "
-"strand colours and labels. Chromosome aliases such as ``1`` / ``chr1`` or"
-" ``I`` / ``chrI`` are reconciled, but aliases do not convert genome "
-"assemblies."
-msgstr ""
-"导入的注释会成为普通基因轨道：可展开转录本、按链着色并显示标签。 ``1`` / ``chr1`` 或 ``I`` / ``chrI`` "
-"等染色体别名会自动对齐，但别名不会转换基因组装配。"
-
-#: ../../data-import.rst:124
-msgid ""
-"A yeast GTF (``representative_transcripts.gtf``) imported onto sacCer3 "
-"and shown directly under the bundled RefSeq track. Gene names and strand "
-"arrows are drawn for both."
-msgstr ""
-"导入到 sacCer3 的酵母 GTF（ ``representative_transcripts.gtf`` ），直接显示在内置 RefSeq "
-"轨道下方。两条轨道都会画出基因名与链方向箭头。"
-
-#: ../../data-import.rst:130
-msgid ""
-"Imported annotations are not converted to the built-in binary format. "
-"They are read on load, which is fine for a few hundred thousand features "
-"but slower than the bundled RefSeq index."
-msgstr "导入的注释不会转成内置二进制格式，而是加载时现读。几十万条特征没问题，但比内置的 RefSeq 索引慢。"
-
-#: ../../data-import.rst:137
-msgid ""
-"Importing FASTA adds its own sequence track; it does not replace the "
-"backend reference for built-in GC, motif or BAM mismatch calculations. "
-"Uncompressed FASTA uses indexed file reads. A gzip FASTA is decompressed "
-"into memory, so whole-human-genome gzip imports can consume several GB of"
-" RAM."
-msgstr ""
-"导入 FASTA 会添加独立的序列轨道；它不会替代内置 GC、基序或 BAM 错配计算所使用的后端参考。未压缩 FASTA "
-"使用索引文件读取。gzip FASTA 会解压到内存，因此导入完整人类基因组的 gzip 文件可能消耗数 GB 内存。"
-
-#: ../../data-import.rst:142
-msgid ""
-"For the complete human-genome walkthrough, with exact positive/negative-"
-"strand start/stop windows, Flip strand and amino-acid translation, see "
-":doc:`sequence`."
-msgstr "完整的人类基因组操作流程（含正链/负链精确起止窗口、翻转链和氨基酸翻译）见  :doc:`sequence`  。"
-
-#: ../../data-import.rst:145
-msgid "Local human FASTA displayed at ACTB with complementary-strand translation"
-msgstr "在 ACTB 位点显示本地人类 FASTA 及互补链翻译"
-
-#: ../../data-import.rst:149
-msgid ""
-"An imported GRCh38 chromosome FASTA at base resolution. The detailed "
-"sequence guide explains why a negative-strand gene must be read right to "
-"left after flipping the displayed bases."
-msgstr "以碱基分辨率显示导入的 GRCh38 染色体 FASTA。详细的序列指南解释了为什么负链基因在翻转显示碱基后必须从右向左读取。"
-
-#: ../../data-import.rst:154
-msgid "Where imported tracks live"
-msgstr "导入的轨道存在哪"
-
-#: ../../data-import.rst:156
-msgid ""
-"Importing copies the file into Orbit's per-user data directory "
-"(``data/loaded``, or ``%LOCALAPPDATA%/Orbit/loaded`` when the install "
-"directory is read-only). The imported copy is used for display; keep your"
-" original research files as backups. Remove a track only when you intend "
-"to remove its imported copy. Imported tracks are session-scoped by "
-"default: set ``IGV_RESTORE_LOADED=1`` to restore them on the next server "
-"launch. Restored tracks may still need to be checked on in the sidebar."
-msgstr ""
-"导入会将文件复制到 Orbit 的用户数据目录（ ``data/loaded`` ；安装目录只读时使用 "
-"``%LOCALAPPDATA%/Orbit/loaded`` "
-"）。显示时使用导入副本；请将原始研究文件作为备份保留。只有在确实要删除导入副本时才移除轨道。导入轨道默认按会话管理：设置 "
-"``IGV_RESTORE_LOADED=1`` 可在下次服务器启动时恢复。恢复的轨道可能仍需在侧栏中手动勾选。"
 
 msgid "WIG"
 msgstr "WIG"
@@ -285,8 +58,23 @@ msgstr "``.wig`` ``.wiggle``"
 msgid "``variableStep`` and ``fixedStep``; stored as intervals like bedGraph."
 msgstr "``variableStep`` 与 ``fixedStep``；按 bedGraph 一样存成区间。"
 
-msgid "Scanned into an in-memory index during import; a ``.bai`` is not used."
-msgstr "导入时扫描并建立内存索引；不使用 ``.bai``。"
+msgid "SEG"
+msgstr "SEG"
+
+msgid "``.seg`` ``.seg.txt`` ``.seg.tsv``"
+msgstr "``.seg`` ``.seg.txt`` ``.seg.tsv``"
+
+msgid "Copy-number segments (GISTIC / TCGA / GDC); one file may hold many samples."
+msgstr "拷贝数片段（GISTIC / TCGA / GDC）；一个文件可含多个样本。"
+
+msgid "BAM"
+msgstr "BAM"
+
+msgid "``.bam``"
+msgstr "``.bam``"
+
+msgid "Uses the neighbouring ``.bai``; builds its own index once if there is none."
+msgstr "读取同目录的 ``.bai``；没有就自己建一次索引。"
 
 msgid "SAM"
 msgstr "SAM"
@@ -294,92 +82,218 @@ msgstr "SAM"
 msgid "``.sam``"
 msgstr "``.sam``"
 
-msgid "Text alignments: same coverage and stacked-reads view as BAM."
-msgstr "文本比对：与 BAM 相同的覆盖度与 reads 堆叠视图。"
+msgid "Text alignments: same coverage, junction and read views as BAM."
+msgstr "文本比对：与 BAM 相同的覆盖度、剪接位点与 reads 视图。"
 
-msgid ""
-"Wiggle files are accepted in both layouts: ``variableStep`` (``position "
-"value`` pairs) and ``fixedStep`` (``start`` / ``step`` / ``span``, with "
-"one value per line). Each probe becomes a small interval, so binning, "
-"autoscale and colours behave exactly like bedGraph. A plain four-column "
-"body is also tolerated."
-msgstr ""
-"Wiggle 两种写法都支持：``variableStep``（``位置 数值`` 成对出现）与 ``fixedStep``（给出 "
-"``start`` / ``step`` / ``span``，每行一个数值）。每个探针转成一个小区间，所以分箱、自动缩放和配色与 "
-"bedGraph 完全一致；纯四列内容也能读。"
+msgid "GTF / GFF3"
+msgstr "GTF / GFF3"
 
-msgid ""
-"WIG carries no chromosome lengths, so the track reports its extent from "
-"the data itself. Coordinates in the file are 1-based, as the format "
-"requires."
+msgid "``.gtf`` ``.gff`` ``.gff3``"
+msgstr "``.gtf`` ``.gff`` ``.gff3``"
+
+msgid "Becomes a gene track; UTR and CDS features are kept."
+msgstr "变成一个基因轨道；UTR 和 CDS 特征都会保留。"
+
+msgid "FASTA"
+msgstr "FASTA"
+
+msgid "``.fa`` ``.fasta``"
+msgstr "``.fa`` ``.fasta``"
+
+msgid "Adds an independent sequence track for matching genomic coordinates."
+msgstr "为匹配的基因组坐标添加独立的序列轨道。"
+
+msgid "The recommended format. Orbit parses the index itself, so there is no ``bigWigToBedGraph`` step and no conversion. Multi-sample overlays work best when the files share a coordinate system."
+msgstr "推荐格式。Orbit 自己解析索引，不需要 ``bigWigToBedGraph`` 转换。多样本叠加时，文件之间共用坐标系效果最好。"
+
+msgid "The track appears immediately with autoscale on. Open its label to pin the range if you want several samples to share one scale."
+msgstr "轨道会立刻出现，默认自动缩放。想让多个样本共用同一量程，就打开轨道标签把范围固定下来。"
+
+msgid "A local ``.bw`` signal track imported onto hg38. The signal is added to the signal panel with autoscale on, and its label (``Scr_R1_IP``) appears in the left sidebar. Its filename alone does not establish the experimental assay."
+msgstr "导入到 hg38 的本地 ``.bw`` 信号轨道。信号会加入信号面板并自动缩放，左侧栏显示其标签（ ``Scr_R1_IP`` ）。仅凭文件名不能确定实验类型。"
+
+msgid "Plain text, four columns (``chrom  start  end  value``). Convenient for small, hand-made tracks; a genome-wide file will cost memory, so prefer bigWig above a few hundred megabytes. Orbit renders bedGraph exactly like bigWig — same signal panel, same autoscale, same colour controls."
+msgstr "纯文本，四列（ ``chrom  start  end  value`` ）。适合小型手工轨道；全基因组级别会吃内存，超过几百 MB 建议改用 bigWig。Orbit 渲染 bedGraph 与 bigWig 完全一致——同一信号面板、同样的自动缩放与配色控件。"
+
+msgid "A four-column ``.bedGraph`` file on hg38, rendered identically to a bigWig signal track. Both go through the same drawing path, so you can mix ``.bw`` and ``.bedGraph`` in one view."
+msgstr "hg38 上的四列 ``.bedGraph`` 文件，渲染效果与 bigWig 信号轨道完全一致。两者走同一条绘制路径，因此可以在同一视图里混用 ``.bw`` 与 ``.bedGraph`` 。"
+
+msgid "Wiggle files are accepted in both layouts: ``variableStep`` (``position value`` pairs) and ``fixedStep`` (``start`` / ``step`` / ``span``, with one value per line). Each probe becomes a small interval, so binning, autoscale and colours behave exactly like bedGraph. A plain four-column body is also tolerated."
+msgstr "Wiggle 两种写法都支持：``variableStep`` （``位置 数值`` 成对出现）与 ``fixedStep`` （给出 ``start`` / ``step`` / ``span``，每行一个数值）。每个探针转成一个小区间，所以分箱、自动缩放和配色与 bedGraph 完全一致；纯四列内容也能读。"
+
+msgid "WIG carries no chromosome lengths, so the track reports its extent from the data itself. Coordinates in the file are 1-based, as the format requires."
 msgstr "WIG 不含染色体长度，因此轨道范围取自数据本身。文件内坐标按格式规定为 1-based。"
 
-msgid ""
-"``.sam`` files (the plain-text form of BAM) are parsed the same way and "
-"appear with an identical coverage row plus stacked reads. Secondary and "
-"supplementary alignments (flags ``0x100`` / ``0x800``) are skipped so a "
-"read is not drawn twice; ``D``/``N`` and ``I`` CIGAR operations are "
-"preserved. Chromosome lengths come from the ``@SQ`` header when present. "
-"SAM is read into memory at import, so use BAM for very large alignment "
-"sets."
-msgstr ""
-"``.sam`` 是 BAM 的纯文本形式，解析后同样生成覆盖度行与 reads 堆叠。次要与补充比对（flag ``0x100`` / "
-"``0x800``）会被跳过，避免同一条 read 被画两次；``D``/``N`` 与 ``I`` 等 CIGAR 操作都会保留。有 "
-"``@SQ`` 头时以其中的染色体长度为准。SAM 在导入时读入内存，比对数据很大时建议改用 BAM。"
+msgid "SEG is the tab-delimited copy-number segment format written by GISTIC, TCGA and the GDC: ``Sample  Chromosome  Start  End  Num_Probes  Segment_Mean``. Orbit identifies the columns by header name, so the GDC spelling (``GDC_Aliquot``) and either ``Segment_Mean`` or ``seg.mean`` are accepted, and ``.seg`` / ``.seg.txt`` / ``.seg.tsv`` (also gzip-compressed) all work. A plain ``.txt`` or ``.tsv`` is accepted too, as long as the first line carries the SEG column names — that is how names like ``xxx.seg.v2.txt`` are recognised. ``Segment_Mean`` is a log2 ratio: ``0`` is diploid, positive is gain and negative is loss."
+msgstr "SEG 是 GISTIC、TCGA 与 GDC 输出的制表符分隔拷贝数片段格式：``Sample  Chromosome  Start  End  Num_Probes  Segment_Mean``。Orbit 按表头名识别各列，因此 GDC 的写法（``GDC_Aliquot``）以及 ``Segment_Mean`` / ``seg.mean`` 都能读，``.seg`` / ``.seg.txt`` / ``.seg.tsv`` （含 gzip 压缩）也都支持。纯 ``.txt`` / ``.tsv`` 同样可以——只要首行带 SEG 的列名，``xxx.seg.v2.txt`` 这类文件名就是这样认出来的。``Segment_Mean`` 是 log2 比值：``0`` 为二倍体，正值表示增益，负值表示缺失。"
 
-msgid ""
-"``.sam`` files (the plain-text form of BAM) are parsed the same way and "
-"appear with an identical coverage row plus stacked reads. All mapped "
-"alignments are kept, including secondary and supplementary records (flags"
-" ``0x100`` / ``0x800``) — IGV does not filter those either: the Java "
-"implementation never tests the flags, and igv.js keeps them unless "
-"``secondary`` / ``supplementary`` filtering is explicitly enabled. "
-"``D``/``N`` and ``I`` CIGAR operations are preserved. Chromosome lengths "
-"come from the ``@SQ`` header when present. SAM is read into memory at "
-"import, so use BAM for very large alignment sets."
-msgstr ""
-"``.sam`` 是 BAM 的纯文本形式，解析后同样生成覆盖度行与 reads 堆叠。所有已比对的记录都会保留，包括次要与补充比对（flag "
-"``0x100`` / ``0x800``）——IGV 也不过滤它们：Java 版从未检查这两个 flag，igv.js 只有在显式开启 "
-"``secondary`` / ``supplementary`` 过滤时才丢弃。``D``/``N`` 与 ``I`` 等 CIGAR "
-"操作都会保留。有 ``@SQ`` 头时以其中的染色体长度为准。SAM 在导入时读入内存，比对数据很大时建议改用 BAM。"
+msgid "A file holding one sample becomes a two-colour bar track whose axis is symmetric around zero, so a gain and a loss of the same magnitude are equally tall. A file holding many samples becomes a heatmap instead — one row per sample, one column per genomic bin — so a cohort can be compared in a single track."
+msgstr "只含一个样本的文件画成双色柱状轨道，纵轴关于 0 对称，因此等幅度的增益与缺失高度相同。含多个样本的文件则改画热图——一行一个样本、一列一个基因组分箱——一个队列就能在单条轨道里对比。"
 
-msgid ""
-"One deliberate difference from IGV remains: IGV hides duplicate-flagged "
-"reads (``0x400``) and vendor-QC failures (``0x200``) by default, whereas "
-"Orbit currently draws every mapped read."
-msgstr ""
-"与 IGV 仍有一处有意保留的差异：IGV 默认隐藏重复（``0x400``）与厂商质控失败（``0x200``）的 read，而 Orbit "
-"目前会画出所有已比对 read。"
+msgid "Ten TCGA-LUAD copy-number segments in one file, drawn as a heatmap on hg38 at ``chr1:55–62 Mb``. Each row is one aliquot; red is gain, blue is loss. The track label reports the sample count and the current amplitude."
+msgstr "一个文件里的 10 个 TCGA-LUAD 拷贝数片段，在 hg38 的 ``chr1:55–62 Mb`` 上画成热图。每行是一个 aliquot；红色为增益，蓝色为缺失。轨道标签给出样本数与当前振幅。"
 
-msgid ""
-"Reads that are unmapped (``0x4``), fail vendor QC (``0x200``) or carry "
-"the duplicate flag (``0x400``) are not drawn — the same default as IGV. "
-"Secondary (``0x100``) and supplementary (``0x800``) alignments are kept, "
-"because IGV never filters those."
-msgstr ""
-"未比对（``0x4``）、厂商质控失败（``0x200``）以及带重复标记（``0x400``）的 read 不会绘制——这与 IGV "
-"的默认行为一致。次要与补充比对（``0x100`` / ``0x800``）会保留，因为 IGV 从不按这两个 flag 过滤。"
+msgid "Right-click the track (or use its gear) for **Heatmap colours (gain / loss)** and **Amplitude ±**. Left on automatic, the amplitude is the 95th percentile of ``|Segment_Mean|`` inside the current window, clamped to 0.1–3 — a single homozygous deletion (``-9``) therefore cannot flatten the rest of the cohort."
+msgstr "右键轨道（或用它的齿轮）可打开**热图颜色（增益 / 缺失）**与**振幅 ±**。振幅留空时按当前窗口内 ``|Segment_Mean|`` 的 95 分位自动定标，并限制在 0.1–3 —— 这样一个纯合缺失（``-9``）不会把整个队列的对比度压平。"
 
-msgid ""
-"``.sam`` files (the plain-text form of BAM) are parsed the same way and "
-"appear with an identical coverage row plus stacked reads. Reads surviving"
-" the default filters are kept, including secondary and supplementary "
-"records (flags ``0x100`` / ``0x800``) — IGV does not filter those either:"
-" the Java implementation never tests the flags, and igv.js keeps them "
-"unless ``secondary`` / ``supplementary`` filtering is explicitly enabled."
-" ``D``/``N`` and ``I`` CIGAR operations are preserved. Chromosome lengths"
-" come from the ``@SQ`` header when present. SAM is read into memory at "
-"import, so use BAM for very large alignment sets."
-msgstr ""
-"``.sam`` 是 BAM 的纯文本形式，解析后同样生成覆盖度行与 reads 堆叠。通过默认过滤的 read "
-"都会保留，包括次要与补充比对（flag ``0x100`` / ``0x800``）——IGV 也不过滤它们：Java 版从未检查这两个 "
-"flag，igv.js 只有在显式开启 ``secondary`` / ``supplementary`` 过滤时才丢弃。``D``/``N`` "
-"与 ``I`` 等 CIGAR 操作都会保留。有 ``@SQ`` 头时以其中的染色体长度为准。SAM 在导入时读入内存，比对数据很大时建议改用 "
-"BAM。"
+msgid "The SEG file stays in the sidebar after a restart but is not re-parsed until you tick it again — see :ref:`imports-are-session-scoped`. Removing the track deletes the imported copy under ``data/loaded``; your original file is untouched."
+msgstr "重启后 SEG 文件仍留在侧栏，但要重新勾选才会再次解析——见 :ref:`imports-are-session-scoped`。删除轨道会删掉 ``data/loaded`` 下的导入副本，你的原始文件不受影响。"
 
-msgid ""
-"The same flag defaults apply to SAM: unflagged primary, secondary and "
-"supplementary records are drawn, while unmapped, QC-failed and duplicate "
-"records are skipped."
+msgid "Orbit reads BAM through a BAI index. If ``sample.bam.bai`` sits next to the file it is used as-is; if there is none, or the one present does not match the BAM, Orbit builds its own index once and caches it next to the imported copy. Only BAI is understood — CSI indexes are not read, so convert them or let Orbit build a BAI."
+msgstr "Orbit 通过 BAI 索引读取 BAM。若 ``sample.bam.bai`` 就在文件旁边，直接使用；没有索引，或现有索引与 BAM 不匹配时，Orbit 会自己建一次索引并缓存在导入副本旁边。只认 BAI——CSI 索引不会读取，请转成 BAI 或让 Orbit 自建。"
+
+msgid "Every read in the window is returned: no sampling, no \"first N\" cap. That is why a wide window on a deep library takes a moment; zoom in and the request shrinks with the window."
+msgstr "窗口内的每条 read 都会返回：不抽样、没有「只取前 N 条」的上限。所以在高深度文库上开大窗口会稍慢；放大后请求量随窗口一起缩小。"
+
+msgid "Three rows per file"
+msgstr "每份文件三行"
+
+msgid "One BAM adds three adjacent rows, and all three carry the file name so several imported BAMs stay distinguishable:"
+msgstr "导入一份 BAM 会新增三条相邻的轨道，三条都带文件名，导入多份时仍能分辨："
+
+msgid "``sample.bam · Coverage``"
+msgstr "``sample.bam · Coverage``"
+
+msgid "Read depth as bars, scaled to the window."
+msgstr "以柱状图显示测序深度，按窗口自动定标。"
+
+msgid "``sample.bam · Junctions``"
+msgstr "``sample.bam · Junctions``"
+
+msgid "Spliced reads as arcs, red for the forward strand and blue for the reverse. The arc height grows with the number of supporting reads."
+msgstr "把剪接 reads 画成弧线，正链红色、负链蓝色；支持该剪接的 read 越多，弧越高。"
+
+msgid "``sample.bam · Alignments``"
+msgstr "``sample.bam · Alignments``"
+
+msgid "The reads themselves, with mismatch marks and ``N`` gaps."
+msgstr "reads 本体，带错配标记与 ``N`` 造成的断口。"
+
+msgid "One BAM on hg38 at ``chr1:11,792,000-11,800,000``: Coverage, Junctions and Alignments, each labelled with the file name. The bundled RefSeq track sits above for context."
+msgstr "hg38 上的一份 BAM，位置 ``chr1:11,792,000-11,800,000``：Coverage、Junctions、Alignments 三行，标签都带文件名。上方是内置 RefSeq 轨道。"
+
+msgid "When to draw them"
+msgstr "什么时候才画"
+
+msgid "Coverage, junctions and alignments share one visibility rule, taken from IGV: 30 kb for a standard library, 300 kb for RNA-seq and 1000 kb for third-generation reads. Orbit estimates the experiment type from the first reads it sees (read length, spliced-read fraction, CIGAR complexity); the result is shown in the track settings, where it can be overridden, together with an explicit maximum window."
+msgstr "覆盖度、剪接位点和比对共用一条可见性规则，取自 IGV：普通文库 30 kb，RNA-seq 300 kb，三代测序 reads 1000 kb。Orbit 根据最先读到的 reads 估计实验类型（read 长度、剪接 read 比例、CIGAR 复杂度），结果显示在轨道设置里，可以改，也可以直接指定最大窗口。"
+
+msgid "The BAM settings popover in English. **Experiment type** drives the window (``Active: 300 kb`` here); **Maximum window (kb)** overrides it for this track only. Colour, range and grouping work as for any signal track."
+msgstr "英文界面下的 BAM 设置浮层。**Experiment type** 决定窗口（这里是 ``Active: 300 kb``）；**Maximum window (kb)** 只覆盖当前轨道。颜色、范围和分组与其他信号轨道一致。"
+
+msgid "Zooming past the limit replaces the rows with a \"zoom in to see alignments\" hint instead of drawing thousands of unreadable reads."
+msgstr "超出窗口上限后，轨道会显示「放大查看比对记录」的提示，而不是硬画几千条看不清的 read。"
+
+msgid "Display modes for reads"
+msgstr "reads 的显示方式"
+
+msgid "Right-click the **Alignments** row (or its label) for the four IGV modes:"
+msgstr "在 **Alignments** 行（或其标签）上右键，可选 IGV 的四种方式："
+
+msgid "``Collapsed``"
+msgstr "``Collapsed``"
+
+msgid "One row, reads drawn on top of each other."
+msgstr "只占一行，reads 叠在一起画。"
+
+msgid "``Expanded``"
+msgstr "``Expanded``"
+
+msgid "One row per non-overlapping read, 13 px."
+msgstr "互不重叠的 read 各占一行，行高 13 px。"
+
+msgid "``Squished``"
+msgstr "``Squished``"
+
+msgid "The same packing at 5 px per row. This is the default."
+msgstr "同样的排布，行高压到 5 px。这是默认方式。"
+
+msgid "``Full``"
+msgstr "``Full``"
+
+msgid "One row per read, including reads that overlap."
+msgstr "每条 read 一行，重叠的也各占一行。"
+
+msgid "The Alignments menu. ``Squished`` is selected by default; **Remove current track** hides this row only and keeps the BAM."
+msgstr "Alignments 的右键菜单。默认选中 ``Squished``；**移除当前轨道** 只隐藏这一行，BAM 文件仍保留。"
+
+msgid "No mode samples: every read that passes the filters is in the layout, and the mode only changes how many of them fit on screen."
+msgstr "任何方式都不抽样：通过过滤的每条 read 都在布局里，方式只决定屏幕上能放下多少行。"
+
+msgid "Browsing every read"
+msgstr "浏览全部 reads"
+
+msgid "Rows that do not fit are scrolled, not discarded. Put the pointer inside the Alignments row and use the wheel; the label reports the visible range, for example ``157 reads · rows 16-39 / 157 · scroll up/down``. A thin bar on the right edge shows where you are. :kbd:`Ctrl` + wheel still zooms."
+msgstr "放不下的行是滚动查看，不是丢弃。把指针放进 Alignments 行里滚轮上下翻；标签会报出当前可见范围，例如 ``157 reads · rows 16-39 / 157 · scroll up/down``。右缘的细条指示当前位置。:kbd:`Ctrl` + 滚轮仍是缩放。"
+
+msgid "Only the visible rows are drawn, so a window with tens of thousands of reads scrolls without re-reading the file."
+msgstr "只绘制可见行，所以几万条 read 的窗口也能顺畅滚动，不会重新读文件。"
+
+msgid "Hiding one row at a time"
+msgstr "逐行隐藏"
+
+msgid "Each of the three rows has its own checkbox in the sidebar, nested under the BAM. Hiding **Junctions** or **Alignments** leaves coverage in place, and the parent BAM switch still hides the whole group. **Remove current track** in the row's menu does the same as unchecking it: the row disappears, the BAM stays imported, and the checkbox brings it back."
+msgstr "三条轨道在侧栏里各有自己的复选框，挂在 BAM 下面。关掉 **Junctions** 或 **Alignments** 不影响覆盖度；BAM 主开关仍然一次隐藏整组。行菜单里的 **移除当前轨道** 与取消勾选等效：行消失、BAM 仍处于导入状态，勾回来就恢复。"
+
+msgid "Two BAMs in the sidebar, each with its own Alignments and Junctions switches. The file names wrap, so ``chr1`` and ``chr2`` stay visible."
+msgstr "侧栏里的两份 BAM，各自带 Alignments 与 Junctions 开关。文件名会折行，``chr1`` / ``chr2`` 这类区分信息不会被截掉。"
+
+msgid "Which reads are drawn"
+msgstr "哪些 reads 会被画出"
+
+msgid "Unmapped (``0x4``), vendor-QC-failed (``0x200``) and duplicate (``0x400``) reads are skipped — the IGV default. Secondary (``0x100``) and supplementary (``0x800``) alignments are kept, because IGV does not filter those either. Coverage counts ``M``, ``=`` and ``X``; ``N`` and ``D`` advance the reference without adding depth, and ``I`` / ``S`` do not advance it."
+msgstr "未比对（``0x4``）、厂商 QC 失败（``0x200``）和重复（``0x400``）的 reads 不画——与 IGV 默认一致。次要比对（``0x100``）和补充比对（``0x800``）保留，IGV 也不过滤这两类。覆盖度只统计 ``M``、``=``、``X``；``N`` 与 ``D`` 推进参考坐标但不增加深度，``I`` / ``S`` 不推进参考坐标。"
+
+msgid "``.sam`` files (the plain-text form of BAM) produce the same three rows. Reads surviving the default filters are kept, including secondary and supplementary records. ``D``/``N`` and ``I`` CIGAR operations are preserved, and coverage is computed from the aligned blocks rather than the whole ``start``–``end`` span. Chromosome lengths come from the ``@SQ`` header when present. SAM is parsed into memory at import, so prefer BAM for very large alignment sets."
+msgstr "``.sam`` 文件（BAM 的纯文本形式）同样生成三行轨道。通过默认过滤的 reads 全部保留，包括次要比对和补充比对。``D``/``N`` 与 ``I`` 等 CIGAR 操作都保留，覆盖度按实际匹配块计算，不按整条 ``start``–``end`` 区间。染色体长度优先取 ``@SQ`` 头。SAM 在导入时整体解析进内存，比对数据很大时请优先用 BAM。"
+
+msgid "The same flag defaults apply to SAM: unflagged primary, secondary and supplementary records are drawn, while unmapped, QC-failed and duplicate records are skipped."
 msgstr "SAM 使用同一套 flag 默认规则：普通主比对、次要与补充比对都会绘制，而未比对、质控失败与重复记录会被跳过。"
 
+msgid "Choose the matching assembly: **hg38** for GRCh38 or **sacCer3** for the yeast example below."
+msgstr "选择匹配的装配：GRCh38 选择  hg38  ，下方酵母示例选择  sacCer3  。"
+
+msgid "Click Import, select the GTF/GFF3, and wait for parsing to finish."
+msgstr "点击导入，选择 GTF/GFF3，并等待解析完成。"
+
+msgid "Enable its annotation row. Use the dedicated imported-annotation search controls when a gene exists only in your imported file, not in RefSeq."
+msgstr "启用其注释行。当基因仅存在于导入文件而不在 RefSeq 中时，请使用专用的导入注释搜索控件。"
+
+msgid "Click its small **+** to expand a gene, or the track's gear for **Expand all**. The procedure and a before/after illustration are in :doc:`navigation`."
+msgstr "点击基因旁的小  +  展开基因，或点击轨道齿轮并选择  全部展开  。具体步骤和前后对比图见  :doc:`navigation`  。"
+
+msgid "Imported annotations become a normal gene track: expandable transcripts, strand colours and labels. Chromosome aliases such as ``1`` / ``chr1`` or ``I`` / ``chrI`` are reconciled, but aliases do not convert genome assemblies."
+msgstr "导入的注释会成为普通基因轨道：可展开转录本、按链着色并显示标签。 ``1`` / ``chr1`` 或 ``I`` / ``chrI`` 等染色体别名会自动对齐，但别名不会转换基因组装配。"
+
+msgid "A yeast GTF (``representative_transcripts.gtf``) imported onto sacCer3 and shown directly under the bundled RefSeq track. Gene names and strand arrows are drawn for both."
+msgstr "导入到 sacCer3 的酵母 GTF（ ``representative_transcripts.gtf`` ），直接显示在内置 RefSeq 轨道下方。两条轨道都会画出基因名与链方向箭头。"
+
+msgid "Imported annotations are not converted to the built-in binary format. They are read on load, which is fine for a few hundred thousand features but slower than the bundled RefSeq index."
+msgstr "导入的注释不会转成内置二进制格式，而是加载时现读。几十万条特征没问题，但比内置的 RefSeq 索引慢。"
+
+msgid "Importing FASTA adds its own sequence track; it does not replace the backend reference for built-in GC, motif or BAM mismatch calculations. Uncompressed FASTA uses indexed file reads. A gzip FASTA is decompressed into memory, so whole-human-genome gzip imports can consume several GB of RAM."
+msgstr "导入 FASTA 会添加独立的序列轨道；它不会替代内置 GC、基序或 BAM 错配计算所使用的后端参考。未压缩 FASTA 使用索引文件读取。gzip FASTA 会解压到内存，因此导入完整人类基因组的 gzip 文件可能消耗数 GB 内存。"
+
+msgid "For the complete human-genome walkthrough, with exact positive/negative-strand start/stop windows, Flip strand and amino-acid translation, see :doc:`sequence`."
+msgstr "完整的人类基因组操作流程（含正链/负链精确起止窗口、翻转链和氨基酸翻译）见  :doc:`sequence`  。"
+
+msgid "Local human FASTA displayed at ACTB with complementary-strand translation"
+msgstr "在 ACTB 位点显示本地人类 FASTA 及互补链翻译"
+
+msgid "An imported GRCh38 chromosome FASTA at base resolution. The detailed sequence guide explains why a negative-strand gene must be read right to left after flipping the displayed bases."
+msgstr "以碱基分辨率显示导入的 GRCh38 染色体 FASTA。详细的序列指南解释了为什么负链基因在翻转显示碱基后必须从右向左读取。"
+
+msgid "Where imported tracks live"
+msgstr "导入的轨道存在哪"
+
+msgid "Importing copies the file into Orbit's per-user data directory (``data/loaded``, or ``%LOCALAPPDATA%/Orbit/loaded`` when the install directory is read-only). The imported copy is used for display; keep your original research files as backups. Remove a track only when you intend to remove its imported copy."
+msgstr "导入会把文件复制到 Orbit 的用户数据目录（``data/loaded``；安装目录只读时用 ``%LOCALAPPDATA%/Orbit/loaded``）。显示用的是这份副本，原始科研文件请自行留底。只有在确实要删掉副本时才删除轨道。"
+
+msgid "Imports are session-scoped"
+msgstr "导入只在本次会话内生效"
+
+msgid "A launch opens nothing. The imported copies stay under ``data/loaded`` and the registration list is kept, but no file is parsed, indexed or drawn until you import it again in that session, so a 900 MB BAM cannot delay the window from appearing. Importing the same file again replaces its stored copy in place instead of creating a second ``_2`` entry."
+msgstr "启动时什么都不打开。导入副本仍留在 ``data/loaded`` 下，登记表也保留，但本次会话里重新导入之前不会解析、建索引或绘制，所以 900 MB 的 BAM 不会拖慢窗口出现。再次导入同一个文件会原地替换已存的副本，不会多出一个 ``_2`` 条目。"
+
+msgid "Set ``IGV_RESTORE_LOADED=1`` before launching to reopen everything that was imported last time — that is the behaviour of a normal genome browser, and it costs the startup time this default avoids. ``start-orbit.bat`` explicitly sets it to ``0``."
+msgstr "启动前设置 ``IGV_RESTORE_LOADED=1`` 可以恢复上次导入的全部轨道——这是普通基因组浏览器的行为，代价正是默认设置省下的启动时间。``start-orbit.bat`` 里显式写的是 ``0``。"
