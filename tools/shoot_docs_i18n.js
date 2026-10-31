@@ -40,8 +40,12 @@ async function main() {
   // shot() 已经按 docs/examples 拼路径，这里只给相对名
   const out = (name) => `${LANG}/${name}`;
 
-  // 切语言：存 orbit.lang 后重载，页面里的中文/英文会被 i18n 整体替换
-  await goto(ev, cdp, `${BASE}/`);
+  // 切语言：存 orbit.lang 后重载，页面里的中文/英文会被 i18n 整体替换。
+  // 必须带上 ?db=，否则重载会沿用上一次会话的装配（自定义组会把 hg38 组带跑偏）。
+  const entry = SCOPE === 'hg38'
+    ? `${BASE}/?db=hg38&locus=chr1:11792000-11800000`
+    : `${BASE}/`;
+  await goto(ev, cdp, entry);
   await ev(`localStorage.setItem('orbit.lang', ${JSON.stringify(LANG)})`);
   await cdp.send('Page.reload', { ignoreCache: false });
   for (let i = 0; i < 150; i++) { if (await ev('!!window.__igv')) break; await sleep(200); }
