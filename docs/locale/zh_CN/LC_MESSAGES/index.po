@@ -61,6 +61,9 @@ msgstr "拷贝数 SEG 文件：单样本一条轨道，多样本一张热图"
 msgid "Import your own bigWig, bedGraph, SEG, BAM, GTF or FASTA at runtime"
 msgstr "运行时导入自己的 bigWig、bedGraph、SEG、BAM、GTF 或 FASTA"
 
+msgid "A non-model organism works without a catalog entry: pick the empty **Custom** assembly and import your genome FASTA plus its GFF3"
+msgstr "非模式物种不需要 catalog 条目：选空的 **自定义** 装配，导入自己的基因组 FASTA 和对应 GFF3 即可"
+
 msgid "Split view, deep links, PNG / SVG / PDF export"
 msgstr "分屏视图、深链接，导出 PNG / SVG / PDF"
 

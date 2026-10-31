@@ -110,6 +110,10 @@ Importing copies files into Orbit's data area. On a fresh page load,
 previously imported tracks remain listed but unchecked; tick them again
 instead of assuming they were deleted.
 
+If you work on a non-model organism, you do not need a catalog entry: choose the
+empty **Custom** assembly and import your own genome FASTA followed by its
+GFF3/GTF. :doc:`assemblies` walks through it with screenshots.
+
 Compare several loci
 ~~~~~~~~~~~~~~~~~~~~
 

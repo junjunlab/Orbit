@@ -1,251 +1,35 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) 2026, junjunlab
-# This file is distributed under the same license as the Orbit package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
-#
-#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Orbit 1.0\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-29 14:43+0800\n"
-"PO-Revision-Date: 2026-10-29 15:00+0800\n"
-"Last-Translator: junjunlab\n"
+"Project-Id-Version: Orbit\n"
 "Language: zh_CN\n"
-"Language-Team: zh_CN <LL@li.org>\n"
-"Plural-Forms: nplurals=1; plural=0;\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.18.0\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
 
-#: ../../assemblies.rst:2
+msgid ""
+msgstr "Project-Id-Version: Orbit\nLanguage: zh_CN\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=1; plural=0;\n"
+
+msgid ""
+msgstr "Project-Id-Version: Orbit 1.0\nReport-Msgid-Bugs-To: \nPOT-Creation-Date: 2026-10-29 14:43+0800\nPO-Revision-Date: 2026-10-29 15:00+0800\nLast-Translator: junjunlab\nLanguage: zh_CN\nLanguage-Team: zh_CN <LL@li.org>\nPlural-Forms: nplurals=1; plural=0;\nMIME-Version: 1.0\nContent-Type: text/plain; charset=utf-8\nContent-Transfer-Encoding: 8bit\nGenerated-By: Babel 2.18.0\n"
+
 msgid "Assemblies"
 msgstr "装配"
 
-#: ../../assemblies.rst:4
-msgid ""
-"Orbit bundles annotation for 18 assemblies across 9 species. Sequence is "
-"not bundled — it is streamed from UCSC on demand, which is what keeps the"
-" download small."
+msgid "Orbit bundles annotation for 18 assemblies across 9 species. Sequence is not bundled — it is streamed from UCSC on demand, which is what keeps the download small."
 msgstr "Orbit 内置 9 个物种共 18 个装配的注释。序列不打包——按需从 UCSC 流式读取，这也是下载体积小的原因。"
 
-#: ../../assemblies.rst:9
 msgid "Bundled assemblies"
 msgstr "内置装配"
 
-#: ../../assemblies.rst:15
+msgid "Assembly selector listing human and model-organism reference builds"
+msgstr "装配选择菜单，列出人类与模式物种的参考版本"
+
+msgid "Choose the reference build before searching or importing. The bundled annotation list is not a claim that these are the newest available assemblies."
+msgstr "搜索或导入前先选择参考装配。内置注释列表并不表示这些是目前可获得的最新装配版本。"
+
 msgid "Species"
 msgstr "物种"
-
-#: ../../assemblies.rst:16
-msgid "Current"
-msgstr "当前版"
-
-#: ../../assemblies.rst:17
-msgid "Previous"
-msgstr "上一版"
-
-#: ../../assemblies.rst:18
-msgid "Source"
-msgstr "来源"
-
-#: ../../assemblies.rst:19
-msgid "Human"
-msgstr "人"
-
-#: ../../assemblies.rst:20
-msgid "``hg38``"
-msgstr "``hg38``"
-
-#: ../../assemblies.rst:21
-msgid "``hg19``"
-msgstr "``hg19``"
-
-#: ../../assemblies.rst:22 ../../assemblies.rst:26 ../../assemblies.rst:30
-#: ../../assemblies.rst:34 ../../assemblies.rst:38 ../../assemblies.rst:42
-#: ../../assemblies.rst:46 ../../assemblies.rst:50 ../../assemblies.rst:54
-msgid "UCSC refGene"
-msgstr "UCSC refGene"
-
-#: ../../assemblies.rst:23
-msgid "Mouse"
-msgstr "小鼠"
-
-#: ../../assemblies.rst:24
-msgid "``mm39``"
-msgstr "``mm39``"
-
-#: ../../assemblies.rst:25
-msgid "``mm10``"
-msgstr "``mm10``"
-
-#: ../../assemblies.rst:27
-msgid "Rat"
-msgstr "大鼠"
-
-#: ../../assemblies.rst:28
-msgid "``rn7``"
-msgstr "``rn7``"
-
-#: ../../assemblies.rst:29
-msgid "``rn6``"
-msgstr "``rn6``"
-
-#: ../../assemblies.rst:31
-msgid "Zebrafish"
-msgstr "斑马鱼"
-
-#: ../../assemblies.rst:32
-msgid "``danRer11``"
-msgstr "``danRer11``"
-
-#: ../../assemblies.rst:33
-msgid "``danRer10``"
-msgstr "``danRer10``"
-
-#: ../../assemblies.rst:35
-msgid "Fly"
-msgstr "果蝇"
-
-#: ../../assemblies.rst:36
-msgid "``dm6``"
-msgstr "``dm6``"
-
-#: ../../assemblies.rst:37
-msgid "``dm3``"
-msgstr "``dm3``"
-
-#: ../../assemblies.rst:39
-msgid "Worm"
-msgstr "线虫"
-
-#: ../../assemblies.rst:40
-msgid "``ce11``"
-msgstr "``ce11``"
-
-#: ../../assemblies.rst:41
-msgid "``ce10``"
-msgstr "``ce10``"
-
-#: ../../assemblies.rst:43
-msgid "Yeast"
-msgstr "酵母"
-
-#: ../../assemblies.rst:44
-msgid "``sacCer3``"
-msgstr "``sacCer3``"
-
-#: ../../assemblies.rst:45
-msgid "``sacCer2``"
-msgstr "``sacCer2``"
-
-#: ../../assemblies.rst:47
-msgid "Frog"
-msgstr "爪蟾"
-
-#: ../../assemblies.rst:48
-msgid "``xenTro10``"
-msgstr "``xenTro10``"
-
-#: ../../assemblies.rst:49
-msgid "``xenTro9``"
-msgstr "``xenTro9``"
-
-#: ../../assemblies.rst:51
-msgid "Chicken"
-msgstr "鸡"
-
-#: ../../assemblies.rst:52
-msgid "``galGal6``"
-msgstr "``galGal6``"
-
-#: ../../assemblies.rst:53
-msgid "``galGal5``"
-msgstr "``galGal5``"
-
-#: ../../assemblies.rst:56
-msgid ""
-"Each assembly carries gene models, cytobands, chromosome sizes and the "
-"primary chromosome order used by the overview panel."
-msgstr "每个装配都带基因模型、细胞遗传带、染色体长度，以及总览面板使用的主染色体顺序。"
-
-#: ../../assemblies.rst:60
-msgid "How sequence is fetched"
-msgstr "序列怎么取"
-
-#: ../../assemblies.rst:62
-msgid ""
-"Every assembly in ``data/catalog.json`` records a ``twoBitURL`` pointing "
-"at the UCSC 2bit file. When you navigate, Orbit issues an HTTP Range "
-"request for just the bytes covering the window and decodes them locally."
-msgstr ""
-"``data/catalog.json`` 里每个装配都记录了一个指向 UCSC 2bit 文件的 ``twoBitURL``。导航时 Orbit"
-" 只对窗口覆盖的字节发 HTTP Range 请求，在本地解码。"
-
-#: ../../assemblies.rst:66
-msgid "First visit to a chromosome: about one second"
-msgstr "首次访问某条染色体：约 1 秒"
-
-#: ../../assemblies.rst:67
-msgid "Subsequent moves within it: about 0.3 seconds"
-msgstr "之后在其上移动：约 0.3 秒"
-
-#: ../../assemblies.rst:68
-msgid "Nothing is written to disk; the range cache is in memory and per session"
-msgstr "不写磁盘；Range 缓存在内存里，随会话结束而消失"
-
-#: ../../assemblies.rst:70
-msgid ""
-"If the network is unavailable, the sequence and GC tracks go grey and "
-"everything else keeps working."
-msgstr "网络不可用时，序列和 GC 轨道变灰，其余功能照常。"
-
-#: ../../assemblies.rst:74
-msgid "Offline mode"
-msgstr "离线模式"
-
-#: ../../assemblies.rst:76
-msgid ""
-"Set ``ORBIT_OFFLINE=1`` before launching to forbid network access. "
-"Combined with a local FASTA or 2bit, this gives a fully air-gapped "
-"browser::"
-msgstr "启动前设置 ``ORBIT_OFFLINE=1`` 即可禁止联网。配合本地 FASTA 或 2bit，就是一个完全隔离的浏览器："
-
-#: ../../assemblies.rst:82
-msgid ""
-"With no local sequence the GC and sequence tracks stay disabled, but "
-"genes, cytobands, search and imported tracks are unaffected."
-msgstr "没有本地序列时，GC 和序列轨道保持禁用，但基因、细胞遗传带、搜索和导入的轨道不受影响。"
-
-#: ../../assemblies.rst:86
-msgid "Adding your own assembly"
-msgstr "添加自己的装配"
-
-#: ../../assemblies.rst:88
-msgid "Edit ``data/catalog.json`` and add an entry alongside the existing ones:"
-msgstr "编辑 ``data/catalog.json``，在现有条目旁边加一条："
-
-#: ../../assemblies.rst:102
-msgid ""
-"Then place ``genes.igvbin`` and ``cytoband.json`` under "
-"``data/ann/myAssembly/``. The binary index is produced by the build "
-"scripts in ``build/``; see :doc:`how-it-works` for the format."
-msgstr ""
-"然后把 ``genes.igvbin`` 和 ``cytoband.json`` 放到 ``data/ann/myAssembly/`` "
-"下。二进制索引由 ``build/`` 里的构建脚本生成；格式见 :doc:`how-it-works`。"
-
-#: ../../assemblies.rst:106
-msgid ""
-"Restart Orbit and the assembly appears in the selector. Nothing else "
-"needs to change — the frontend reads the catalog, not a hard-coded list."
-msgstr "重启 Orbit，装配就会出现在选择器里。其它都不用改——前端读的是 catalog，不是硬编码列表。"
-
-msgid "Frontend export"
-msgstr "前端导出"
-
-msgid "``composePlot`` / ``composeVector`` generate the downloadable files"
-msgstr "``composePlot`` / ``composeVector`` 生成可下载的导出文件"
 
 msgid "Bundled newer build"
 msgstr "内置较新版本"
@@ -253,61 +37,185 @@ msgstr "内置较新版本"
 msgid "Bundled older build"
 msgstr "内置较旧版本"
 
+msgid "Source"
+msgstr "来源"
+
+msgid "Human"
+msgstr "人"
+
+msgid "``hg38``"
+msgstr "``hg38``"
+
+msgid "``hg19``"
+msgstr "``hg19``"
+
+msgid "UCSC refGene"
+msgstr "UCSC refGene"
+
+msgid "Mouse"
+msgstr "小鼠"
+
+msgid "``mm39``"
+msgstr "``mm39``"
+
+msgid "``mm10``"
+msgstr "``mm10``"
+
+msgid "Rat"
+msgstr "大鼠"
+
+msgid "``rn7``"
+msgstr "``rn7``"
+
+msgid "``rn6``"
+msgstr "``rn6``"
+
+msgid "Zebrafish"
+msgstr "斑马鱼"
+
+msgid "``danRer11``"
+msgstr "``danRer11``"
+
+msgid "``danRer10``"
+msgstr "``danRer10``"
+
+msgid "Fly"
+msgstr "果蝇"
+
+msgid "``dm6``"
+msgstr "``dm6``"
+
+msgid "``dm3``"
+msgstr "``dm3``"
+
+msgid "Worm"
+msgstr "线虫"
+
+msgid "``ce11``"
+msgstr "``ce11``"
+
+msgid "``ce10``"
+msgstr "``ce10``"
+
+msgid "Yeast"
+msgstr "酵母"
+
+msgid "``sacCer3``"
+msgstr "``sacCer3``"
+
+msgid "``sacCer2``"
+msgstr "``sacCer2``"
+
 msgid "UCSC ncbiRefSeq / sgdGene"
 msgstr "UCSC ncbiRefSeq / sgdGene"
+
+msgid "Frog"
+msgstr "爪蟾"
+
+msgid "``xenTro10``"
+msgstr "``xenTro10``"
+
+msgid "``xenTro9``"
+msgstr "``xenTro9``"
+
+msgid "Chicken"
+msgstr "鸡"
+
+msgid "``galGal6``"
+msgstr "``galGal6``"
+
+msgid "``galGal5``"
+msgstr "``galGal5``"
+
+msgid "Each assembly carries gene models, cytobands, chromosome sizes and the primary chromosome order used by the overview panel."
+msgstr "每个装配都带基因模型、细胞遗传带、染色体长度，以及总览面板使用的主染色体顺序。"
+
+msgid "How sequence is fetched"
+msgstr "序列怎么取"
+
+msgid "Every assembly in ``data/catalog.json`` records a ``twoBitURL`` pointing at the UCSC 2bit file. When you navigate, Orbit issues an HTTP Range request for just the bytes covering the window and decodes them locally."
+msgstr "``data/catalog.json`` 里每个装配都记录了一个指向 UCSC 2bit 文件的 ``twoBitURL``。导航时 Orbit 只对窗口覆盖的字节发 HTTP Range 请求，在本地解码。"
 
 msgid "Response time depends on the network and reference index."
 msgstr "响应时间取决于网络状况和参考索引。"
 
-msgid ""
-"The range cache is in memory and per session, not a persistent offline "
-"genome."
+msgid "The range cache is in memory and per session, not a persistent offline genome."
 msgstr "区间缓存位于内存中，仅在本次会话有效，不是持久保存的离线基因组。"
 
 msgid "Local 2bit takes priority over the remote source."
 msgstr "本地 2bit 优先于远程序列源。"
 
-msgid ""
-"For a second instance, use a different port. To isolate imported data "
-"too, prepare a separate compatible data folder and pass it with "
-"``--data``:"
-msgstr "第二个实例应使用不同端口。如需同时隔离导入数据，请准备独立且结构兼容的数据目录，并通过 ``--data`` 指定："
+msgid "If the network is unavailable, the sequence and GC tracks go grey and everything else keeps working."
+msgstr "网络不可用时，序列和 GC 轨道变灰，其余功能照常。"
 
-msgid ""
-"Changing the port alone does not isolate data. Do not rely on an "
-"unsupported ``ORBIT_HOME`` setting to separate research files."
-msgstr "只更换端口不会隔离数据。不要依赖未支持的 ``ORBIT_HOME`` 设置来隔离科研文件。"
+msgid "Offline mode"
+msgstr "离线模式"
 
-msgid ""
-"User data may remain in ``%LOCALAPPDATA%/Orbit`` or the application data "
-"folder. Back up imported research files before uninstalling. Do not "
-"delete an entire user-data folder merely to reset colours or another "
-"display preference."
-msgstr ""
-"用户数据可能仍保存在 ``%LOCALAPPDATA%/Orbit`` "
-"或应用数据目录中。卸载前请备份导入的科研文件，不要仅为了重置颜色等显示偏好而删除整个用户数据目录。"
+msgid "Set ``ORBIT_OFFLINE=1`` before launching to disable remote 2bit fallback. A local matching 2bit supplies built-in reference operations offline. Imported FASTA remains an independent sequence track; see :doc:`sequence`::"
+msgstr "启动前设置 ``ORBIT_OFFLINE=1`` 可禁用远程 2bit 回退。匹配的本地 2bit 支持内置参考序列操作离线工作。导入 FASTA 仍是独立序列轨道；详见 :doc:`sequence` 。"
 
-msgid ""
-"The backend uses the standard library ThreadingHTTPServer, bound to "
-"localhost by default. It serves the frontend and JSON APIs; the frontend "
-"composes exports."
-msgstr "后端采用标准库 ThreadingHTTPServer，默认绑定本机地址。它提供前端页面与 JSON API；导出由前端合成。"
+msgid "With no local sequence the GC and sequence tracks stay disabled, but genes, cytobands, search and imported tracks are unaffected."
+msgstr "没有本地序列时，GC 和序列轨道保持禁用，但基因、细胞遗传带、搜索和导入的轨道不受影响。"
 
-msgid ""
-"Set ``ORBIT_OFFLINE=1`` before launching to disable remote 2bit fallback."
-" A local matching 2bit supplies built-in reference operations offline. "
-"Imported FASTA remains an independent sequence track; see "
-":doc:`sequence`::"
-msgstr ""
-"启动前设置 ``ORBIT_OFFLINE=1`` 可禁用远程 2bit 回退。匹配的本地 2bit 支持内置参考序列操作离线工作。导入 "
-"FASTA 仍是独立序列轨道；详见 :doc:`sequence` 。"
+msgid "Working with a non-model organism"
+msgstr "非模式物种：用自己组装的基因组和注释"
 
-msgid "Assembly selector listing human and model-organism reference builds"
-msgstr "装配选择菜单，列出人类与模式物种的参考版本"
+msgid "You do not need a catalog entry to look at your own assembly. Pick the empty **Custom** assembly, import the genome FASTA, then import the annotation. Orbit builds the chromosome axis from the files themselves, so a newly assembled genome with names like ``scaffold_1`` works the same way a reference build does."
+msgstr "不必先改 catalog 就能看自己的装配：在装配菜单里选空的 **自定义**，先导入基因组 FASTA，再导入注释。Orbit 用这两个文件本身建立染色体轴，所以 ``scaffold_1`` 这种新组装的名字和参考基因组一样能用。"
 
-msgid ""
-"Choose the reference build before searching or importing. The bundled "
-"annotation list is not a claim that these are the newest available "
-"assemblies."
-msgstr "搜索或导入前先选择参考装配。内置注释列表并不表示这些是目前可获得的最新装配版本。"
+msgid "Order matters only in that the FASTA has to arrive before anything that needs a coordinate axis; the gene track draws itself as soon as the annotation is parsed."
+msgstr "顺序只要求 FASTA 先到：任何需要坐标轴的东西都得等它；注释一解析完，基因轨道就会自己画出来。"
 
+msgid "A three-scaffold assembly (``scaffold_1``, 150 kb) with its own GFF3. The annotation track reports *5 genes* over a 40 kb window; the FASTA track below it holds the sequence and switches to bases once you zoom past 1.2 bp/px. The bundled RefSeq, GC and ideogram rows are hidden because a custom assembly has no cytobands and no bundled annotation for them to draw."
+msgstr "一套三条 scaffold 的装配（``scaffold_1``，150 kb）连同它自己的 GFF3。注释轨道在 40 kb 窗口里显示 *5 个基因*；下面的 FASTA 轨道存着序列，放大到 1.2 bp/px 以内就切换成碱基。内置的 RefSeq、GC 和染色体示意图已隐藏——自定义装配没有条带，也没有内置注释可画。"
+
+msgid "Both strands, exons and introns come from the file, not from any assumption about the organism:"
+msgstr "正负链、外显子和内含子都来自文件本身，不依赖任何物种假设："
+
+msgid "Collapsed view: gene models packed onto one row, exon boxes and intron lines drawn from the GFF3. ``g1`` runs 5'→3' to the right, ``g2`` to the left."
+msgstr "折叠视图：基因模型排在一行里，外显子方块和内含子细线都按 GFF3 画。``g1`` 向右（5′→3′），``g2`` 向左。"
+
+msgid "The same track with one gene expanded. Each transcript gets its own row, with CDS blocks darker than UTR and the introns drawn as connecting lines."
+msgstr "同一条轨道，展开一个基因。每个转录本各占一行，CDS 比 UTR 深，内含子用连线表示。"
+
+msgid "Right-clicking a model opens the same detail popover used for RefSeq, fed by the imported GFF3:"
+msgstr "右键基因模型打开与 RefSeq 相同的详情浮层，内容来自导入的 GFF3："
+
+msgid "Exon 4 of 4 on the minus strand, its interval and length, the matching CDS fragment, and all three introns with coordinates. Gene IDs read *not provided* because this GFF3 carries no ``ID=`` beyond the transcript name."
+msgstr "负链上的第 4 个外显子（共 4 个），含区间、长度、对应的 CDS 片段，以及三个内含子的坐标。基因 ID 显示「未提供」，因为这份 GFF3 除了转录本名之外没有别的 ``ID=``。"
+
+msgid "Base level from the imported FASTA: coloured nucleotides inside the exon, with the intron line ending at the exon boundary above."
+msgstr "导入 FASTA 提供的碱基级视图：外显子内是彩色碱基，上方内含子线正好停在外显子边界。"
+
+msgid "Things worth knowing"
+msgstr "几点要注意"
+
+msgid "**Sequence names must match between the two files.** ``chr1`` and ``1`` are treated as the same chromosome, but ``scaffold_1`` and ``Chr1`` are not. If the gene track says *no annotation in this region* while the FASTA has bases, the names are the first thing to check."
+msgstr "**两个文件的序列名必须对得上。** ``chr1`` 与 ``1`` 视为同一条染色体，但 ``scaffold_1`` 与 ``Chr1`` 不是。如果 FASTA 有碱基、基因轨道却说 *此区域无注释*，先查名字。"
+
+msgid "**The built-in sequence row stays empty.** It reads the reference 2bit, which a custom assembly does not have — the imported FASTA track is the sequence track to use. Hide the built-in row from the sidebar."
+msgstr "**内置「序列」行会是空的。** 它读的是参考 2bit，自定义装配没有；该看的是导入的 FASTA 轨道。可以把内置那行从侧栏关掉。"
+
+msgid "**No cytobands and no RefSeq.** Both bundled rows have nothing to draw on a custom assembly; hide them to keep the view compact."
+msgstr "**没有染色体条带，也没有 RefSeq。** 这两条内置轨道在自定义装配上没内容可画，关掉能让视图更紧凑。"
+
+msgid "**Search has to be pointed at your file.** The main search box reads the bundled RefSeq index by default; switch its scope dropdown to **All imported** or to the GFF3 track itself to look up genes by name."
+msgstr "**搜索要指向你自己的文件。** 主搜索框默认查内置 RefSeq 索引；把左侧的范围下拉切到 **全部导入** 或直接选那条 GFF3，才能按名字找基因。"
+
+msgid "**Nothing is persisted.** A custom assembly is assembled at import time from the tracks in the session, so the next launch starts empty again — the files stay under ``data/loaded`` and can be re-imported (see :ref:`imports-are-session-scoped`)."
+msgstr "**不落盘。** 自定义装配是导入时用会话里的轨道临时拼出来的，下次启动又从空开始——文件仍留在 ``data/loaded`` 下，重新导入即可（见 :ref:`imports-are-session-scoped`）。"
+
+msgid "If the assembly is going to be used repeatedly, the catalog route below is the better option: it compiles the annotation into the binary index and gives the assembly a name in the menu."
+msgstr "如果这套装配要反复用，下面的 catalog 方式更合适：它把注释编译成二进制索引，并在菜单里给装配一个名字。"
+
+msgid "Adding your own assembly"
+msgstr "添加自己的装配"
+
+msgid "Edit ``data/catalog.json`` and add an entry alongside the existing ones:"
+msgstr "编辑 ``data/catalog.json``，在现有条目旁边加一条："
+
+msgid "Then place ``genes.igvbin`` and ``cytoband.json`` under ``data/ann/myAssembly/``. The binary index is produced by the build scripts in ``build/``; see :doc:`how-it-works` for the format."
+msgstr "然后把 ``genes.igvbin`` 和 ``cytoband.json`` 放到 ``data/ann/myAssembly/`` 下。二进制索引由 ``build/`` 里的构建脚本生成；格式见 :doc:`how-it-works`。"
+
+msgid "Restart Orbit and the assembly appears in the selector. Nothing else needs to change — the frontend reads the catalog, not a hard-coded list."
+msgstr "重启 Orbit，装配就会出现在选择器里。其它都不用改——前端读的是 catalog，不是硬编码列表。"

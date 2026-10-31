@@ -114,26 +114,51 @@ negative is loss.
 
 A file holding one sample becomes a two-colour bar track whose axis is
 symmetric around zero, so a gain and a loss of the same magnitude are equally
-tall. A file holding many samples becomes a heatmap instead — one row per
-sample, one column per genomic bin — so a cohort can be compared in a single
-track.
+tall:
 
 .. code-block:: text
 
-   Import → select TCGA-LUAD-10samples.seg.txt
+   Import → select TCGA-LUAD-05-4396-01A.seg.txt
 
-.. figure:: examples/import-seg.png
+.. figure:: examples/import-seg-bar.png
    :align: center
    :width: 100%
 
-   Ten TCGA-LUAD copy-number segments in one file, drawn as a heatmap on hg38
-   at ``chr1:55–62 Mb``. Each row is one aliquot; red is gain, blue is loss.
-   The track label reports the sample count and the current amplitude.
+   One aliquot (``TCGA-05-4396-01A``) across the whole of chr1 on hg38. Bars
+   above the zero line are gains (red), bars below are losses (blue); the label
+   carries the per-track range, here ``2.50 – -2.50``. The bundled RefSeq track
+   above is unrelated to the file and merely gives the chromosome context.
+
+A file holding many samples becomes a heatmap instead — one row per sample, one
+column per genomic bin — so a cohort can be compared in a single track. Import
+several such files and each becomes its own heatmap, which is how two patient
+groups are compared side by side:
+
+.. code-block:: text
+
+   Import → select TCGA-LUAD-10samples.seg.txt and
+            TCGA-LUAD-another10samples.seg.txt
+
+.. figure:: examples/import-seg-heatmap.png
+   :align: center
+   :width: 100%
+
+   Two independent 10-aliquot cohorts on ``chr1``. Every row is one aliquot with
+   its name in the sample column (hide that column from the track menu if it
+   takes too much room), and the **CNV Summary** row at the bottom of each
+   heatmap is the per-bin mean of that group. Red is gain, blue is loss, white is
+   diploid; ``±2.03`` and ``±1.16`` are the amplitudes the two files settled on.
 
 Right-click the track (or use its gear) for **Heatmap colours (gain / loss)**
 and **Amplitude ±**. Left on automatic, the amplitude is the 95th percentile of
 ``|Segment_Mean|`` inside the current window, clamped to 0.1–3 — a single
 homozygous deletion (``-9``) therefore cannot flatten the rest of the cohort.
+Single-sample bar tracks take the same menu, with the colour applying to the
+whole track.
+
+A whole-chromosome or whole-genome view is the useful scale for copy number:
+segments are megabases long, so a 30 kb window usually contains a single flat
+piece. Imported SEG tracks are not limited by the BAM visibility window.
 
 .. note::
 
@@ -193,11 +218,11 @@ length, spliced-read fraction, CIGAR complexity); the result is shown in the
 track settings, where it can be overridden, together with an explicit maximum
 window.
 
-.. figure:: examples/bam-settings-en.png
+.. figure:: examples/bam-settings.png
    :align: center
    :width: 62%
 
-   The BAM settings popover in English. **Experiment type** drives the window
+   The BAM settings popover. **Experiment type** drives the window
    (``Active: 300 kb`` here); **Maximum window (kb)** overrides it for this track
    only. Colour, range and grouping work as for any signal track.
 

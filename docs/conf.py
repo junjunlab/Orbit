@@ -86,7 +86,42 @@ extlinks = {
     "issue": ("https://github.com/junjunlab/Orbit/issues/%s", "issue #%s"),
 }
 
-intersphinx_mapping = {"python": ("https://docs.python.org/3", None)}
+# 本地无网络时 intersphinx 会拖垮整次构建（-W 下直接报错）；设 ORBIT_DOCS_OFFLINE=1
+# 跳过它。RTD 有网络，不受影响。
+intersphinx_mapping = (
+    {} if os.environ.get("ORBIT_DOCS_OFFLINE") == "1"
+    else {"python": ("https://docs.python.org/3", None)}
+)
+
+
+# 截图按界面语言分目录 --------------------------------------------------------
+# 英文文档里放英文界面截图，中文文档里放中文界面截图，否则中文版会看到英文 UI、
+# 英文版会看到中文 UI（这正是 1.0.2 文档第一版的问题）。
+# 源文件统一写 ``examples/name.png``；构建时按当前语言改成
+# ``examples/en/name.png`` 或 ``examples/zh/name.png``，找不到就退回原图，
+# 这样新加图还没补双语时也不会构建失败。
+def _pick_localized_figures(app, doctree):
+    from pathlib import Path as _Path
+    lang = (app.config.language or "en").lower()
+    sub = "zh" if lang.startswith("zh") else "en"
+    src = _Path(app.srcdir) / "examples" / sub
+    if not src.is_dir():
+        return
+    from docutils import nodes
+    for node in doctree.traverse(nodes.image):
+        uri = node.get("uri") or ""
+        if not uri.startswith("examples/") or uri.startswith("examples/" + sub + "/"):
+            continue
+        name = uri.split("/", 1)[1]
+        if (src / name).exists():
+            node["uri"] = f"examples/{sub}/{name}"
+
+
+def setup(app):
+    # 优先级要早于 Sphinx 的 ImageCollector（它默认 200），否则图片已经按旧路径
+    # 收进 _images 了，改 uri 只会让 HTML 指向一个没被复制的文件。
+    app.connect("doctree-read", _pick_localized_figures, priority=100)
+    return {"parallel_read_safe": True}
 
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store", "ui-review"]
 

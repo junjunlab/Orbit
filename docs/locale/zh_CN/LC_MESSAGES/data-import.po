@@ -127,14 +127,23 @@ msgstr "WIG 不含染色体长度，因此轨道范围取自数据本身。文�
 msgid "SEG is the tab-delimited copy-number segment format written by GISTIC, TCGA and the GDC: ``Sample  Chromosome  Start  End  Num_Probes  Segment_Mean``. Orbit identifies the columns by header name, so the GDC spelling (``GDC_Aliquot``) and either ``Segment_Mean`` or ``seg.mean`` are accepted, and ``.seg`` / ``.seg.txt`` / ``.seg.tsv`` (also gzip-compressed) all work. A plain ``.txt`` or ``.tsv`` is accepted too, as long as the first line carries the SEG column names — that is how names like ``xxx.seg.v2.txt`` are recognised. ``Segment_Mean`` is a log2 ratio: ``0`` is diploid, positive is gain and negative is loss."
 msgstr "SEG 是 GISTIC、TCGA 与 GDC 输出的制表符分隔拷贝数片段格式：``Sample  Chromosome  Start  End  Num_Probes  Segment_Mean``。Orbit 按表头名识别各列，因此 GDC 的写法（``GDC_Aliquot``）以及 ``Segment_Mean`` / ``seg.mean`` 都能读，``.seg`` / ``.seg.txt`` / ``.seg.tsv`` （含 gzip 压缩）也都支持。纯 ``.txt`` / ``.tsv`` 同样可以——只要首行带 SEG 的列名，``xxx.seg.v2.txt`` 这类文件名就是这样认出来的。``Segment_Mean`` 是 log2 比值：``0`` 为二倍体，正值表示增益，负值表示缺失。"
 
-msgid "A file holding one sample becomes a two-colour bar track whose axis is symmetric around zero, so a gain and a loss of the same magnitude are equally tall. A file holding many samples becomes a heatmap instead — one row per sample, one column per genomic bin — so a cohort can be compared in a single track."
-msgstr "只含一个样本的文件画成双色柱状轨道，纵轴关于 0 对称，因此等幅度的增益与缺失高度相同。含多个样本的文件则改画热图——一行一个样本、一列一个基因组分箱——一个队列就能在单条轨道里对比。"
+msgid "A file holding one sample becomes a two-colour bar track whose axis is symmetric around zero, so a gain and a loss of the same magnitude are equally tall:"
+msgstr "只含一个样本的文件会变成一条双色条形轨道，纵轴以零为中心对称，所以同样大小的增益和缺失高度相同："
 
-msgid "Ten TCGA-LUAD copy-number segments in one file, drawn as a heatmap on hg38 at ``chr1:55–62 Mb``. Each row is one aliquot; red is gain, blue is loss. The track label reports the sample count and the current amplitude."
-msgstr "一个文件里的 10 个 TCGA-LUAD 拷贝数片段，在 hg38 的 ``chr1:55–62 Mb`` 上画成热图。每行是一个 aliquot；红色为增益，蓝色为缺失。轨道标签给出样本数与当前振幅。"
+msgid "One aliquot (``TCGA-05-4396-01A``) across the whole of chr1 on hg38. Bars above the zero line are gains (red), bars below are losses (blue); the label carries the per-track range, here ``2.50 – -2.50``. The bundled RefSeq track above is unrelated to the file and merely gives the chromosome context."
+msgstr "一个 aliquot（``TCGA-05-4396-01A``）在 hg38 整条 chr1 上的结果。零线以上是增益（红），以下是缺失（蓝）；标签给出该轨道的取值范围，这里是 ``2.50 – -2.50``。上方的 RefSeq 轨道与该文件无关，只提供染色体背景。"
 
-msgid "Right-click the track (or use its gear) for **Heatmap colours (gain / loss)** and **Amplitude ±**. Left on automatic, the amplitude is the 95th percentile of ``|Segment_Mean|`` inside the current window, clamped to 0.1–3 — a single homozygous deletion (``-9``) therefore cannot flatten the rest of the cohort."
-msgstr "右键轨道（或用它的齿轮）可打开**热图颜色（增益 / 缺失）**与**振幅 ±**。振幅留空时按当前窗口内 ``|Segment_Mean|`` 的 95 分位自动定标，并限制在 0.1–3 —— 这样一个纯合缺失（``-9``）不会把整个队列的对比度压平。"
+msgid "A file holding many samples becomes a heatmap instead — one row per sample, one column per genomic bin — so a cohort can be compared in a single track. Import several such files and each becomes its own heatmap, which is how two patient groups are compared side by side:"
+msgstr "含多个样本的文件改为热图——一个样本一行、一个基因组分箱一列——这样一份数据就能看完整队列。导入多份文件时各自成为一张热图，两组病人因此可以并排比较："
+
+msgid "Two independent 10-aliquot cohorts on ``chr1``. Every row is one aliquot with its name in the sample column (hide that column from the track menu if it takes too much room), and the **CNV Summary** row at the bottom of each heatmap is the per-bin mean of that group. Red is gain, blue is loss, white is diploid; ``±2.03`` and ``±1.16`` are the amplitudes the two files settled on."
+msgstr "两组各 10 个 aliquot 的独立队列，都画在 ``chr1`` 上。每行一个 aliquot，名字在样本列里（觉得占地方可以从轨道菜单里关掉这一列）；每张热图底部的 **CNV Summary** 行是该组的逐箱均值。红为增益、蓝为缺失、白为二倍体；``±2.03`` 与 ``±1.16`` 是两份文件各自定出的振幅。"
+
+msgid "Right-click the track (or use its gear) for **Heatmap colours (gain / loss)** and **Amplitude ±**. Left on automatic, the amplitude is the 95th percentile of ``|Segment_Mean|`` inside the current window, clamped to 0.1–3 — a single homozygous deletion (``-9``) therefore cannot flatten the rest of the cohort. Single-sample bar tracks take the same menu, with the colour applying to the whole track."
+msgstr "右键轨道（或用它的齿轮）可以设置 **热图配色（增益 / 缺失）** 与 **振幅 ±**。自动时振幅取窗口内 ``|Segment_Mean|`` 的 95 分位，限制在 0.1–3 之间——单个纯合缺失（``-9``）因此不会把整组压成一片。单样本条形轨道用同一个菜单，颜色作用于整条轨道。"
+
+msgid "A whole-chromosome or whole-genome view is the useful scale for copy number: segments are megabases long, so a 30 kb window usually contains a single flat piece. Imported SEG tracks are not limited by the BAM visibility window."
+msgstr "看拷贝数要用整条染色体或全基因组的尺度：一个片段动辄几兆碱基，30 kb 窗口里通常只有一小段平台。导入的 SEG 轨道不受 BAM 可见窗口的限制。"
 
 msgid "The SEG file stays in the sidebar after a restart but is not re-parsed until you tick it again — see :ref:`imports-are-session-scoped`. Removing the track deletes the imported copy under ``data/loaded``; your original file is untouched."
 msgstr "重启后 SEG 文件仍留在侧栏，但要重新勾选才会再次解析——见 :ref:`imports-are-session-scoped`。删除轨道会删掉 ``data/loaded`` 下的导入副本，你的原始文件不受影响。"

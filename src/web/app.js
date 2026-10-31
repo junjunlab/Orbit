@@ -798,11 +798,20 @@
   }
 
   // 面板 i 的可用绘图宽度（所有 pane 等宽，任取一个即可）
+  // clientWidth 为 0 表示这一帧还没布局完（pane 刚插入、轨道刚由隐藏变可见）。
+  // 此时绝不能返回 80 的兜底值：px() 会以为画布只有 80 px 宽，把整条染色体的
+  // 刻度/基因全挤在左边（自组装装配下首次渲染就踩到过）。返回 0 让 refreshPaneW
+  // 判定为「未知」，沿用上一次的有效宽度，这一帧画出来最多偏一点，不会缩成一团。
   function paneWidth(i) {
     const el = document.querySelector(`#view .pane[data-p="${i}"]`);
-    if (el) return Math.max(80, el.clientWidth);
+    if (el) {
+      const w = el.clientWidth;
+      if (w > 0) return w;
+      const body = visibleTrackBody();
+      return body && body.clientWidth > 0 ? body.clientWidth : 0;
+    }
     const body = visibleTrackBody();
-    return Math.max(200, body ? body.clientWidth : 400);
+    return body ? body.clientWidth : 0;
   }
 
   // 当前活动面板里某条轨道的 canvas
@@ -1022,7 +1031,11 @@
   function refreshPaneW() {
     const n = Math.max(1, S.panels.length);
     const next = new Array(n);
-    for (let i = 0; i < n; i++) next[i] = paneWidth(i);
+    for (let i = 0; i < n; i++) {
+      const w = paneWidth(i);
+      // 0 = 这一帧量不到（布局未完成）。沿用上一次的有效值，别退化成 80。
+      next[i] = w > 0 ? w : (_paneW[i] || 0);
+    }
     _paneW = next;
   }
 

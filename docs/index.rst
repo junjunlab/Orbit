@@ -30,6 +30,8 @@ What you get
 * bigWig and bedGraph signal tracks, multi-sample overlays
 * Copy-number SEG files: one track per sample, or a cohort heatmap
 * Import your own bigWig, bedGraph, SEG, BAM, GTF or FASTA at runtime
+* A non-model organism works without a catalog entry: pick the empty **Custom**
+  assembly and import your genome FASTA plus its GFF3
 * Split view, deep links, PNG / SVG / PDF export
 
 .. note::

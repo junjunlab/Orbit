@@ -94,6 +94,9 @@ msgstr "请使用与所选参考装配对应的真实文件。:doc:`data-import`
 msgid "Importing copies files into Orbit's data area. On a fresh page load, previously imported tracks remain listed but unchecked; tick them again instead of assuming they were deleted."
 msgstr "导入会将文件复制到 Orbit 的数据区域。重新加载页面时，以前导入的轨道仍会列出但默认未勾选；请重新勾选，不要以为它们已被删除。"
 
+msgid "If you work on a non-model organism, you do not need a catalog entry: choose the empty **Custom** assembly and import your own genome FASTA followed by its GFF3/GTF. :doc:`assemblies` walks through it with screenshots."
+msgstr "如果做的是非模式物种，不必先建 catalog 条目：选空的 **自定义** 装配，先导入自己的基因组 FASTA，再导入 GFF3/GTF。:doc:`assemblies` 里有带截图的完整流程。"
+
 msgid "Compare several loci"
 msgstr "比较多个位点"
 
