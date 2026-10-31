@@ -203,10 +203,19 @@ def main() -> int:
         print(f"  [{i:3d}/{len(files)}] {rel}  {st_size/1e3:.0f} KB")
     cache_path.write_text(json.dumps(cache))
 
-    # 不用 base_tree：我们要的树就是这些文件，从头建更干净。
-    # 注意 tree 必须是「完整」的：如果漏掉 .github/workflows/*，更新分支时会把
-    # 仓库里已有的 workflow 删掉（曾经因此每次推送都多出一个「删了再加回来」的提交）。
-    st, tree = api("POST", f"/repos/{owner}/{REPO}/git/trees", {"tree": blobs}, tok=tok)
+    # 必须带 base_tree：本目录是开发副本，仓库里还有本地没有的文件
+    # （LICENSE、.readthedocs.yaml、旧探针脚本…）。不带 base_tree 时整棵树由
+    # 本地文件重建，本地没有的等于删除——2026-10-31 就这样把 LICENSE 和
+    # .readthedocs.yaml 删了，RTD 的 latest 从此每次构建都失败。
+    base_tree = None
+    if base_commit:
+        st_c, commit_obj = api("GET", f"/repos/{owner}/{REPO}/git/commits/{base_commit}", tok=tok)
+        if st_c == 200 and commit_obj.get("tree", {}).get("sha"):
+            base_tree = commit_obj["tree"]["sha"]
+    payload_tree = {"tree": blobs}
+    if base_tree:
+        payload_tree["base_tree"] = base_tree
+    st, tree = api("POST", f"/repos/{owner}/{REPO}/git/trees", payload_tree, tok=tok)
     dropped_wf = False
     if st not in (200, 201) and any(b["path"].startswith(WORKFLOW_PREFIX) for b in blobs):
         # 兜底：token 缺 Workflows: write 时整棵树都会被拒，去掉 workflow 再试一次
