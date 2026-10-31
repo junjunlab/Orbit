@@ -670,8 +670,58 @@ class Handler(BaseHTTPRequestHandler):
                                "hasSeq": t.has_seq, "paired": t.paired,
                                "ms": round((time.perf_counter() - t0) * 1000, 2)})
 
+        # ---- 导入注释的基因搜索：必须放在统一的 asm 检查**之前**处理。
+        # 「自定义（空）」装配的 id 是 __custom__，不在 catalog 里，asm 为
+        # None；早前统一 404 会让本端点永远失败 —— 现象就是导入 GTF/GFF 后
+        # 基因画得出来（loaded/genes 在检查之前），搜索框却弹不出候选、回车
+        # 也没反应（前端 api() 对非 200 抛错，被 .catch 静默吞掉）。
+        if name == "loaded/search":
+            q = (qs.get("q") or [""])[0].strip()
+            tid = (qs.get("track") or ["all"])[0]
+            if not q:
+                return self._json({"hits": []})
+            tracks = STORE.loaded.gene_tracks()
+            if tid and tid != "all":
+                tracks = [t for t in tracks if t.id == tid]
+            # 染色体名重映射（Ensembl 8 → chr8）只对内置装配有意义；自定义
+            # 装配没有 catalog 记录，退回用导入轨道自带的染色体字典。
+            asm_chroms = (STORE.assembly(db) or {}).get("chroms") or {}
+            if not asm_chroms:
+                # 注意：循环变量别叫 t0 —— 它已经是最外层的计时起点
+                for ts in STORE.loaded.seq_tracks() + tracks:
+                    ch = getattr(ts, "chroms", None) or {}
+                    if ch:
+                        asm_chroms = ch
+                        break
+            hits = []
+            seen = set()
+            for t in tracks:
+                for g in t.search_names(q, limit=20):
+                    key = (t.id, g.name, g.chrom, g.start, g.end)
+                    if key in seen:
+                        continue
+                    seen.add(key)
+                    chrom = g.chrom
+                    if asm_chroms and chrom not in asm_chroms:
+                        for v in _chrom_variants(chrom):
+                            if v in asm_chroms:
+                                chrom = v
+                                break
+                    hits.append({"type": "loaded-gene", "track": t.id,
+                                 "trackName": t.name, "name": g.name,
+                                 "chrom": chrom, "start": g.start,
+                                 "end": g.end, "strand": g.strand})
+                    if len(hits) >= 30:
+                        break
+                if len(hits) >= 30:
+                    break
+            return self._json({"hits": hits,
+                               "ms": round((time.perf_counter() - t0) * 1000, 2)})
+
         asm = STORE.assembly(db)
-        if asm is None:
+        # search（内置 RefSeq）在自定义装配下没有索引：返回空命中而不是
+        # 404，否则「内置」范围下搜索会被前端 catch 吞掉，既没候选也没提示。
+        if asm is None and name != "search":
             return self._error(f"unknown assembly: {db}", HTTPStatus.NOT_FOUND)
 
         if name == "cytobands":
@@ -745,7 +795,7 @@ class Handler(BaseHTTPRequestHandler):
             if not q:
                 return self._json({"hits": []})
             hits = []
-            locus = parse_locus(q, asm["chroms"])
+            locus = parse_locus(q, (asm or {}).get("chroms") or {})
             if locus:
                 hits.append({"type": "locus", "chrom": locus[0],
                              "start": locus[1], "end": locus[2],
@@ -780,44 +830,6 @@ class Handler(BaseHTTPRequestHandler):
                 hits.append({"type": "gene", "name": p[4], "chrom": p[0],
                              "start": p[1], "end": p[2], "strand": p[3]})
             return self._json({"hits": hits[:30]})
-
-        if name == "loaded/search":
-            # Search gene names inside user-imported GTF/GFF tracks. ``track``
-            # may be a single track id or "all". Gene coordinates are mapped
-            # from the file's chromosome naming (Ensembl ``8``) back to the
-            # assembly's (``chr8``) so the front end can navigate there.
-            q = (qs.get("q") or [""])[0].strip()
-            tid = (qs.get("track") or ["all"])[0]
-            if not q:
-                return self._json({"hits": []})
-            tracks = STORE.loaded.gene_tracks()
-            if tid and tid != "all":
-                tracks = [t for t in tracks if t.id == tid]
-            asm_chroms = asm["chroms"]
-            hits = []
-            seen = set()
-            for t in tracks:
-                for g in t.search_names(q, limit=20):
-                    key = (t.id, g.name, g.chrom, g.start, g.end)
-                    if key in seen:
-                        continue
-                    seen.add(key)
-                    chrom = g.chrom
-                    if chrom not in asm_chroms:
-                        for v in _chrom_variants(chrom):
-                            if v in asm_chroms:
-                                chrom = v
-                                break
-                    hits.append({"type": "loaded-gene", "track": t.id,
-                                 "trackName": t.name, "name": g.name,
-                                 "chrom": chrom, "start": g.start,
-                                 "end": g.end, "strand": g.strand})
-                    if len(hits) >= 30:
-                        break
-                if len(hits) >= 30:
-                    break
-            return self._json({"hits": hits,
-                               "ms": round((time.perf_counter() - t0) * 1000, 2)})
 
         if name == "gene":
             chrom = (qs.get("chrom") or [""])[0]

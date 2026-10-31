@@ -6438,6 +6438,7 @@
     const scopeMenu = $('#scopeMenu');
     const scopeLabel = $('#scopeLabel');
     let scopeVal = 'refseq';
+    let scopeUserSet = false;   // 用户是否手动切过范围（手动选择后不再被默认值覆盖）
     const scopeLoaded = () => scopeVal !== 'refseq';
     const scopeTrack = () => scopeVal === 'refseq' ? 'all' : scopeVal;
     const geneTracks = () => S.loaded.list.filter((t) => t.kind === 'gene');
@@ -6648,6 +6649,13 @@
         for (const t of tracks) items.push({ v: t.id, label: t.name });
       }
       if (!items.some((it) => it.v === scopeVal)) scopeVal = 'refseq';
+      // 自定义（空）装配没有内置注释，「内置」范围没有意义：一旦导入了
+      // GTF/GFF，默认就用「全部导入」，否则用户第一次搜索（范围仍是
+      // 「内置」）什么都搜不到，必须手动切范围才行。
+      if (!scopeUserSet && scopeVal === 'refseq' && tracks.length
+          && S.asm && S.asm.custom) {
+        scopeVal = 'all';
+      }
       scopeMenu.innerHTML = items.map((it) =>
         `<div class="scope-item${it.v === scopeVal ? ' cur' : ''}" role="option"` +
         ` aria-selected="${it.v === scopeVal}" data-v="${escHtml(it.v)}">` +
@@ -6698,6 +6706,7 @@
         closeScope();
         const v = el.dataset.v;
         if (v === scopeVal) { input.focus(); return; }
+        scopeUserSet = true;
         scopeVal = v;
         gtfRefresh();
         // 切换范围后先丢掉上一种范围的候选，再按新范围重新联想
