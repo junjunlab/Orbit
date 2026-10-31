@@ -99,6 +99,10 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     steps:
+      # 说明文件 docs/release-notes/<tag>.md 在仓库里，这个 job 不 checkout 就取不到，
+      # 会静默退回自动生成的正文（1.0.2 第一次发布就是这样）。
+      - uses: actions/checkout@v4
+
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
